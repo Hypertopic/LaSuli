@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/" type"text/css" ?>
+<?xml-stylesheet href="chrome://browser/skin/browser.css" type="text/css" ?>
+
+<overlay id="lasuliOverlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<script src="chrome://lasuli/content/js/overlay.js" type="application/x-javascript" />
+
+  <menupopup id="viewSidebarMenu">
+    <menuitem key="key_openLaSuliSidebar" observes="viewLaSuliSidebar"  />
+  </menupopup>
+
+  <keyset id="mainKeyset">
+    <key id="key_openLaSuliSidebar" command="viewLaSuliSidebar"
+         key="L"
+         modifiers="shift control" />
+  </keyset>
+
+  <broadcasterset id="mainBroadcasterSet">
+    <broadcaster id="viewLaSuliSidebar"
+                 label="LaSuli"
+                 autoCheck="false"
+                 type="checkbox"
+                 group="sidebar"
+                 sidebarurl="chrome://lasuli/content/index.html"
+                 sidebartitle="LaSuli"
+                 oncommand="overlay.openSideBar();" />
+  </broadcasterset>
+</overlay>

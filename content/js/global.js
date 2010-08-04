@@ -1,0 +1,1 @@
+var jsBaseDir = "chrome://lasuli/content/js/";

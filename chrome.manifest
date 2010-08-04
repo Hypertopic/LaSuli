@@ -1,0 +1,3 @@
+content   lasuli                content/
+
+overlay chrome://browser/content/browser.xul chrome://lasuli/content/overlay.xul
