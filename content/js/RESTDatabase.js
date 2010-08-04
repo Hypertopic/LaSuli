@@ -74,10 +74,10 @@ RESTDatabase.prototype.post = function(object) {
  * @param query the path to get the view from the baseURL
  * @return the object or the object list that was read on the server
  */
-RESTDatabase.prototype.get = function(query) {
+RESTDatabase.prototype.get = function(query, force) {
 	var _args = 'RESTDatabase.prototype.get';
 	query = (query) ? this.baseUrl + query : '';
-	if(this.cache[query])
+	if(this.cache[query] && !force)
 		return this.cache[query];
 
 	var body = this.send("GET", query, null);
@@ -90,3 +90,41 @@ RESTDatabase.prototype.get = function(query) {
 	return body;
 }
 
+/**
+ * @param object the object to update on the server
+ * (_id is mandatory, the server may need _rev for conflict management)
+ * if the server features conflict management, the object is updated with _rev
+ */
+RESTDatabase.prototype.put = function(object) {
+	var _args = 'RESTDatabase.prototype.put';
+	var url = this.baseUrl + object._id;
+
+	var body = this.send("PUT", url, object);
+	if(!body && !body.ok)
+	{
+		exception(url, this._sourceName, _args);
+		return false;
+	}
+	if(body.rev)
+		object._rev = body.rev;
+	return object;
+}
+
+/**
+ * @param object the object to delete on the server
+ * (_id is mandatory, the server may need _rev for conflict management)
+ */
+RESTDatabase.prototype.delete = function(object) {
+	var _args = 'RESTDatabase.prototype.delete';
+	var url = this.baseUrl + object._id;
+	if(object._rev)
+		url += "?rev=" + object._rev;
+
+	var body = this.send("DELETE", url, null);
+	if(!body)
+	{
+		exception(url, this._sourceName, _args);
+		return false;
+	}
+	return true;
+}
