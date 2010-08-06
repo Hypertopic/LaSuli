@@ -1,3 +1,21 @@
+/*
+HYPERTOPIC - Infrastructure for community-driven knowledge organization systems
+
+OFFICIAL WEB SITE
+http://www.hypertopic.org/
+
+Copyright (C) 2010 Chao ZHOU, Aurelien Benel.
+
+LEGAL ISSUES
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License (version 3) as published by the
+Free Software Foundation.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details:
+http://www.gnu.org/licenses/gpl.html
+*/
+
 /**
  * @param baseURL The database URL.
  *                example: http://127.0.0.1:5984/test/
@@ -75,12 +93,13 @@ RESTDatabase.prototype.post = function(object) {
  * @return the object or the object list that was read on the server
  */
 RESTDatabase.prototype.get = function(query, force) {
+	force = (force) ? force : true; //TODO should write a worker to check the changes on couchdb
 	var _args = 'RESTDatabase.prototype.get';
-	query = (query) ? this.baseUrl + query : '';
+	query = (query) ? query : '';
 	if(this.cache[query] && !force)
 		return this.cache[query];
 
-	var body = this.send("GET", query, null);
+	var body = this.send("GET", this.baseUrl + query, null);
 	if(!body)
 	{
 		exception(query, this._sourceName, _args);
