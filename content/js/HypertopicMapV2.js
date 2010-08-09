@@ -122,3 +122,85 @@ HypertopicMapV2.prototype.untagItem(itemID, viewpointID, topicID)
 {
 //TODO
 }
+
+
+HypertopicMapV2.prototype.tagFragment(itemID, coordinates, text, viewpointID, topicID)
+{
+	var item = this.db.get(itemID);
+	var fragments = item.fragments;
+	if (fragments==null)
+		item.fragments = {};
+
+	if (!item.fragments[coordinates]) {
+		item.fragments[coordinates] = {};
+		item.fragments[coordinates]text = text;
+	}
+
+	if (!item.fragments[coordinates].topics) {
+		item.fragments[coordinates].topics = {};
+		item.fragments[coordinates].topics = topics;
+	}
+	item.fragments[coordinates].topics[viewpointID] = topicID;
+	this.db.put(item);
+}
+
+
+HypertopicMapV2.prototype.untagFragment(itemID, coordinates, viewpointID, topicID)
+{
+	var item = this.db.get(itemID);
+	if(item.fragments[coordinates] && item.fragments[coordinates].topics)
+		delete item.fragments[coordinates].topics[viewpointID];
+
+	this.db.put(item);
+}
+
+//=================================================================== VIEWPOINT
+
+/**
+ * @param actor e.g. "cecile@hypertopic.org"
+ */
+HypertopicMapV2.prototype.listViewpoints(actor)
+{
+	return this.db.get("viewpoint/?actor=" + actor);
+}
+
+HypertopicMapV2.prototype.createViewpoint(name, actor)
+{
+	var viewpoint = {};
+	viewpoint.viewpoint_name = name;
+	viewpoint.actors = [ actor ];
+
+	var result = this.db.post(viewpoint);
+	return (!result) ? false : result._id;
+}
+
+HypertopicMapV2.prototype.destroyViewpoint(viewpointID)
+{
+	var viewpoint = this.db.get(viewpointID);
+	if(!viewpoint) return false;
+	return this.db.delete(viewpoint);
+}
+
+//TODO importViewpoint(XML, viewpointID?)
+//TODO XML exportViewpoint(viewpointID)
+
+//======================================================================= TOPIC
+
+/**
+ * @param topicID null for the virtual root
+ * @return an object with broader, narrower and name
+ */
+HypertopicMapV2.prototype.getTopic(viewpointID, topicID)
+{
+//TODO
+}
+
+//==================================================================== RESOURCE
+
+/**
+ * @param resource e.g. "http://cassandre/text/d0"
+ */
+HypertopicMapV2.prototype.getResources(resource)
+{
+	return this.db.get("resource/?resource=" + resource);
+}
