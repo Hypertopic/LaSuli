@@ -6,6 +6,8 @@ function w(str)
 
 function HypertopicV2Test()
 {
+  this._sourceName = "HypertopicMapV2.test.js";
+  
   var user = 'chao@zhou.fr';
   var corpus_name = 'Testing';
   var map = new HypertopicMapV2('http://127.0.0.1/argos_dev/_design/argos/_rewrite/');
@@ -24,21 +26,28 @@ function HypertopicV2Test()
     return;
   }
   var corpusID = result;
+  
   result = map.renameCorpus(corpusID, corpus_name + ':' + user);
   w(result);
+  log(result, 'renameCorpus');
+  
   
   result = map.getCorpus(corpusID);
   w(result);
+  log(result, 'getCorpus');
+  
   
   result = map.listCorpora(user);
   w(result);
+  log(result, 'listCorpora');
   
   result = map.destroyCorpus(corpusID);
   w(result);
+  log(result, 'destroyCorpus');
   
   result = map.listCorpora(user);
   w(result);
-  
+  log(result, 'listCorpora');
 }
 
 $(function(){

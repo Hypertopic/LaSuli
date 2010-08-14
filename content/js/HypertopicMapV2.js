@@ -89,15 +89,19 @@ HypertopicMapV2.prototype.renameCorpus = function(corpusID, name) {
 HypertopicMapV2.prototype.destroyCorpus = function(corpusID)
 {
   //TODO
+  log(corpusID, "[destroyCorpus] corpusID");
   var obj = this.db.get(corpusID);
   if(!obj) return false;
 
+  log(obj, "[destroyCorpus] obj");
   var result = this.db.delete(obj);
   if(!result) return false;
   
   var items = this.listItems(corpusID);
-  for(var documentID in items)
+  log(items, "[destroyCorpus] items");
+  for(var i=0, documentID; documentID = items[i]; i++)
   {
+    log(documentID, "[destroyCorpus] documentID");
     var obj = this.db.get(documentID);
     if(!obj) continue;
     this.db.delete(obj);

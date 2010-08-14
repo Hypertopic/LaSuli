@@ -100,7 +100,9 @@ RESTDatabase.prototype.post = function(object) {
  * otherwise the original object is returned.
  */
 RESTDatabase.prototype.get = function(query, force) {
-  force = (typeof(force) == 'boolean') ? force : true; //TODO should write a worker to check the changes on couchdb
+  
+  force = (typeof(force) == 'boolean') ? force : true; 
+  //TODO should write a worker to check the changes on couchdb
   var _args = 'RESTDatabase.prototype.get';
   query = (query) ? query : '';
   if(this.cache[query] && !force)
@@ -113,7 +115,7 @@ RESTDatabase.prototype.get = function(query, force) {
     return false;
   }
   
-  var body = JSON.parse(str);
+  //TODO, need to rewrite this part of algorithm
   if(body.rows && body.rows.length > 0)  
   {
     var result = {};
