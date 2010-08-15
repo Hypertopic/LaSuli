@@ -149,16 +149,17 @@ HypertopicMapV2.prototype.destroyItem = function(itemID){
   var object = this.db.get(itemID);
   if(!object)
    return false;
-  this.db.delete(object);
+  return this.db.delete(object);
 }
 
 HypertopicMapV2.prototype.describeItem = function(itemID, attribute, value)
 {
   var item = this.db.get(itemID);
+  if(!item) return false;
   if(!item[attribute])
     item[attribute] = {};
   item[attribute].push(value);
-  this.db.put(item);
+  return this.db.put(item);
 }
 
 HypertopicMapV2.prototype.undescribeItem = function(itemID, attribute, value)
@@ -174,6 +175,7 @@ HypertopicMapV2.prototype.undescribeItem = function(itemID, attribute, value)
 HypertopicMapV2.prototype.tagItem = function(itemID, viewpointID, topicID)
 {
   var item = this.db.get(itemID);
+  if(!item) return false;
   if(!item.topics)
     item.topics = {};
   if(!item.topics[topicID])
@@ -184,38 +186,44 @@ HypertopicMapV2.prototype.tagItem = function(itemID, viewpointID, topicID)
 
 HypertopicMapV2.prototype.untagItem = function(itemID, viewpointID, topicID)
 {
-//TODO
+  var item = this.db.get(itemID);
+  if(!item) return false;
+  if(!item.topics || !item.topics[topicID]) return true;
+  delete item.topics[topicID];
+  return this.db.put(item);
 }
 
-
+/**
+ * @param itemID Note: replaced by a corpusID in Cassandre.
+ * @return the ID of the highlight
+ */
 HypertopicMapV2.prototype.tagFragment = function(itemID, coordinates, text, viewpointID, topicID)
 {
   var item = this.db.get(itemID);
-  var fragments = item.fragments;
-  if (fragments==null)
-    item.fragments = {};
+  if(!item) return false;
+  
+  if (!item.highlights)
+    item.highlights = {};
 
-  if (!item.fragments[coordinates]) {
-    item.fragments[coordinates] = {};
-    item.fragments[coordinates].text = text;
-  }
-
-  if (!item.fragments[coordinates].topics) {
-    item.fragments[coordinates].topics = {};
-    item.fragments[coordinates].topics = topics;
-  }
-  item.fragments[coordinates].topics[viewpointID] = topicID;
+  var highlights = {};
+  highlights.coordinates = coordinates;
+  highlights.text = text;
+  highlights.viewpoint = viewpoint;
+  highlights.topic = topic;
+  
+  var highlightID = radomUUID();
+  item.highlights[highlightID] = highlights;
   this.db.put(item);
+  return highlightID;
 }
-
 
 HypertopicMapV2.prototype.untagFragment = function(itemID, coordinates, viewpointID, topicID)
 {
   var item = this.db.get(itemID);
-  if(item.fragments[coordinates] && item.fragments[coordinates].topics)
-    delete item.fragments[coordinates].topics[viewpointID];
-
-  this.db.put(item);
+  if(!item) return false;
+  if(!item.highlights[highlightID]) return true;
+  delete item.highlights[highlightID];
+  return this.db.put(item);
 }
 
 //=================================================================== VIEWPOINT
@@ -275,11 +283,100 @@ HypertopicMapV2.prototype.destroyViewpoint = function(viewpointID)
 
 /**
  * @param topicID null for the virtual root
- * @return an object with broader, narrower and name
+ * @return an object with broader, narrower and name 
  */
-HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID)
+HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID) 
 {
-//TODO
+	var obj = this.getViewpoint(viewpointID);
+	return (obj && obj[topicID]) ? obj[topicID] : false;
+}
+
+/**
+ * @param topics can be empty
+ * @return topic ID
+ */
+HypertopicMapV2.prototype.createTopicIn = function(viewpointID, topicsIDs) 
+{
+	var topicID = randomUUID();
+	var viewpoint = this.db.get(viewpointID);
+	if(!viewpoint) return false;
+	
+	if(!viewpoint.topics)
+	  viewpoint.topics = {};
+	if(!viewpoint.topics[topicID])
+	  viewpoint.topics[topicID] = {};
+	viewpoint.topics[topicID].broader = topicsIDs;
+	var result = this.db.put(viewpoint);
+	return (!result) ? false : result;
+}
+
+HypertopicMapV2.prototype.renameTopic = function(viewpointID, topicID, name)
+{
+  var viewpoint = this.db.get(viewpointID);
+	if(!viewpoint) return false;
+	
+	if(!viewpoint.topics)
+	  viewpoint.topics = {};
+	if(!viewpoint.topics[topicID])
+	  viewpoint.topics[topicID] = {};
+  viewpoint.topics[topicID].name = name;
+	var result = this.db.put(viewpoint);
+	return (!result) ? false : result;
+}
+
+HypertopicMapV2.prototype.destroyTopic = function(viewpointID, topicID)
+{
+	var viewpoint = this.db.get(viewpointID);
+	if(!viewpoint) return false;
+	if(!viewpoint.topics || !viewpoint.topics[topicID]) return true;
+	delete viewpoint.topics[topicID];
+	
+	for(var t in viewpoint.topics)
+	{
+	  if(viewpoint.topics[t] && viewpoint.topics[t].broader && viewpoint.topics[t].broader.length > 0)
+	    viewpoint.topics[t].broader.remove(topicID);
+	}
+	var result = this.db.put(viewpoint);
+	return (!result) ? false : result;
+}
+
+
+/**
+ * @param topicID can be empty (to unlik from parents)
+ */
+HypertopicMapV2.prototype.moveTopicsIn = function(topicsIDs, viewpointID, topicID) 
+{
+	var viewpoint = this.db.get(viewpointID);
+	if(!viewpoint) return false;
+	
+	if(!viewpoint.topics) viewpoint.topics = {};
+	
+	for(var i=0, t; t = topicsIDs[i]; i++)
+	{
+	  if(!viewpoint.topics[t]) viewpoint.topics[t] = {};
+	  
+	  viewpoint.topics[t].broader = new Array(topicID);
+	}
+	var result = this.db.put(viewpoint);
+	return (!result) ? false : result;
+}
+
+HypertopicMapV2.prototype.linkTopicsIn = function(topicsIDs, viewpointID, topicID) 
+{
+	var viewpoint = this.db.get(viewpointID);
+	if(!viewpoint) return false;
+	
+	if(!viewpoint.topics) viewpoint.topics = {};
+	
+	for(var i=0, t; t = topicsIDs[i]; i++)
+	{
+	  if(!viewpoint.topics[t]) viewpoint.topics[t] = {};
+	  if(!viewpoint.topics[t].broader) viewpoint.topics[t].broader = new Array();
+	  
+	  viewpoint.topics[t].broader.push(topicID);
+	}
+	var result = this.db.put(viewpoint);
+	return (!result) ? false : result;
 }
 
 //==================================================================== RESOURCE

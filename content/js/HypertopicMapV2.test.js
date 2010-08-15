@@ -51,7 +51,7 @@ function HypertopicV2Test()
   ****/
   
   /**** Viewpoint 
-  **/
+  
   result = map.createViewpoint('Test Viewpoint', 'chao@zhou.fr');
   w(result);
   log(result, 'createViewpoint');
@@ -80,6 +80,7 @@ function HypertopicV2Test()
   result = map.listViewpoints('chao@zhou.fr');
   w(result);
   log(result, 'listViewpoints');
+  **/
 }
 
 $(function(){
