@@ -81,11 +81,11 @@ RESTDatabase.prototype.post = function(object) {
     exception(object, this._sourceName, _args);
     return false;
   }
-  log(object, this._sourceName, _args);
+  //log(object, this._sourceName, _args);
   object._id = body.id;
   if (body.rev)
     object._rev = body.rev;
-  log(object, this._sourceName, _args);
+  //log(object, this._sourceName, _args);
   return object;
 }
 

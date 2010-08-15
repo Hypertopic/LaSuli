@@ -17,7 +17,7 @@ function HypertopicV2Test()
   w(result);
   result = map.unregister('5a03d6d794ec4b9215f7cba8600c24db', 'chao@zhou.fr');
   w(result);
-  ****/
+  
   
   result = map.createCorpus(corpus_name,user);
   if(!result)
@@ -48,6 +48,38 @@ function HypertopicV2Test()
   result = map.listCorpora(user);
   w(result);
   log(result, 'listCorpora');
+  ****/
+  
+  /**** Viewpoint 
+  **/
+  result = map.createViewpoint('Test Viewpoint', 'chao@zhou.fr');
+  w(result);
+  log(result, 'createViewpoint');
+  var viewpointID = result;
+  
+  result = map.listViewpoints('chao@zhou.fr');
+  w(result);
+  log(result, 'listViewpoints');
+  
+  result = map.getViewpoint(viewpointID);
+  w(result);
+  log(result, 'getViewpoint');
+  
+  result = map.renameViewpoint(viewpointID, ' new name');
+  w(result);
+  log(result, 'renameViewpoint');
+  
+  result = map.getViewpoint(viewpointID);
+  w(result);
+  log(result, 'getViewpoint');
+  
+  result = map.destroyViewpoint(viewpointID);
+  w(result);
+  log(result, 'destroyViewpoint');
+  
+  result = map.listViewpoints('chao@zhou.fr');
+  w(result);
+  log(result, 'listViewpoints');
 }
 
 $(function(){

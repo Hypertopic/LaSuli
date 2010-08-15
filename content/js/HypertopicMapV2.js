@@ -127,7 +127,8 @@ HypertopicMapV2.prototype.listItems = function(corpusID){
 
 HypertopicMapV2.prototype.getItem = function(corpusID, itemID) {
   var obj = this.getCorpus(corpusID);
-  if(!obj) return false;
+  if(!obj) 
+    return false;
   else
     return obj[itemID];
 }
@@ -154,14 +155,19 @@ HypertopicMapV2.prototype.destroyItem = function(itemID){
 HypertopicMapV2.prototype.describeItem = function(itemID, attribute, value)
 {
   var item = this.db.get(itemID);
-  item.attribute.push(value);
+  if(!item[attribute])
+    item[attribute] = {};
+  item[attribute].push(value);
   this.db.put(item);
 }
 
 HypertopicMapV2.prototype.undescribeItem = function(itemID, attribute, value)
 {
   var item = this.db.get(itemID);
-  item.attribute.remove(value);
+  if(item[attribute] && !item[attribute].length > 0) return;
+  item[attribute].remove(value);
+  if(item[attribute].length == 0)
+    delete item[attribute];
   this.db.put(item);
 }
 
@@ -217,19 +223,42 @@ HypertopicMapV2.prototype.untagFragment = function(itemID, coordinates, viewpoin
 /**
  * @param actor e.g. "cecile@hypertopic.org"
  */
-HypertopicMapV2.prototype.listViewpoints = function(actor)
+HypertopicMapV2.prototype.listViewpoints = function(user)
 {
-  return this.db.get("viewpoint/?actor=" + actor);
+	var result = this.db.get("user/" + user);
+	if(!result || !result[user]) return false;
+	
+	var obj = result[user];
+	return (obj.viewpoint) ? obj.viewpoint : false;
 }
 
-HypertopicMapV2.prototype.createViewpoint = function(name, actor)
+HypertopicMapV2.prototype.getViewpoint = function(viewpointID)
 {
+  var result = this.db.get("viewpoint/" + viewpointID);
+  if(!result || !result[viewpointID] ) return false;
+  
+  return result[viewpointID];
+}
+
+HypertopicMapV2.prototype.createViewpoint = function(name, user)
+{
+  
   var viewpoint = {};
   viewpoint.viewpoint_name = name;
-  viewpoint.actors = [ actor ];
+  viewpoint.users = [ user ];
 
   var result = this.db.post(viewpoint);
   return (!result) ? false : result._id;
+}
+
+HypertopicMapV2.prototype.renameViewpoint = function(viewpointID, name)
+{
+  var obj = this.db.get(viewpointID);
+  if(!obj) return false;
+  obj.viewpoint_name = name;
+  var result = this.db.put(obj);
+  //log(result, '[renameViewpoint] result');
+  return (result) ? true : false;
 }
 
 HypertopicMapV2.prototype.destroyViewpoint = function(viewpointID)
@@ -260,5 +289,7 @@ HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID)
  */
 HypertopicMapV2.prototype.getResources = function(resource)
 {
-  return this.db.get("resource/?resource=" + resource);
+  return this.db.get("resource/?resource=" + encodeURIComponent(resource));
 }
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HypertopicMapV2
