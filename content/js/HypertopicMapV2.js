@@ -17,9 +17,23 @@ PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details:
 http://www.gnu.org/licenses/lgpl.html
 */
 
-function HypertopicMapV2(baseUrl)
+function HypertopicMapV2(baseUrl, designDocument)
 {
-  this.db = new RESTDatabase(baseUrl);
+  if(!designDocument)
+  {
+    var db = new RESTDatabase(baseUrl);
+    var result = db.get('_all_docs?startkey="_design/"&endkey="_design0"');
+    var doc;
+    for(doc in result)
+      if(doc.indexOf("argos") != -1)
+        break;
+    designDocument = doc;
+  }
+  this.db = new RESTDatabase(baseUrl + designDocument + "/_rewrite/");
+}
+
+HypertopicMapV2.prototype.get = function(objectID) {
+  return this.db.get(objectID);
 }
 
 //========================================================= CORPUS OR VIEWPOINT
@@ -157,7 +171,7 @@ HypertopicMapV2.prototype.describeItem = function(itemID, attribute, value)
   var item = this.db.get(itemID);
   if(!item) return false;
   if(!item[attribute])
-    item[attribute] = {};
+    item[attribute] = new Array();
   item[attribute].push(value);
   return this.db.put(item);
 }
@@ -165,11 +179,11 @@ HypertopicMapV2.prototype.describeItem = function(itemID, attribute, value)
 HypertopicMapV2.prototype.undescribeItem = function(itemID, attribute, value)
 {
   var item = this.db.get(itemID);
-  if(item[attribute] && !item[attribute].length > 0) return;
+  if(!item[attribute] || !(item[attribute].length > 0)) return true;
   item[attribute].remove(value);
   if(item[attribute].length == 0)
     delete item[attribute];
-  this.db.put(item);
+  return this.db.put(item);
 }
 
 HypertopicMapV2.prototype.tagItem = function(itemID, viewpointID, topicID)
@@ -208,16 +222,16 @@ HypertopicMapV2.prototype.tagFragment = function(itemID, coordinates, text, view
   var highlights = {};
   highlights.coordinates = coordinates;
   highlights.text = text;
-  highlights.viewpoint = viewpoint;
-  highlights.topic = topic;
+  highlights.viewpoint = viewpointID;
+  highlights.topic = topicID;
   
-  var highlightID = radomUUID();
+  var highlightID = randomUUID();
   item.highlights[highlightID] = highlights;
   this.db.put(item);
   return highlightID;
 }
 
-HypertopicMapV2.prototype.untagFragment = function(itemID, coordinates, viewpointID, topicID)
+HypertopicMapV2.prototype.untagFragment = function(itemID, highlightID)
 {
   var item = this.db.get(itemID);
   if(!item) return false;
@@ -288,6 +302,9 @@ HypertopicMapV2.prototype.destroyViewpoint = function(viewpointID)
 HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID) 
 {
 	var obj = this.getViewpoint(viewpointID);
+	log(obj, "[getTopic] obj:");
+	log(topicID, "[getTopic] topicID:");
+	
 	return (obj && obj[topicID]) ? obj[topicID] : false;
 }
 
@@ -307,7 +324,7 @@ HypertopicMapV2.prototype.createTopicIn = function(viewpointID, topicsIDs)
 	  viewpoint.topics[topicID] = {};
 	viewpoint.topics[topicID].broader = topicsIDs;
 	var result = this.db.put(viewpoint);
-	return (!result) ? false : result;
+	return (!result) ? false : topicID;
 }
 
 HypertopicMapV2.prototype.renameTopic = function(viewpointID, topicID, name)

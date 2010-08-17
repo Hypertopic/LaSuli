@@ -8,6 +8,10 @@
 		<script type="text/javascript" src="js/jquery.log.js"></script>
   	<script type="text/javascript" src="js/RESTDatabase.js"></script>
   	<script type="text/javascript" src="js/HypertopicMapV2.js"></script>
+  	
+  	<script type="text/javascript" src="assets/jsunittest.js"></script>
+  	<link rel="stylesheet" href="assets/unittest.css" type="text/css" />
+  	
   	<!-- <script type="text/javascript" src="js/RESTDatabase.test.js"></script> //-->
   	<script type="text/javascript" src="js/HypertopicMapV2.test.js"></script>
   	<script language="javascript">
@@ -17,9 +21,12 @@
   		}
   		$(document).bind('dblclick',reload_sidebar);
   	</script>
+  	
 	</head>
-	<body>
-		<input type="button" name="reload" value="reload" onclick="reload_sidebar();" />
-		<div id="result"></div>
-	</body>
+<body>
+  <div id="content">
+	  <input type="button" name="reload" value="reload" onclick="reload_sidebar();" />
+	  <div id="testlog"></div>
+  </div>
+</body>
 </html>

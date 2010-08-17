@@ -128,7 +128,7 @@ RESTDatabase.prototype.get = function(query, force) {
         rows[_key] = new Array();
       rows[_key].push(row.value);
     }
-    //p(rows);
+    //log(rows);
     //Combine the value according to the value name.
     for(var _key in rows)
     {
@@ -144,35 +144,40 @@ RESTDatabase.prototype.get = function(query, force) {
       }
       rows[_key] = obj;
     }
-    
+    //log(rows);
     var result = {};
         
     for(var _key in rows)
     {
       var keys = JSON.parse(_key);
       var obj = null,tmp,key;
-      //p(keys);
-      for(var i=keys.length-1; i >= 0; i--)
+      if(typeof(keys) == "object")
+        for(var i=keys.length-1; i >= 0; i--)
+        {
+          key = keys[i];
+          //print(i);
+          if(obj == null)
+          {
+            //print('not obj');
+            obj = {};
+            obj[key] = rows[_key];
+            tmp = JSON.parse(JSON.stringify(obj));
+            //p(obj);
+          }
+          else
+          {
+            //print('obj');
+            //p(tmp);
+            obj = {};
+            obj[key] = tmp;
+            tmp = JSON.parse(JSON.stringify(obj));
+            //p(obj);
+          }
+        }
+      else
       {
-        key = keys[i];
-        //print(i);
-        if(obj == null)
-        {
-          //print('not obj');
-          obj = {};
-          obj[key] = rows[_key];
-          tmp = JSON.parse(JSON.stringify(obj));
-          //p(obj);
-        }
-        else
-        {
-          //print('obj');
-          //p(tmp);
-          obj = {};
-          obj[key] = tmp;
-          tmp = JSON.parse(JSON.stringify(obj));
-          //p(obj);
-        }
+        obj = {};
+        obj[keys] = rows[_key];
       }
       //p(obj);
       //print(key);
