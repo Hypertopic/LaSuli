@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<dialog id="lasuli-setting-dialog"
+      persist="screenX screenY width height"
+      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      autosize="true"
+      resizable="no"
+      title="Réglages du serveur Hypertopic"
+      buttons="accept,cancel"
+      onload="lasuli.setting.loadSetting();"
+      ondialogaccept="return lasuli.setting.saveSetting();">
+
+  <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.setting.js"/>
+  <vbox flex="1">
+    <groupbox>
+      <caption label="Service Hypertopic" />
+      <hbox>
+        <label id="urllabel" value="URL:"/>
+        <textbox id="txtService" flex="1"/>
+      </hbox>
+      <hbox>
+        <label id="labelUser" value="Utilisateur :"/>
+        <textbox id="txtUser" flex="1"/>
+        <label id="labelPassword" value="Mot de passe :"/>
+        <textbox id="txtPass" type="password" flex="1"/>
+      </hbox>
+    </groupbox>
+    <hbox align="right">
+      <button dlgtype="accept" label="Ok" id="myAccept"/>
+      <button dlgtype="cancel" label="Annuler" id="myCancel"/>
+    </hbox>
+  </vbox>
+</dialog>
