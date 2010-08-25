@@ -21,6 +21,7 @@ function strict(aMessage, aSourceName, args)
 function myLogToConsole(aMessage, aSourceName, aSourceLine, aLineNumber,
                         aColumnNumber, aFlags, aCategory, args)
 {
+  jsBaseDir = (lasuli.jsBaseDir) ? lasuli.jsBaseDir : '';
 	aSourceName = (aSourceName) ? jsBaseDir + aSourceName : null;
 	aMessage = (typeof(aMessage) == "string") ? aMessage : JSON.stringify(aMessage);
 	if(args)

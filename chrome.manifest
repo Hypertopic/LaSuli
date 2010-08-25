@@ -1,4 +1,5 @@
 content   lasuli                content/
 skin      lasuli   classic/1.0  skin/
+resource  lasuli                ./
 
 overlay chrome://browser/content/browser.xul chrome://lasuli/content/overlay.xul

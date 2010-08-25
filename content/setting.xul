@@ -7,8 +7,8 @@
       resizable="no"
       title="Réglages du serveur Hypertopic"
       buttons="accept,cancel"
-      onload="lasuli.setting.loadSetting();"
-      ondialogaccept="return lasuli.setting.saveSetting();">
+      onload="onLoad();"
+      ondialogaccept="return onOK();">
 
   <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.setting.js"/>
   <vbox flex="1">
@@ -16,7 +16,7 @@
       <caption label="Service Hypertopic" />
       <hbox>
         <label id="urllabel" value="URL:"/>
-        <textbox id="txtService" flex="1"/>
+        <textbox id="txtBaseUrl" flex="1"/>
       </hbox>
       <hbox>
         <label id="labelUser" value="Utilisateur :"/>
