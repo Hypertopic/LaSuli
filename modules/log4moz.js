@@ -237,24 +237,31 @@ Logger.prototype = {
   },
 
   fatal: function Logger_fatal(string) {
+    string = (typeof(string) == "string") ? string : JSON.stringify(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Fatal, string));
   },
   error: function Logger_error(string) {
+    string = (typeof(string) == "string") ? string : JSON.stringify(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Error, string));
   },
   warn: function Logger_warn(string) {
+    string = (typeof(string) == "string") ? string : JSON.stringify(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Warn, string));
   },
   info: function Logger_info(string) {
+    string = (typeof(string) == "string") ? string : JSON.stringify(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Info, string));
   },
   config: function Logger_config(string) {
+    string = (typeof(string) == "string") ? string : JSON.stringify(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Config, string));
   },
   debug: function Logger_debug(string) {
+    string = (typeof(string) == "string") ? string : JSON.stringify(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Debug, string));
   },
   trace: function Logger_trace(string) {
+    string = (typeof(string) == "string") ? string : JSON.stringify(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Trace, string));
   }
 };

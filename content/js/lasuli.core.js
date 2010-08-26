@@ -2,24 +2,28 @@ Cu.import("resource://lasuli/modules/Observers.js");
 Cu.import("resource://lasuli/modules/Preferences.js");
 
 lasuli.core = {
-  _baseUrl: 'http://127.0.0.1', //TODO: default server uri
-  _username: 'user@hypertopic.org',
-  _password: 'no-need',
   
   loadSetting : function()
   {
     var logger = lasuli.Log4Moz.repository.getLogger("LaSuli.Core.loadSetting");
     logger.level = lasuli.Log4Moz.Level["Debug"];
-    this._baseUrl   = Preferences.get("extensions.lasuli.baseUrl", this._baseUrl);
-    this._username  = Preferences.get("extensions.lasuli.user", this._username);
-    this._password  = Preferences.get("extensions.lasuli.pass", this._password);
-    logger.info("BaseUrl:" + this._baseUrl);
-    logger.info("Username:" + this._username);
-    logger.info("Password:" + this._password);
+    lasuli._baseUrl   = Preferences.get("extensions.lasuli.baseUrl", lasuli._baseUrl);
+    lasuli._username  = Preferences.get("extensions.lasuli.user", lasuli._username);
+    lasuli._password  = Preferences.get("extensions.lasuli.pass", lasuli._password);
+    logger.info("BaseUrl:" + lasuli._baseUrl);
+    logger.info("Username:" + lasuli._username);
+    logger.info("Password:" + lasuli._password);
+    lasuli._map = new HypertopicMapV2(lasuli._baseUrl);
     return true;
+  },
+  
+  listViewpoints: function()
+  {
+    
   }
 }
 
+// Detect the preference changes, when the setting is changed reload the sidebar.
 var lasuliPrefObserver = {
   register: function() {
     this.logger = lasuli.Log4Moz.repository.getLogger("LaSuli.Core.lasuliPrefObserver");
@@ -29,13 +33,13 @@ var lasuliPrefObserver = {
     this._branch = prefService.getBranch("extensions.lasuli.");
     this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
     this._branch.addObserver("", this, false);
-    this.logger.info('register');
+    this.logger.info('register preference observer');
   },
 
   unregister: function() {
     if (!this._branch) return;
     this._branch.removeObserver("", this);
-    this.logger.info('unregister');
+    this.logger.info('unregister preference observer');
   },
 
   observe: function(aSubject, aTopic, aData) {
@@ -46,8 +50,8 @@ var lasuliPrefObserver = {
 }
 
 $(function(){
+  lasuli.setupLogging();
   lasuliPrefObserver.register();
-  setupLogging();
   lasuli.core.loadSetting();
 });
 
