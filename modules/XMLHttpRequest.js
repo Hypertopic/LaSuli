@@ -19,7 +19,6 @@ function XMLHttpRequest()
     self.method = method;
     self.url = url;
     self.sync = sync;
-    
     self.wrapped.open(method, url, sync);
   };
   

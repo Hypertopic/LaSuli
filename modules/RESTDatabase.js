@@ -16,31 +16,52 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details:
 http://www.gnu.org/licenses/lgpl.html
 */
-var EXPORTED_SYMBOLS = ["RESTDatabase"];
+let EXPORTED_SYMBOLS = ["RESTDatabase"];
 
 const Exception = Components.Exception;
-/*const Cc = Components.classes;
+const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 const include = Cu.import;
+
+include("resource://lasuli/modules/log4moz.js");
+include("resource://lasuli/modules/XMLHttpRequest.js");
+
+/*
+* Recursively merge properties of two objects 
 */
-Cu.import("resource://lasuli/modules/log4moz.js");
-Cu.import("resource://lasuli/modules/XMLHttpRequest.js");
+function MergeRecursive(obj1, obj2) {
+  for (var p in obj2)
+    try 
+    {
+      // Property in destination object set; update its value.
+      if ( obj2[p].constructor==Object )
+        obj1[p] = MergeRecursive(obj1[p], obj2[p]);
+      else
+        obj1[p] = obj2[p];
+    }
+    catch(e) 
+    {
+      obj1[p] = obj2[p]; // Property in destination object not set; create it and set its value.
+    }
+  return obj1;
+}
+
 /**
  * @param baseURL The database URL.
  *                example: http://127.0.0.1:5984/test/
  */
-function RESTDatabase(baseUrl) {
-  var logger = Log4Moz.repository.getLogger("RESTDatabase");
+let RESTDatabase = function(baseUrl) {
+  let logger = Log4Moz.repository.getLogger("RESTDatabase");
   this.cache = {};
-  var regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+  let regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
   if(!baseUrl || baseUrl === "" || !regexp.test(baseUrl))
   {
     logger.fatal("BaseUrl is not validate:" + baseUrl);
     throw Exception('baseUrl is not vaildate!');
   }
   baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
-  loggger.info("BaseUrl is:" + baseUrl);
+  logger.info("BaseUrl is:" + baseUrl);
   this.baseUrl = baseUrl;
   this.xhr = new XMLHttpRequest();
   this.xhr.overrideMimeType('application/json');
@@ -51,26 +72,38 @@ RESTDatabase.prototype = {
    * @param object null if method is GET or DELETE
    * @return response body
    */
-  send : function(httpAction, httpUrl, httpBody)
+  _send : function(httpAction, httpUrl, httpBody)
   {
-    var logger = Log4Moz.repository.getLogger("RESTDatabase.send");
+    let logger = Log4Moz.repository.getLogger("RESTDatabase._send");
     httpAction = (httpAction) ? httpAction : "GET";
     httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
   
     httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object") ? JSON.stringify(httpBody) : httpBody);
-    var result = null;
+    let result = null;
   
     try{
-      this.xhr.open('GET', httpUrl, false);
-      this.xhr.send('');
+      this.xhr.open(httpAction, httpUrl, false);
+      if(httpBody && httpBody != '')
+        this.xhr.setRequestHeader('Content-Type', 'application/json');
+
+      if(typeof(httpBody) != 'string')
+        httpBody = JSON.stringify(httpBody);
+
+      this.xhr.send(httpBody);
       
-      return JSON.parse(http.responseText);
+      if((this.xhr.status + "").substr(0,1) != '2')
+      {
+        logger.info(this.xhr.status);
+        throw Exception('error');
+      }
+      result = this.xhr.responseText;
     }
     catch(e)
     {
       logger.error("Ajax Error, xhr.status: " + this.xhr.status + " " + this.xhr.statusText + ". \nRequest:\n" + httpAction + " " + httpUrl + "\n" + httpBody);
-      throw Exception('Cannot get url: ' + httpUrl);
+      throw Exception('Error! ' + httpAction + ' ' + httpUrl);
     }
+    return JSON.parse(result);
   },
   
   
@@ -79,11 +112,11 @@ RESTDatabase.prototype = {
    *               It is updated with an _id (and a _rev if the server features
    *               conflict management).
    */
-  Post : function(object) {
-    var logger = Log4Moz.repository.getLogger("RESTDatabase.post");
-    var body;
+  httpPost : function(object) {
+    let logger = Log4Moz.repository.getLogger("RESTDatabase.post");
+    let body;
     try{
-      body = this.send("POST", this.baseUrl, object);
+      body = this._send("POST", this.baseUrl, object);
       if(!body || !body.ok)
         throw Exception(JSON.stringify(body));
     }
@@ -110,17 +143,17 @@ RESTDatabase.prototype = {
    * {key0:{key1:{attribute0:[value0, value1...]}}}
    * otherwise the original object is returned.
    */
-  Get : function(query, force) {
-    var logger = Log4Moz.repository.getLogger("RESTDatabase.get");
+  httpGet : function(query, force) {
+    let logger = Log4Moz.repository.getLogger("RESTDatabase.get");
     force = (typeof(force) == 'boolean') ? force : true; 
     //TODO should write a worker to check the changes on couchdb
     query = (query) ? query : '';
     if(this.cache[query] && !force)
       return this.cache[query];
     
-    var body;
+    let body;
     try{
-      body = this.send("GET", this.baseUrl + query, null);
+      body = this._send("GET", this.baseUrl + query, null);
       if(!body)
         throw Exception(JSON.stringify(body));
     }catch(e)
@@ -133,24 +166,23 @@ RESTDatabase.prototype = {
     //TODO, need to rewrite this part of algorithm
     if(body.rows && body.rows.length > 0)  
     {
-      var result = {};
-      var rows = {};
+      let rows = {};
       //Combine the array according to the index key.
-      for(var i=0, row; row = body.rows[i]; i++)
+      for(let i=0, row; row = body.rows[i]; i++)
       {
-        var _key = JSON.stringify(row.key);
+        let _key = JSON.stringify(row.key);
         if(!rows[_key])
           rows[_key] = new Array();
         rows[_key].push(row.value);
       }
       //log(rows);
       //Combine the value according to the value name.
-      for(var _key in rows)
+      for(let _key in rows)
       {
-        var obj = {};
-        for(var i=0, val; val = rows[_key][i] ; i++)
+        let obj = {};
+        for(let i=0, val; val = rows[_key][i] ; i++)
         {
-          for(var n in val)
+          for(let n in val)
           {
             if(!obj[n])
               obj[n] = new Array();
@@ -160,14 +192,14 @@ RESTDatabase.prototype = {
         rows[_key] = obj;
       }
       //log(rows);
-      var result = {};
+      let result = {};
           
-      for(var _key in rows)
+      for(let _key in rows)
       {
-        var keys = JSON.parse(_key);
-        var obj = null,tmp,key;
+        let keys = JSON.parse(_key);
+        let obj = null,tmp,key;
         if(typeof(keys) == "object")
-          for(var i=keys.length-1; i >= 0; i--)
+          for(let i=keys.length-1; i >= 0; i--)
           {
             key = keys[i];
             //print(i);
@@ -211,12 +243,12 @@ RESTDatabase.prototype = {
    * (_id is mandatory, the server may need _rev for conflict management)
    * if the server features conflict management, the object is updated with _rev
    */
-  Put : function(object) {
-    var logger = Log4Moz.repository.getLogger("RESTDatabase.put");
-    var url = this.baseUrl + object._id;
-    var body;
+  httpPut : function(object) {
+    let logger = Log4Moz.repository.getLogger("RESTDatabase.put");
+    let url = this.baseUrl + object._id;
+    let body;
     try{
-      body = this.send("PUT", url, object);
+      body = this._send("PUT", url, object);
       if(!body)
         throw Exception(JSON.stringify(body));
     }catch(e)
@@ -235,14 +267,14 @@ RESTDatabase.prototype = {
    * @param object the object to delete on the server
    * (_id is mandatory, the server may need _rev for conflict management)
    */
-  Delete : function(object) {
-    var logger = Log4Moz.repository.getLogger("RESTDatabase.delete");
-    var url = this.baseUrl + object._id;
+  httpDelete : function(object) {
+    let logger = Log4Moz.repository.getLogger("RESTDatabase.delete");
+    let url = this.baseUrl + object._id;
     if(object._rev)
       url += "?rev=" + object._rev;
-    var body;
+    let body;
     try{
-      body = this.send("DELETE", url, null);
+      body = this._send("DELETE", url, null);
       if(!body)
         throw Exception(JSON.stringify(body));
     }catch(e)
