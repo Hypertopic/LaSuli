@@ -58,7 +58,7 @@ let RESTDatabase = function(baseUrl) {
   if(!baseUrl || baseUrl === "" || !regexp.test(baseUrl))
   {
     logger.fatal("BaseUrl is not validate:" + baseUrl);
-    throw Exception('baseUrl is not vaildate!');
+    throw URIError('baseUrl is not vaildate!');
   }
   baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
   logger.info("BaseUrl is:" + baseUrl);

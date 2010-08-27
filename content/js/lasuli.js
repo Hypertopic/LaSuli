@@ -58,20 +58,6 @@ var lasuli = {
 
 Cu.import("resource://lasuli/modules/log4moz.js", lasuli);
 
-Array.prototype.remove = function(value)
-{
-		var j = 0;
-		while (j < this.length)
-		{
-                        if (this[j] == value)
-				this.splice(j, 1);
-			else
-				j++;
-		}
-}
-
-
-
 //Generate UUID without the "-"
 function randomUUID() {
   var s = [], itoh = '0123456789ABCDEF';
@@ -82,4 +68,3 @@ function randomUUID() {
   s[8] = s[13] = s[18] = s[23] = '';
   return s.join('');
 }
-

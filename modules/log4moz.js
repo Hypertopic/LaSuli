@@ -237,31 +237,31 @@ Logger.prototype = {
   },
 
   fatal: function Logger_fatal(string) {
-    string = (typeof(string) == "string") ? string : JSON.stringify(string);
+    string = (typeof(string) == "string") ? string : "\n" + prettyJSON(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Fatal, string));
   },
   error: function Logger_error(string) {
-    string = (typeof(string) == "string") ? string : JSON.stringify(string);
+    string = (typeof(string) == "string") ? string : "\n" + prettyJSON(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Error, string));
   },
   warn: function Logger_warn(string) {
-    string = (typeof(string) == "string") ? string : JSON.stringify(string);
+    string = (typeof(string) == "string") ? string : "\n" + prettyJSON(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Warn, string));
   },
   info: function Logger_info(string) {
-    string = (typeof(string) == "string") ? string : JSON.stringify(string);
+    string = (typeof(string) == "string") ? string : "\n" + prettyJSON(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Info, string));
   },
   config: function Logger_config(string) {
-    string = (typeof(string) == "string") ? string : JSON.stringify(string);
+    string = (typeof(string) == "string") ? string : "\n" + prettyJSON(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Config, string));
   },
   debug: function Logger_debug(string) {
-    string = (typeof(string) == "string") ? string : JSON.stringify(string);
+    string = (typeof(string) == "string") ? string : "\n" + prettyJSON(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Debug, string));
   },
   trace: function Logger_trace(string) {
-    string = (typeof(string) == "string") ? string : JSON.stringify(string);
+    string = (typeof(string) == "string") ? string : "\n" + prettyJSON(string);
     this.log(new LogMessage(this._name, Log4Moz.Level.Trace, string));
   }
 };
@@ -566,3 +566,81 @@ RotatingFileAppender.prototype = {
     // Note: this._file still points to the same file
   }
 };
+
+/**
+ * Produce valid json, but "pretty"
+ * @param objectOrString To encode
+ * @param initialIndent Initial number of idents (one ident is one tab spaces)
+ * @return String containing the pretty version
+ */
+function prettyJSON(objectOrString, initialIndent) {
+	// borrowed from json.jsm
+	// and modified to do some pretty printing
+	function prettyPrint(_oo, _l) {
+		let _p = [];
+		
+		function l(n) {
+			let rv = '';
+			while(--n >= 0) {
+				rv += '  ';
+			}
+			return rv;
+		}
+		function p(o, _l) {
+			if (typeof o == "string") {
+				o = o.replace(/[\\"\x00-\x1F\u0080-\uFFFF]/g, function($0) {
+					switch ($0) {case "\b": return "\\b"; case "\t": return "\\t"; case "\n": return "\\n"; case "\f": return "\\f"; case "\r": return "\\r"; case '"':	return '\\"'; case "\\": return "\\\\";}
+					return "\\u" + ("0000" + $0.charCodeAt(0).toString(16)).slice(-4);
+				});
+				_p.push('"' + o + '"')
+			}
+			else if (typeof o == "boolean") {
+				_p.push(o ? "true" : "false");
+			}
+			else if (typeof o == "number" && isFinite(o)) {
+				_p.push(o.toString());
+			}
+			else if (o === null) {
+				_p.push("null");
+			}
+			else if (
+				o instanceof Array ||
+				typeof o == "object" && "length" in o &&
+				(o.length === 0 || o[o.length - 1] !== undefined)
+			) {
+				_p.push("[\n");
+				for (var i = 0; i < o.length; i++) {
+					arguments.callee(o[i], _l + 1);
+					_p.push(",");
+				}
+				if (o.length > 0)
+					_p.pop();
+				_p.push("\n" + l(_l) + "]");
+			}
+			else if (typeof o == "object") {
+				_p.push(l(_l));
+				_p.push("{\n");
+				for (var key in o) {
+					_p.push(l(_l + 1));
+					arguments.callee(key.toString());
+					_p.push(": ");
+					arguments.callee(o[key], _l + 1);
+					_p.push(",\n");
+				}
+				if (_p[_p.length - 1] == ",\n")
+					_p.pop();
+				_p.push("\n" + l(_l) + "}");
+			}
+			else {
+				throw new TypeError("No JSON representation for this object!");
+			}
+		}
+		p(_oo, _l ? _l : 0);
+		
+		return _p.join("");
+	}
+	if (typeof objectOrString != 'string') {
+		objectOrString = JSON.stringify(objectOrString);
+	}
+	return prettyPrint(JSON.parse(objectOrString), initialIndent);
+}
