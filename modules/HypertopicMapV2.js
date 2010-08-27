@@ -238,7 +238,7 @@ HypertopicMapV2.prototype.tagFragment = function(itemID, coordinates, text, view
   highlights.viewpoint = viewpointID;
   highlights.topic = topicID;
   
-  var highlightID = randomUUID();
+  var highlightID = this.getUUID();
   item.highlights[highlightID] = highlights;
   this.db.httpPut(item);
   return highlightID;
@@ -327,7 +327,7 @@ HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID)
  */
 HypertopicMapV2.prototype.createTopicIn = function(viewpointID, topicsIDs) 
 {
-  var topicID = randomUUID();
+  var topicID = this.getUUID();
   var viewpoint = this.db.httpGet(viewpointID);
   if(!viewpoint) return false;
   
@@ -420,3 +420,14 @@ HypertopicMapV2.prototype.getResources = function(resource)
 }
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HypertopicMapV2
+
+HypertopicMapV2.prototype.getUUID = function()
+{
+  var uuidGenerator = 
+    Components.classes["@mozilla.org/uuid-generator;1"]
+            .getService(Components.interfaces.nsIUUIDGenerator);
+  var uuid = uuidGenerator.generateUUID();
+  var uuidString = uuid.toString();
+  
+  return uuidString.replace('{', '').replace('}', '').replace(/-/gi, '');
+}
