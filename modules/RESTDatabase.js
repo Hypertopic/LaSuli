@@ -99,7 +99,7 @@ var RESTDatabase = {
     this.baseUrl = baseUrl;
     this.xhr = new XMLHttpRequest();
     this.xhr.overrideMimeType('application/json');
-    //setTimeout(CouchDBListen, 2000);
+    setTimeout(CouchDBListen, 2000);
   },
   
   /**
@@ -185,7 +185,7 @@ var RESTDatabase = {
       logger.info("load from cache");
       return this.cache[query];
     }
-    logger.info("load from server" + query);
+    logger.info("load from server" + this.baseUrl + query);
     let body;
     try{
       body = this._send("GET", this.baseUrl + query, null);
@@ -340,9 +340,8 @@ function CouchDBListen()
   
   logger.info("listen on " + changeUrl);
   //RESTDatabase.purge();
-  /*var channel = Services.io.newChannel(changeUrl, null, null);
+  var channel = Services.io.newChannel(changeUrl, null, null);
   var aInputStream = channel.open();
-  logger.info(typeof(aInputStream));
   var scriptableInputStream = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
   scriptableInputStream.init(aInputStream);
   while(1)
@@ -356,9 +355,9 @@ function CouchDBListen()
     //Change happens
     if(str.indexOf("}") > 0)
       RESTDatabase.purge();
-    Sync.sleep(1000);
+    //Sync.sleep(1000);
   }
   logger.info("close");
   aInputStream.close();
-  scriptableInputStream.close();*/
+  scriptableInputStream.close();
 }
