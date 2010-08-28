@@ -329,17 +329,31 @@ var RESTDatabase = {
     let logger = Log4Moz.repository.getLogger("RESTDatabase.purge");
     logger.info("purge the cache");
     this.cache = {};
-  }  
+  },
+  
+  get lastSeq()
+  {
+    if(!this.last_seq)
+    {
+      var result = this.httpGet("_changes");
+      this.last_seq = result.last_seq;
+    }
+    return this.last_seq;
+  },
+  
+  set lastSeq(lastSeq)
+  {
+    this.last_seq = lastSeq;
+  }
 }
 
 function CouchDBListen()
 {
   let logger = Log4Moz.repository.getLogger("CouchDBListen");
-  var result = RESTDatabase.httpGet("_changes");
-  var changeUrl = RESTDatabase.baseUrl + "_changes?feed=continuous&heartbeat=5000&since=" + result.last_seq;
-  
-  logger.info("listen on " + changeUrl);
-  //RESTDatabase.purge();
+  var changeUrl = RESTDatabase.baseUrl + "_changes?since=" + RESTDatabase.lastSeq;
+  //TODO implement this function in ChromeWorker for Firefox 4
+  //URL: feed=continuous&heartbeat=5000&
+  //logger.info("listen on " + changeUrl);
   var channel = Services.io.newChannel(changeUrl, null, null);
   var aInputStream = channel.open();
   var scriptableInputStream = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
@@ -348,16 +362,24 @@ function CouchDBListen()
   {
     var str = scriptableInputStream.read(aInputStream.available());
     if(str.length == 0)
-    {
-      logger.error("empty!");
       break;
-    }
     //Change happens
     if(str.indexOf("}") > 0)
-      RESTDatabase.purge();
-    //Sync.sleep(1000);
+    {
+      try
+      {
+        var result = JSON.parse(str.trim());
+        if(result.last_seq > RESTDatabase.lastSeq)
+        {
+          RESTDatabase.lastSeq = result.last_seq;
+          RESTDatabase.purge();
+          logger.warn("Changes happen:" + str.trim());
+        }
+      }catch(e)
+      {}
+    }
   }
-  logger.info("close");
   aInputStream.close();
   scriptableInputStream.close();
+  setTimeout(CouchDBListen, 5000);
 }
