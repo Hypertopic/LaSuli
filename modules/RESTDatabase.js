@@ -26,6 +26,8 @@ const include = Cu.import;
 
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/XMLHttpRequest.js");
+include("resource://lasuli/modules/Services.js");
+include("resource://lasuli/modules/Sync.js");
 
 /*
 * Recursively merge properties of two objects 
@@ -48,26 +50,58 @@ function MergeRecursive(obj1, obj2) {
 }
 
 /**
+ * Set a timer, simulating the API for the window.setTimeout call.
+ * This only simulates the API for the version of the call that accepts
+ * a function as its first argument and no additional parameters,
+ * and it doesn't return the timeout ID.
+ *
+ * @param func {Function}
+ *        the function to call after the delay
+ * @param delay {Number}
+ *        the number of milliseconds to wait
+ */
+function setTimeout(func, delay) {
+  // Copy from Sync.js
+  let timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+  let callback = {
+    notify: function notify() {
+      // This line actually just keeps a reference to timer (prevent GC)
+      timer = null;
+
+      // Call the function so that "this" is global
+      func();
+    }
+  }
+  timer.initWithCallback(callback, delay, Ci.nsITimer.TYPE_ONE_SHOT);
+}
+
+/**
  * @param baseURL The database URL.
  *                example: http://127.0.0.1:5984/test/
  */
-let RESTDatabase = function(baseUrl) {
-  let logger = Log4Moz.repository.getLogger("RESTDatabase");
-  this.cache = {};
-  let regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-  if(!baseUrl || baseUrl === "" || !regexp.test(baseUrl))
+var RESTDatabase = {
+  cache : null,
+  baseUrl : null,
+  xhr : null,
+  
+  init : function(baseUrl)
   {
-    logger.fatal("BaseUrl is not validate:" + baseUrl);
-    throw URIError('baseUrl is not vaildate!');
-  }
-  baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
-  logger.info("BaseUrl is:" + baseUrl);
-  this.baseUrl = baseUrl;
-  this.xhr = new XMLHttpRequest();
-  this.xhr.overrideMimeType('application/json');
-}
-
-RESTDatabase.prototype = {
+    let logger = Log4Moz.repository.getLogger("RESTDatabase");
+    this.cache = {};
+    let regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+    if(!baseUrl || baseUrl === "" || !regexp.test(baseUrl))
+    {
+      logger.fatal("BaseUrl is not validate:" + baseUrl);
+      throw URIError('baseUrl is not vaildate!');
+    }
+    baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
+    logger.info("BaseUrl is:" + baseUrl);
+    this.baseUrl = baseUrl;
+    this.xhr = new XMLHttpRequest();
+    this.xhr.overrideMimeType('application/json');
+    //setTimeout(CouchDBListen, 2000);
+  },
+  
   /**
    * @param object null if method is GET or DELETE
    * @return response body
@@ -143,14 +177,15 @@ RESTDatabase.prototype = {
    * {key0:{key1:{attribute0:[value0, value1...]}}}
    * otherwise the original object is returned.
    */
-  httpGet : function(query, force) {
+  httpGet : function(query) {
     let logger = Log4Moz.repository.getLogger("RESTDatabase.get");
-    force = (typeof(force) == 'boolean') ? force : true; 
-    //TODO should write a worker to check the changes on couchdb
     query = (query) ? query : '';
-    if(this.cache[query] && !force)
+    if(this.cache[query])
+    {
+      logger.info("load from cache");
       return this.cache[query];
-    
+    }
+    logger.info("load from server" + query);
     let body;
     try{
       body = this._send("GET", this.baseUrl + query, null);
@@ -284,5 +319,46 @@ RESTDatabase.prototype = {
       throw e;
     }
     return true;
+  },
+  
+  /**
+   * Clear the cache
+   */
+  purge : function()
+  {
+    let logger = Log4Moz.repository.getLogger("RESTDatabase.purge");
+    logger.info("purge the cache");
+    this.cache = {};
+  }  
+}
+
+function CouchDBListen()
+{
+  let logger = Log4Moz.repository.getLogger("CouchDBListen");
+  var result = RESTDatabase.httpGet("_changes");
+  var changeUrl = RESTDatabase.baseUrl + "_changes?feed=continuous&heartbeat=5000&since=" + result.last_seq;
+  
+  logger.info("listen on " + changeUrl);
+  //RESTDatabase.purge();
+  /*var channel = Services.io.newChannel(changeUrl, null, null);
+  var aInputStream = channel.open();
+  logger.info(typeof(aInputStream));
+  var scriptableInputStream = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
+  scriptableInputStream.init(aInputStream);
+  while(1)
+  {
+    var str = scriptableInputStream.read(aInputStream.available());
+    if(str.length == 0)
+    {
+      logger.error("empty!");
+      break;
+    }
+    //Change happens
+    if(str.indexOf("}") > 0)
+      RESTDatabase.purge();
+    Sync.sleep(1000);
   }
+  logger.info("close");
+  aInputStream.close();
+  scriptableInputStream.close();*/
 }
