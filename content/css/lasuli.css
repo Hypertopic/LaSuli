@@ -64,10 +64,17 @@ div#create-viewpoint input
 #viewpointListContainer span {margin: 0px; padding:6px;}
 #viewpointListContainer ul {list-style-type: none; margin-top: 6px;}
 #viewpointListContainer ul li { 
-  margin: 0 3px 3px -20px; 
+  margin: 4px 3px 3px -20px; 
   padding: 4px; 
   padding-left: 0px; 
   font-size: 12px; 
   border-bottom:1px solid #EEEEEE;
   cursor:pointer;
+}
+
+.icon-remove-viewpoint{
+	vertical-align: middle;
+	margin-right: 8px;
+	margin-top: -2px;
+	opacity: 0;
 }

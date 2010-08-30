@@ -53,7 +53,24 @@ lasuli.ui = {
 		  Observers.notify("lasuli.core.actionCreateViewpoint", viewpointName);
 		});
 		
+		//Noticy the core to load all viewpoints.
 		Observers.notify("lasuli.core.actionListViewpoints", null);
+		
+		//When click enter key also create viewpoint
+		$('#txtViewpoint').keyup(function(event){
+      if (event.keyCode == 13)
+        $('#btn-create-viewpoint').trigger('click');
+    });
+    
+		$('#viewpoints-ul li').live('mouseover', function(){
+      $(this).find("img").stop().animate({opacity: 1}, 250);
+      //$(this).stop().animate({marginLeft : -26}, 250);
+    });
+    $('#viewpoints-ul li').live('mouseout', function(){
+      $(this).find("img").stop().animate({opacity: 0}, 250);
+      //$(this).stop().animate({marginLeft : 0}, 250);
+    });
+    
   },
 
   //Auto register all observers
@@ -82,8 +99,41 @@ lasuli.ui = {
   
     if(subject)
     $.each(subject,function(i,viewpoint){
-      $("#viewpoints-ul").append("<li uri='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='remove-viewpoint'><a>"
+      $("#viewpoints-ul").append("<li uri='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
                                  + viewpoint.name + "</a></li>");
+    });
+  }
+}
+
+function showMessage(title, content, callback)
+{
+  title = (title) ? title : "Information";
+  $("#ui-dialog-title-message-dialog").html(title);
+  $("#message").html(content);
+  if(callback)
+  {
+    $("#message-dialog").dialog('destroy');
+    var i18nButtons = {};
+    i18nButtons[_('Cancel')] = function() { $(this).dialog('close');  };
+	  i18nButtons[_('Okay')] = function() { $(this).dialog('close');  callback();  };
+    $("#message-dialog").dialog({
+      autoOpen: true,
+      modal: true,
+      width: 150,
+      buttons: i18nButtons
+    });
+  }
+  else
+  {
+  	var i18nButtons = {};
+    i18nButtons[_('Okay')] = function() { $(this).dialog('close');  };
+    $("#message-dialog").dialog('destroy');
+    $("#message-dialog").dialog({
+      bgiframe: true,
+      autoOpen: true,
+      modal: true,
+      width: 150,
+      buttons: i18nButtons
     });
   }
 }
