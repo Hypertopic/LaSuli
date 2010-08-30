@@ -99,7 +99,7 @@ var RESTDatabase = {
     this.baseUrl = baseUrl;
     this.xhr = new XMLHttpRequest();
     this.xhr.overrideMimeType('application/json');
-    setTimeout(CouchDBListen, 2000);
+    //setTimeout(CouchDBListen, 2000);
   },
   
   /**
@@ -131,13 +131,13 @@ var RESTDatabase = {
         throw Exception('error');
       }
       result = this.xhr.responseText;
+      return JSON.parse(result);
     }
     catch(e)
     {
       logger.error("Ajax Error, xhr.status: " + this.xhr.status + " " + this.xhr.statusText + ". \nRequest:\n" + httpAction + " " + httpUrl + "\n" + httpBody);
       throw Exception('Error! ' + httpAction + ' ' + httpUrl);
     }
-    return JSON.parse(result);
   },
   
   
@@ -180,7 +180,7 @@ var RESTDatabase = {
   httpGet : function(query) {
     let logger = Log4Moz.repository.getLogger("RESTDatabase.get");
     query = (query) ? query : '';
-    if(this.cache[query])
+    if(this.cache[query] && false)
     {
       logger.info("load from cache");
       return this.cache[query];

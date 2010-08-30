@@ -1,0 +1,73 @@
+body
+{ 
+  font: 62.5% "Trebuchet MS", sans-serif; 
+  margin: 0px; 
+  min-height:100%;
+  background-color: #CCCCCC;
+  overflow-y:hidden;
+}
+
+#overlay-div
+{
+	background-color: #000000;
+	opacity:0.5;
+	cursor: wait;
+	border:none;
+	margin:0;
+	padding:0;
+	width:100%;
+	height:100%;
+	top:0;
+	left:0;
+	z-index:998;
+	position:absolute;
+}
+
+#status-bar { 
+  position: fixed;
+  background-color: #BBBBBB;
+  width: 100%;
+  height: 30px;
+  top: auto;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  z-index:999;
+}
+
+.hide {display: none;}
+
+div#create-viewpoint
+{
+  width: 100%; 
+  padding: 4px; 
+}
+
+div#create-viewpoint input
+{
+  height:22px;
+  margin:2px 4px 2px 2px;
+  padding:2px;
+}
+
+#tabs {
+  margin-top: 0px;
+  margin-right: 2px;
+  margin-bottom: auto;
+  margin-left: 2px; 
+}
+#tabs li .ui-icon-close { float: left; margin: 4px 2px 0 0; cursor: pointer; }
+#tabs li .ui-icon-tabplus { float: left; margin: 6px 2px 0 6px; cursor: pointer; padding: 1px 2px;}
+.ui-icon-tabplus {background-image: url(images/plus.png); }
+
+#viewpointListContainer {margin-top: 30px;}
+#viewpointListContainer span {margin: 0px; padding:6px;}
+#viewpointListContainer ul {list-style-type: none; margin-top: 6px;}
+#viewpointListContainer ul li { 
+  margin: 0 3px 3px -20px; 
+  padding: 4px; 
+  padding-left: 0px; 
+  font-size: 12px; 
+  border-bottom:1px solid #EEEEEE;
+  cursor:pointer;
+}
