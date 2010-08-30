@@ -3,14 +3,16 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>Hypertopic JavaScript Library</title>
-		<script type="text/javascript" src="js/lasuli.js"></script>
+		
+		<link type="text/css" href="css/blitzer/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
+		<link type="text/css" href="css/lasuli.css" rel="stylesheet" />
+		
 		<script type="text/javascript" src="js/jquery-1.4.2.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
 		
-		<script type="text/javascript" src="js/lasuli.core.js"></script>
+		<script type="text/javascript" src="js/lasuli.js"></script>
+		<script type="text/javascript" src="js/lasuli.ui.js"></script>
 		
-  	<script type="text/javascript" src="js/RESTDatabase.js"></script>
-  	<script type="text/javascript" src="js/HypertopicMapV2.js"></script>
-  	
   	<script language="javascript">
   		function reload_sidebar()
   		{
@@ -21,9 +23,92 @@
   	
 	</head>
 <body>
-  <div id="content">
-	  <input type="button" name="reload" value="reload" onclick="reload_sidebar();" />
-	  <div id="testlog"></div>
-  </div>
+<!-- Add attribute dialog //-->
+<div id="attribute-dialog" title="Add Attribute" class="hide">
+	<fieldset>
+		<p>
+		<label for="attribute-name" id="label-attribute-dialog-name">Nom : </label>
+		<input type="text" id="attribute-name" class="text ui-widget-content ui-corner-all" />
+		</p>
+		<p>
+		<label for="attribute-value" id="label-attribute-dialog-value">Valeur : </label>
+		<input type="text" id="attribute-value" value="" class="text ui-widget-content ui-corner-all" />
+		</p>
+	</fieldset>
+</div>
+<!-- Add topic dialog //-->
+<div id="topic-dialog" title="Add Topic" class="hide">
+	<fieldset>
+		<p>
+		<label for="topic-name" id="label-topic-dialog-name">Nom : </label>
+		<input type="text" id="topic-name" class="text ui-widget-content ui-corner-all" />
+		</p>
+	</fieldset>
+</div>
+
+<!-- message dialog //-->
+<div id="message-dialog" title="Information" class="hide"> 
+	<p> 
+		<span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 50px 0;"></span> 
+		<span id="message"></span>
+	</p> 
+</div>
+
+<!-- Context menu for tagcloud //-->
+<ul id="tagcloudContextMenu" class="contextMenu hide">
+    <li class="tagcloudSwitcher">
+        <a id="a-tagcloud-switcher" href="#tagcloudSwitcher">Change appearance</a>
+    </li>
+    <li class="tagcloudSortAlphabetically">
+        <a id="a-tagcloud-sort-alphabetically" href="#tagcloudSortAlphabetically">Sort alphabetically</a>
+    </li>
+    <li class="tagcloudSortByStrength">
+        <a id="a-tagcloudd-sort-by-strength" href="#tagcloudSortByStrength">Sort by strength</a>
+    </li>
+</ul>
+
+<!-- main body layer //-->
+<div id="tabs">
+	<ul>
+		<li><a id="tab-document-title" href="#tabs-document" class="tab-document">Document</a></li>
+		<li id="tab-add-button"><a href="#tabs-add" class="tab-add"><img src="css/blitzer/images/plus.png" border="0"></a></li>
+	</ul>
+	<div id="tabs-document" class="tabpanel">
+	  <h3 id="h3-entity-name">Entity Name</h3>
+	  <table id="gird-attribute" cellpadding="0" cellspacing="0"></table>
+	  <div id="attribute-toolbar">
+	  <a id="add-attribute-button" href="#" class="fg-button fg-button-icon-left ui-state-default ui-corner-all"><span class="ui-icon ui-icon-circle-plus"></span><span id="span-add-attribute-button">New</span></a>
+	  <a id="del-attribute-button" href="#" class="fg-button fg-button-icon-left ui-state-default ui-corner-all"><span class="ui-icon ui-icon-circle-minus"></span><span id="span-remove-attribute-button">Remove</span></a>
+	  </div>
+	  <br /><br />
+	  <h3 id="h3-related-topics">Related Topics</h3>
+	  <div id="tags">
+  		<ul></ul>
+	  </div>
+	  <h3 id="h3-actors">Actors</h3>
+	  <div id="actors">
+  		<ul></ul>
+	  </div>
+	</div>
+
+	<div id="tabs-add" class="tabpanel">
+	  <div id="create-viewpoint" class="ui-widget-header ui-corner-all">
+	  	<input type="text" id="txtViewpoint" class="ui-corner-all">
+	  	<button id="btn-create-viewpoint">Create</button>
+	  </div>
+		<p></p>
+	  <div id="viewpointListContainer" class="ui-widget">
+	  	<span class="ui-widget-header ui-corner-top" id="span-viewpoint-list">Viewpoints</span>
+	  	<ul id="viewpoints-ul" class="ui-widget-content"></ul>
+	  </div>
+	</div>
+</div>
+
+<!-- status bar //-->	
+<div id="overlay-div" class="hide"></div>
+<div id="status-bar" class="hide">
+  <div id="progressbar"></div>
+</div>
+
 </body>
 </html>

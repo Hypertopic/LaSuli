@@ -1,6 +1,15 @@
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cu = Components.utils;
+if(typeof(Cc) == "undefined")
+  var Cc = Components.classes;
+if(typeof(Ci) == "undefined")
+  var Ci = Components.interfaces;
+if(typeof(Cu) == "undefined")
+  var Cu = Components.utils;
+if(typeof(include) == "undefined")
+  var include = Cu.import;
+if(typeof(Exception) == "undefined")
+  var Exception = Components.Exception;
+
+include("resource://lasuli/modules/log4moz.js");
 
 /**
  * LaSuli namespace.
@@ -33,19 +42,19 @@ var lasuli = {
   setupLogging: function() {
     // The basic formatter will output lines like:
     // DATE/TIME	LoggerName	LEVEL	(log message) 
-    var formatter = new lasuli.Log4Moz.BasicFormatter();
+    var formatter = new Log4Moz.BasicFormatter();
   
     // Loggers are hierarchical, lowering this log level will affect all output
-    var root = lasuli.Log4Moz.repository.rootLogger;
+    var root = Log4Moz.repository.rootLogger;
     if(root.appenders.length > 0) return;
-    root.level = lasuli.Log4Moz.Level["All"];
+    root.level = Log4Moz.Level["All"];
     
     /*var dapp = new lasuli.Log4Moz.DumpAppender(formatter);
     dapp.level = lasuli.Log4Moz.Level["Debug"];
     root.addAppender(dapp);*/
     
-    var capp = new lasuli.Log4Moz.ConsoleAppender(formatter);
-    capp.level = lasuli.Log4Moz.Level["All"];
+    var capp = new Log4Moz.ConsoleAppender(formatter);
+    capp.level = Log4Moz.Level["All"];
     root.addAppender(capp);
     /*
     var logFile = lasuli.getLocalDirectory();
@@ -55,5 +64,3 @@ var lasuli = {
     root.addAppender(appender);*/
   }
 };
-
-Cu.import("resource://lasuli/modules/log4moz.js", lasuli);

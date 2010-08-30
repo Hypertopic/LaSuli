@@ -32,7 +32,7 @@ if(!(remove in Array))
 
 function HypertopicMapV2(baseUrl, designDocument)
 {
-  if(!designDocument)
+  /*if(!designDocument)
   {
     var db = new RESTDatabase(baseUrl);
     var result = db.httpGet('_all_docs?startkey="_design/"&endkey="_design0"');
@@ -41,18 +41,19 @@ function HypertopicMapV2(baseUrl, designDocument)
       if(doc.indexOf("argos") != -1)
         break;
     designDocument = doc;
-  }
-  this.db = new RESTDatabase(baseUrl + designDocument + "/_rewrite/");
+  }*/
+  designDocument = designDocument || "_design/argos";
+  RESTDatabase.init(baseUrl + designDocument + "/_rewrite/");
 }
 
 HypertopicMapV2.prototype.get = function(objectID) {
-  return this.db.httpGet(objectID);
+  return RESTDatabase.httpGet(objectID);
 }
 
 //========================================================= CORPUS OR VIEWPOINT
 
 HypertopicMapV2.prototype.register = function(objectID, user) {
-  var obj = this.db.httpGet(objectID);
+  var obj = RESTDatabase.httpGet(objectID);
   if(!obj) return false;
   if(obj.users)
   {  
@@ -62,15 +63,15 @@ HypertopicMapV2.prototype.register = function(objectID, user) {
   else
     obj.users = [user];
     
-  return this.db.httpPut(obj);
+  return RESTDatabase.httpPut(obj);
 }
 
 HypertopicMapV2.prototype.unregister = function(objectID, user) {
-  var obj = this.db.httpGet(objectID);
+  var obj = RESTDatabase.httpGet(objectID);
   if(!obj) return false;
   if(!obj.users) return true;
   obj.users.remove(user);
-  return this.db.httpPut(obj);
+  return RESTDatabase.httpPut(obj);
 }
 
 //====================================================================== CORPUS
@@ -79,13 +80,13 @@ HypertopicMapV2.prototype.unregister = function(objectID, user) {
  * @param user e.g. "cecile@hypertopic.org"
  */
 HypertopicMapV2.prototype.listCorpora = function(user) {
-  var obj = this.db.httpGet("user/" + user);
+  var obj = RESTDatabase.httpGet("user/" + user);
   if(!obj) return false;
   return obj[user].corpus;
 }
 
 HypertopicMapV2.prototype.getCorpus = function(corpusID) {
-  var obj = this.db.httpGet("corpus/" + corpusID);
+  var obj = RESTDatabase.httpGet("corpus/" + corpusID);
   if(!obj) 
     return false;
   else
@@ -99,15 +100,15 @@ HypertopicMapV2.prototype.createCorpus = function(name, user){
   var obj = {};
   obj.corpus_name = name;
   obj.users = [user];
-  var result = this.db.httpPost(obj);
+  var result = RESTDatabase.httpPost(obj);
   return (!result) ? false : result._id;
 }
 
 HypertopicMapV2.prototype.renameCorpus = function(corpusID, name) {
-  var obj = this.db.httpGet(corpusID);
+  var obj = RESTDatabase.httpGet(corpusID);
   if(!obj) return false;
   obj.corpus_name = name;
-  return this.db.httpPut(obj);
+  return RESTDatabase.httpPut(obj);
 }
 
 /**
@@ -117,11 +118,11 @@ HypertopicMapV2.prototype.destroyCorpus = function(corpusID)
 {
   //TODO
   log(corpusID, "[destroyCorpus] corpusID");
-  var obj = this.db.httpGet(corpusID);
+  var obj = RESTDatabase.httpGet(corpusID);
   if(!obj) return false;
 
   log(obj, "[destroyCorpus] obj");
-  var result = this.db.httpDelete(obj);
+  var result = RESTDatabase.httpDelete(obj);
   if(!result) return false;
   
   var items = this.listItems(corpusID);
@@ -129,9 +130,9 @@ HypertopicMapV2.prototype.destroyCorpus = function(corpusID)
   for(var i=0, documentID; documentID = items[i]; i++)
   {
     log(documentID, "[destroyCorpus] documentID");
-    var obj = this.db.httpGet(documentID);
+    var obj = RESTDatabase.httpGet(documentID);
     if(!obj) continue;
-    this.db.httpDelete(obj);
+    RESTDatabase.httpDelete(obj);
   }
   return true;
 }
@@ -168,56 +169,56 @@ HypertopicMapV2.prototype.createItem = function(name, corpusID) {
   object.item_name = name;
   object.item_corpus = corpusID;
 
-  var result = this.db.httpPost(object);
+  var result = RESTDatabase.httpPost(object);
   return (!result) ? false : result._id;
 }
 
 HypertopicMapV2.prototype.destroyItem = function(itemID){
-  var object = this.db.httpGet(itemID);
+  var object = RESTDatabase.httpGet(itemID);
   if(!object)
    return false;
-  return this.db.httpDelete(object);
+  return RESTDatabase.httpDelete(object);
 }
 
 HypertopicMapV2.prototype.describeItem = function(itemID, attribute, value)
 {
-  var item = this.db.httpGet(itemID);
+  var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
   if(!item[attribute])
     item[attribute] = new Array();
   item[attribute].push(value);
-  return this.db.httpPut(item);
+  return RESTDatabase.httpPut(item);
 }
 
 HypertopicMapV2.prototype.undescribeItem = function(itemID, attribute, value)
 {
-  var item = this.db.httpGet(itemID);
+  var item = RESTDatabase.httpGet(itemID);
   if(!item[attribute] || !(item[attribute].length > 0)) return true;
   item[attribute].remove(value);
   if(item[attribute].length == 0)
     delete item[attribute];
-  return this.db.httpPut(item);
+  return RESTDatabase.httpPut(item);
 }
 
 HypertopicMapV2.prototype.tagItem = function(itemID, viewpointID, topicID)
 {
-  var item = this.db.httpGet(itemID);
+  var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
   if(!item.topics)
     item.topics = {};
   if(!item.topics[topicID])
     item.topics[topicID] = {};
   item.topics[topicID].viewpoint = viewpointID;
-  return this.db.httpPut(item);
+  return RESTDatabase.httpPut(item);
 }
 
 HypertopicMapV2.prototype.untagItem = function(itemID, viewpointID, topicID)
 {
-  var item = this.db.httpGet(itemID);
+  var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
   if(!item.topics || !item.topics[topicID]) return true;
   delete item.topics[topicID];
-  return this.db.httpPut(item);
+  return RESTDatabase.httpPut(item);
 }
 
 /**
@@ -226,7 +227,7 @@ HypertopicMapV2.prototype.untagItem = function(itemID, viewpointID, topicID)
  */
 HypertopicMapV2.prototype.tagFragment = function(itemID, coordinates, text, viewpointID, topicID)
 {
-  var item = this.db.httpGet(itemID);
+  var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
   
   if (!item.highlights)
@@ -240,17 +241,17 @@ HypertopicMapV2.prototype.tagFragment = function(itemID, coordinates, text, view
   
   var highlightID = this.getUUID();
   item.highlights[highlightID] = highlights;
-  this.db.httpPut(item);
+  RESTDatabase.httpPut(item);
   return highlightID;
 }
 
 HypertopicMapV2.prototype.untagFragment = function(itemID, highlightID)
 {
-  var item = this.db.httpGet(itemID);
+  var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
   if(!item.highlights[highlightID]) return true;
   delete item.highlights[highlightID];
-  return this.db.httpPut(item);
+  return RESTDatabase.httpPut(item);
 }
 
 //=================================================================== VIEWPOINT
@@ -260,7 +261,7 @@ HypertopicMapV2.prototype.untagFragment = function(itemID, highlightID)
  */
 HypertopicMapV2.prototype.listViewpoints = function(user)
 {
-  var result = this.db.httpGet("user/" + user);
+  var result = RESTDatabase.httpGet("user/" + user);
   if(!result || !result[user]) return false;
   
   var obj = result[user];
@@ -269,7 +270,7 @@ HypertopicMapV2.prototype.listViewpoints = function(user)
 
 HypertopicMapV2.prototype.getViewpoint = function(viewpointID)
 {
-  var result = this.db.httpGet("viewpoint/" + viewpointID);
+  var result = RESTDatabase.httpGet("viewpoint/" + viewpointID);
   if(!result || !result[viewpointID] ) return false;
   
   return result[viewpointID];
@@ -282,25 +283,25 @@ HypertopicMapV2.prototype.createViewpoint = function(name, user)
   viewpoint.viewpoint_name = name;
   viewpoint.users = [ user ];
 
-  var result = this.db.httpPost(viewpoint);
+  var result = RESTDatabase.httpPost(viewpoint);
   return (!result) ? false : result._id;
 }
 
 HypertopicMapV2.prototype.renameViewpoint = function(viewpointID, name)
 {
-  var obj = this.db.httpGet(viewpointID);
+  var obj = RESTDatabase.httpGet(viewpointID);
   if(!obj) return false;
   obj.viewpoint_name = name;
-  var result = this.db.httpPut(obj);
+  var result = RESTDatabase.httpPut(obj);
   //log(result, '[renameViewpoint] result');
   return (result) ? true : false;
 }
 
 HypertopicMapV2.prototype.destroyViewpoint = function(viewpointID)
 {
-  var viewpoint = this.db.httpGet(viewpointID);
+  var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
-  return this.db.httpDelete(viewpoint);
+  return RESTDatabase.httpDelete(viewpoint);
 }
 
 //TODO importViewpoint(XML, viewpointID?)
@@ -328,7 +329,7 @@ HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID)
 HypertopicMapV2.prototype.createTopicIn = function(viewpointID, topicsIDs) 
 {
   var topicID = this.getUUID();
-  var viewpoint = this.db.httpGet(viewpointID);
+  var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
   
   if(!viewpoint.topics)
@@ -336,13 +337,13 @@ HypertopicMapV2.prototype.createTopicIn = function(viewpointID, topicsIDs)
   if(!viewpoint.topics[topicID])
     viewpoint.topics[topicID] = {};
   viewpoint.topics[topicID].broader = topicsIDs;
-  var result = this.db.httpPut(viewpoint);
+  var result = RESTDatabase.httpPut(viewpoint);
   return (!result) ? false : topicID;
 }
 
 HypertopicMapV2.prototype.renameTopic = function(viewpointID, topicID, name)
 {
-  var viewpoint = this.db.httpGet(viewpointID);
+  var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
   
   if(!viewpoint.topics)
@@ -350,13 +351,13 @@ HypertopicMapV2.prototype.renameTopic = function(viewpointID, topicID, name)
   if(!viewpoint.topics[topicID])
     viewpoint.topics[topicID] = {};
   viewpoint.topics[topicID].name = name;
-  var result = this.db.httpPut(viewpoint);
+  var result = RESTDatabase.httpPut(viewpoint);
   return (!result) ? false : result;
 }
 
 HypertopicMapV2.prototype.destroyTopic = function(viewpointID, topicID)
 {
-  var viewpoint = this.db.httpGet(viewpointID);
+  var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
   if(!viewpoint.topics || !viewpoint.topics[topicID]) return true;
   delete viewpoint.topics[topicID];
@@ -366,7 +367,7 @@ HypertopicMapV2.prototype.destroyTopic = function(viewpointID, topicID)
     if(viewpoint.topics[t] && viewpoint.topics[t].broader && viewpoint.topics[t].broader.length > 0)
       viewpoint.topics[t].broader.remove(topicID);
   }
-  var result = this.db.httpPut(viewpoint);
+  var result = RESTDatabase.httpPut(viewpoint);
   return (!result) ? false : result;
 }
 
@@ -376,7 +377,7 @@ HypertopicMapV2.prototype.destroyTopic = function(viewpointID, topicID)
  */
 HypertopicMapV2.prototype.moveTopicsIn = function(topicsIDs, viewpointID, topicID) 
 {
-  var viewpoint = this.db.httpGet(viewpointID);
+  var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
   
   if(!viewpoint.topics) viewpoint.topics = {};
@@ -387,13 +388,13 @@ HypertopicMapV2.prototype.moveTopicsIn = function(topicsIDs, viewpointID, topicI
     
     viewpoint.topics[t].broader = new Array(topicID);
   }
-  var result = this.db.httpPut(viewpoint);
+  var result = RESTDatabase.httpPut(viewpoint);
   return (!result) ? false : result;
 }
 
 HypertopicMapV2.prototype.linkTopicsIn = function(topicsIDs, viewpointID, topicID) 
 {
-  var viewpoint = this.db.httpGet(viewpointID);
+  var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
   
   if(!viewpoint.topics) viewpoint.topics = {};
@@ -405,7 +406,7 @@ HypertopicMapV2.prototype.linkTopicsIn = function(topicsIDs, viewpointID, topicI
     
     viewpoint.topics[t].broader.push(topicID);
   }
-  var result = this.db.httpPut(viewpoint);
+  var result = RESTDatabase.httpPut(viewpoint);
   return (!result) ? false : result;
 }
 
@@ -416,7 +417,7 @@ HypertopicMapV2.prototype.linkTopicsIn = function(topicsIDs, viewpointID, topicI
  */
 HypertopicMapV2.prototype.getResources = function(resource)
 {
-  return this.db.httpGet("resource/?resource=" + encodeURIComponent(resource));
+  return RESTDatabase.httpGet("resource/?resource=" + encodeURIComponent(resource));
 }
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HypertopicMapV2

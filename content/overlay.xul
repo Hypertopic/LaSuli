@@ -5,7 +5,8 @@
 
 <overlay id="lasuliOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-<script src="chrome://lasuli/content/js/overlay.js" type="application/x-javascript" />
+<script src="chrome://lasuli/content/js/lasuli.js" type="application/x-javascript" />
+<script src="chrome://lasuli/content/js/lasuli.core.js" type="application/x-javascript" />
 
   <menupopup id="viewSidebarMenu">
     <menuitem key="key_openLaSuliSidebar" observes="viewLaSuliSidebar"  />
@@ -25,6 +26,6 @@
                  group="sidebar"
                  sidebarurl="chrome://lasuli/content/index.html"
                  sidebartitle="LaSuli"
-                 oncommand="overlay.openSideBar();" />
+                 oncommand="lasuli.core.openSideBar();" />
   </broadcasterset>
 </overlay>
