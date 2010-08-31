@@ -71,10 +71,26 @@ div#create-viewpoint input
   border-bottom:1px solid #EEEEEE;
   cursor:pointer;
 }
+#viewpointListContainer ul li:last-child { 
+  border-bottom:0px;
+}
+
 
 .icon-remove-viewpoint{
 	vertical-align: middle;
 	margin-right: 8px;
 	margin-top: -2px;
 	opacity: 0;
+}
+
+span#attribute-toolbar
+{
+  padding: 6px 3px;
+}
+
+span#attribute-toolbar button
+{
+  font-size: 0.9em;
+  margin-right: 0px;
+  -moz-border-radius: 2px 2px 2px 2px;
 }

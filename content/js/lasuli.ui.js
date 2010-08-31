@@ -25,8 +25,12 @@ lasuli.ui = {
     });
   },
   
-  initViewpointPanel : function()
-  {
+  initDocumentPanel : function(){
+    var browsingUrl = "http://cassandre/text/d0";
+    Observers.notify("lasuli.core.actionLoadDocument", browsingUrl);
+  },
+  
+  initViewpointPanel : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.listViewpoints");
     $('#btn-create-viewpoint').button({
 			label: 'Create',
@@ -70,78 +74,157 @@ lasuli.ui = {
       $(this).find("img").stop().animate({opacity: 0}, 250);
       //$(this).stop().animate({marginLeft : 0}, 250);
     });
-    
+    //Click the trash icon to delete a viewpoint
+    $('.icon-remove-viewpoint').live('click', function(){
+      var viewpointID = $(this).parent().attr('id');
+      var viewpointName = $(this).next().text();
+      var message = {};
+      message.title = _("Warning");
+      message.content = _("delete.viewpoint.warning", [viewpointName]);
+      message.callback = function() {
+        Observers.notify("lasuli.core.actionDestroyViewpoint", viewpointID);
+      };
+      Observers.notify("lasuli.ui.showMessage", message);
+    });
   },
-
+  
+  initAttributeGrid : function(){
+    $('#attribute-delete').button({
+			label: _('delete'),
+			icons: {
+				primary: 'ui-icon-minus'
+			}
+		});
+		$('#attribute-add').button({
+			label: _('new'),
+			icons: {
+				primary: 'ui-icon-plus'
+			}
+		});
+		$('#attribute-modify').button({
+			label: _('modify'),
+			icons: {
+				primary: 'ui-icon-comment'
+			}
+		});
+		
+		$("#gird-attribute").jqGrid({
+      url: "#",
+      datatype: "local",
+      height: "100%",
+      colNames:[_('name'),_('value')],
+      colModel:[
+           {name:'name',index:'name',editable:true},
+           {name:'value',index:'value',editable:true}    
+         ],
+      sortname: 'name',
+      viewrecords: true,
+      sortorder: "desc",
+      multiselect: false,
+      cellsubmit: 'clientArray',
+      /*ondblClickRow: function(id){
+        if(id && id!==lastsel){
+          jQuery('#gird-attribute').jqGrid('restoreRow',lastsel);
+          jQuery('#gird-attribute').jqGrid('editRow',id, true, false, false, 'clientArray');
+          lastsel=id;
+        }
+      },
+      afterSaveCell : function(rowid,name,val,iRow,iCol) {
+        alert("a");
+      },*/
+      caption: _("attributes")
+    });
+  },  
   //Auto register all observers
-  register: function()
-  {
+  register: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.register");
     for(var func in this)
       if(func.substr(0, 4) == "show")
       {
-        logger.debug("registering function: " + func);
+        //logger.debug("registering function: " + func);
         Observers.add("lasuli.ui." + func, lasuli.ui[func], lasuli.ui);
       }
   },
-  unregister: function()
-  {
+  unregister: function(){
     for(var func in this)
       if(func.substr(0, 4) == "show")
         Observers.remove("lasuli.ui." + func, lasuli.ui[func], lasuli.ui);
   },
   
-  showViewpoints : function(subject,data)
-  {
+  showMessage : function(subject, data){
+    var msgTitle = (typeof(subject.title) == "string") ? subject.title : "Information";
+    $("#message").html(subject.content);
+    if(subject.callback)
+    {
+      $("#message-dialog").dialog('destroy');
+      var i18nButtons = {};
+      i18nButtons[_('Cancel')] = function() { $(this).dialog('close');  };
+  	  i18nButtons[_('Okay')] = function() { $(this).dialog('close');  subject.callback();  };
+      $("#message-dialog").dialog({
+        autoOpen: true,
+        modal: true,
+        width: 150,
+        buttons: i18nButtons
+      });
+    }
+    else
+    {
+    	var i18nButtons = {};
+      i18nButtons[_('Okay')] = function() { $(this).dialog('close');  };
+      $("#message-dialog").dialog('destroy');
+      $("#message-dialog").dialog({
+        bgiframe: true,
+        autoOpen: true,
+        modal: true,
+        width: 150,
+        buttons: i18nButtons
+      });
+    }
+    $("#ui-dialog-title-message-dialog").html(msgTitle);
+  },
+  
+  showViewpoints : function(subject,data){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.showViewpoints");
     logger.debug(subject);
     $('#viewpoints-ul li').hide().remove();
   
     if(subject)
     $.each(subject,function(i,viewpoint){
-      $("#viewpoints-ul").append("<li uri='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
+      $("#viewpoints-ul").append("<li id='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
                                  + viewpoint.name + "</a></li>");
     });
+  },
+  
+  showUsers : function(users){
+    $("#actors ul li").hide().remove();
+    if(!users) return;
+    users.sort();
+    for(var i=0, user; user = users[i]; i++)
+    {
+      var content = "<li class='actor'><a uri='" + user + "'>" + user + "</a></li>";
+      $("#actors ul").append(content);
+    }
+  },
+  
+  showItemName : function(itemName){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.showItemName");
+    logger.debug(itemName);
+    if(!itemName) itemName = _("no.name");
+    $("#h3-entity-name").html(itemName);
+  },
+  
+  showAttributes : function(attributes)
+  {
   }
 }
 
-function showMessage(title, content, callback)
-{
-  title = (title) ? title : "Information";
-  $("#ui-dialog-title-message-dialog").html(title);
-  $("#message").html(content);
-  if(callback)
-  {
-    $("#message-dialog").dialog('destroy');
-    var i18nButtons = {};
-    i18nButtons[_('Cancel')] = function() { $(this).dialog('close');  };
-	  i18nButtons[_('Okay')] = function() { $(this).dialog('close');  callback();  };
-    $("#message-dialog").dialog({
-      autoOpen: true,
-      modal: true,
-      width: 150,
-      buttons: i18nButtons
-    });
-  }
-  else
-  {
-  	var i18nButtons = {};
-    i18nButtons[_('Okay')] = function() { $(this).dialog('close');  };
-    $("#message-dialog").dialog('destroy');
-    $("#message-dialog").dialog({
-      bgiframe: true,
-      autoOpen: true,
-      modal: true,
-      width: 150,
-      buttons: i18nButtons
-    });
-  }
-}
 
 $(window).bind("load", function(){
   lasuli.ui.register();
   lasuli.ui.initTabs();
   lasuli.ui.initViewpointPanel();
+  lasuli.ui.initDocumentPanel();
+  lasuli.ui.initAttributeGrid();
 });
 
 $(window).bind("unload", function(){

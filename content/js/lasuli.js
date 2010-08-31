@@ -10,17 +10,12 @@ if(typeof(Exception) == "undefined")
   var Exception = Components.Exception;
 
 include("resource://lasuli/modules/log4moz.js");
+include("resource://lasuli/modules/StringBundle.js");
 
 /**
  * LaSuli namespace.
  */
 var lasuli = {
-  jsBaseDir : "chrome://lasuli/content/js/",
-  _baseUrl: 'http://127.0.0.1', //TODO: default server uri
-  _username: 'user@hypertopic.org',
-  _password: 'no-need',
-  _map: null,
-  
   getLocalDirectory : function() {
     var directoryService =
       Cc["@mozilla.org/file/directory_service;1"].
@@ -64,3 +59,18 @@ var lasuli = {
     root.addAppender(appender);*/
   }
 };
+
+//Read localize string
+function _(n,arg)
+{
+  var logger = Log4Moz.repository.getLogger("i18n");
+  var i18nStrings = new StringBundle("chrome://lasuli/locale/lasuli.properties");
+  try{
+    logger.debug("get string:" + n + ", return:" + i18nStrings.get(n,arg));
+    return i18nStrings.get(n,arg);
+  }catch(e)
+  {
+    logger.error(n);
+    return n;
+  }
+}

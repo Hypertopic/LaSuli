@@ -59,20 +59,82 @@ lasuli.core = {
     lasuli.core.loadSetting();
   },
   
-  actionListViewpoints: function(subject, data)
+  actionListViewpoints: function()
   {
     var viewpoints = HypertopicMapV2.listViewpoints();
     //Notify lasuli.ui to show the viewpoints
     Observers.notify("lasuli.ui.showViewpoints", viewpoints);
   },
   
-  actionCreateViewpoint : function(subject,data)
+  actionCreateViewpoint : function(viewpointName)
   {
     var logger = Log4Moz.repository.getLogger("lasuli.core.actionCreateViewpoint");
     logger.debug("Name:" + subject);
-    HypertopicMapV2.createViewpoint(subject);
+    HypertopicMapV2.createViewpoint(viewpointName);
     //reload the viewpoints
     this.actionListViewpoints();
+  },
+  
+  actionDestroyViewpoint : function(viewpointID)
+  {
+    var logger = Log4Moz.repository.getLogger("lasuli.core.actionDestroyViewpoint");
+    HypertopicMapV2.destroyViewpoint(viewpointID);
+    this.actionListViewpoints();
+  },
+  
+  actionLoadDocument : function(url){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.actionLoadDocument");
+    logger.debug("Browsing web page url:" + url);
+    var arg = {};
+    try{
+      var result = HypertopicMapV2.getResources(url);
+      //logger.debug(result);
+      var itemID = result[url].item[0].id;
+      var corpusID = result[url].item[0].corpus;
+      //logger.debug("Item ID:" + itemID);
+      //logger.debug("Corpus ID:" + corpusID);
+      
+      var corpus = HypertopicMapV2.getCorpus(corpusID);
+      Observers.notify("lasuli.ui.showUsers", corpus.user);
+      Observers.notify("lasuli.ui.showItemName", corpus.name[0]);
+      arg.corpus_name = corpus.name[0];
+      arg.users = corpus.user;
+      arg.attributes = [{"foo" : "bar"}];
+      //logger.debug(corpus);
+      
+      var item = HypertopicMapV2.getItem(corpusID, itemID);
+      //logger.debug("==================item =========");
+      //logger.debug(item);
+      
+      var topics = item.topic;
+      for(var k in item)
+        if("coordinates" in item[k])
+          if(item[k].topic)
+            topics = topics.concat(item[k].topic);
+      //logger.debug(topics);
+      arg.topics = {};
+      topics.forEach(function(topic, index, topics){
+        var result = HypertopicMapV2.getTopic(topic.viewpoint, topic.id);
+        //logger.debug(result);
+        result.viewpoint = topic.viewpoint;
+        result.id = topic.id;
+        if(result.highlight)
+          delete result.highlight;
+        if(result.broader)
+          delete result.broader;
+        if(result.narrower)
+          delete result.narrower;
+          
+        if(!this.topics[result.name])
+          this.topics[result.name] = new Array();
+        this.topics[result.name].push(result);
+      },arg);
+      //logger.debug(arg);
+    }catch(e)
+    {
+      logger.error(e);
+    }
+    Observers.notify("lasuli.ui.showDocumentInfo", arg);
   }
 }
 
