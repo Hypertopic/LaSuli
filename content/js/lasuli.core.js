@@ -18,8 +18,7 @@ lasuli.core = {
 	},
 	
 	//Load setting from preferences
-  loadSetting : function()
-  {
+  loadSetting : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.loadSetting");
     logger.level = Log4Moz.Level["Debug"];
     HypertopicMapV2.baseUrl   = Preferences.get("extensions.lasuli.baseUrl", lasuli._baseUrl);
@@ -33,21 +32,23 @@ lasuli.core = {
   },
   
   //Auto register all observers
-  register: function()
-  {
+  register: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.register");
+    //logger.warn("start to register");
     for(var func in this)
       if(func.substr(0, 6) == "action")
+      {
+        //logger.warn(func);
         Observers.add("lasuli.core." + func, lasuli.core[func], lasuli.core);
+      }
   },
-  unregister: function()
-  {
+  unregister: function(){
     for(var func in this)
       if(func.substr(0, 6) == "action")
         Observers.remove("lasuli.core." + func, lasuli.core[func], lasuli.core);
   },
   
-  actionPrefChange : function()
-  {
+  actionPrefChange : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.actionPrefChange");
     logger.level = Log4Moz.Level["Debug"];
     if(lasuli.core.isSidebarOpen())
@@ -59,24 +60,24 @@ lasuli.core = {
     lasuli.core.loadSetting();
   },
   
-  actionListViewpoints: function()
-  {
+  actionListViewpoints: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.actionLoadDocument");
     var viewpoints = HypertopicMapV2.listViewpoints();
+    logger.debug(viewpoints);
     //Notify lasuli.ui to show the viewpoints
     Observers.notify("lasuli.ui.showViewpoints", viewpoints);
   },
   
-  actionCreateViewpoint : function(viewpointName)
-  {
+  actionCreateViewpoint : function(viewpointName){
     var logger = Log4Moz.repository.getLogger("lasuli.core.actionCreateViewpoint");
-    logger.debug("Name:" + subject);
-    HypertopicMapV2.createViewpoint(viewpointName);
+    logger.debug("Name:" + viewpointName);
+    var result = HypertopicMapV2.createViewpoint(viewpointName);
+    logger.debug(result);
     //reload the viewpoints
     this.actionListViewpoints();
   },
   
-  actionDestroyViewpoint : function(viewpointID)
-  {
+  actionDestroyViewpoint : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.core.actionDestroyViewpoint");
     HypertopicMapV2.destroyViewpoint(viewpointID);
     this.actionListViewpoints();
@@ -151,12 +152,47 @@ lasuli.core = {
           this.topics[result.name] = new Array();
         this.topics[result.name].push(result);
       },arg);
+      this.topics = arg.topics;
+      //logger.error(this.topics);
       Observers.notify("lasuli.ui.showTopics", arg.topics);
     }catch(e)
     {
       logger.error(e);
     }
     
+  },
+  
+  actionOpenViewpointByTopicName : function(topicName) {
+    var logger = Log4Moz.repository.getLogger("lasuli.core.actionLoadDocument");
+    //logger.debug("topicName: " + topicName);
+    var viewpoints = new Array();
+    if(!this.topics) return false;
+    var viewpoints = new Array();
+    var strTopics = JSON.stringify(this.topics);
+    while( result = /\"viewpoint\":\s?\"([a-zA-z0-9]+)\"/ig.exec(strTopics))
+        viewpoints.push(result[1]);
+        
+    //logger.debug(viewpoints);
+    Observers.notify("lasuli.ui.showViewpointPanels", viewpoints);
+  },
+  
+  actionOpenViewpointByUser : function(user){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.actionOpenViewpointByUser");
+    //logger.debug("user: " + user);
+    var corpora = HypertopicMapV2.listCorpora(user);
+    //logger.debug(corpora);
+    if(!corpora) return false;
+    
+    var viewpoints = new Array();
+    for(var i=0, corpus; corpus = corpora[i];i++)
+    {
+      corpus = HypertopicMapV2.getCorpus(corpus.id);
+      var strCorpus = JSON.stringify(corpus);
+      while( result = /\"viewpoint\":\s?\"([a-zA-z0-9]+)\"/ig.exec(strCorpus))
+        viewpoints.push(result[1]);
+    }
+    
+    Observers.notify("lasuli.ui.showViewpointPanels", viewpoints);
   }
 }
 

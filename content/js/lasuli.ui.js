@@ -33,29 +33,28 @@ lasuli.ui = {
   initViewpointPanel : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.listViewpoints");
     $('#btn-create-viewpoint').button({
-			label: 'Create',
+			label: _('Create'),
 			icons: {
 				primary: 'ui-icon-circle-plus'
 			}
+		}).click(function(){
+		  var viewpointName = $.trim($(this).prev().val());
+		  if(viewpointName == "")
+		  {
+		    var message = {"title": _("Warning"), "content": _('create.viewpoint.warning')};
+		    Observers.notify("lasuli.ui.showMessage", message);
+		    return false;
+		  }
+		  logger.debug("Create viewpoint button click.\nViewpoint name:" + viewpointName);
+		  Observers.notify("lasuli.core.actionCreateViewpoint", viewpointName);
 		});
+		
 		var resizeInput = function(){
 		  $('div#create-viewpoint input').width( $('#tabs').innerWidth() - 130);
 		};
 		//Resize the input box
 		$(window).resize(resizeInput);
 		resizeInput();
-		
-		//Bind the button to create the viewpoint
-		$('div#create-viewpoint button').click(function(){
-		  var viewpointName = $.trim($(this).prev().val());
-		  if(viewpointName == "")
-		  {
-		    alert("viewpoint name cannot be null");
-		    return false;
-		  }
-		  logger.debug("Create viewpoint button click.\nViewpoint name:" + viewpointName);
-		  Observers.notify("lasuli.core.actionCreateViewpoint", viewpointName);
-		});
 		
 		//Noticy the core to load all viewpoints.
 		Observers.notify("lasuli.core.actionListViewpoints", null);
@@ -85,6 +84,12 @@ lasuli.ui = {
         Observers.notify("lasuli.core.actionDestroyViewpoint", viewpointID);
       };
       Observers.notify("lasuli.ui.showMessage", message);
+    });
+    $('#viewpoints-ul li a').live('click', function(){
+      var viewpointID = $(this).parent().attr("id");
+      var viewpoints = new Array(viewpointID);
+      Observers.notify("lasuli.ui.showViewpointPanels", viewpoints);
+      return false;
     });
   },
   
@@ -302,16 +307,18 @@ lasuli.ui = {
     $("#ui-dialog-title-message-dialog").html(msgTitle);
   },
   
-  showViewpoints : function(subject,data){
+  showViewpoints : function(viewpoints){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.showViewpoints");
-    logger.debug(subject);
+    logger.debug(viewpoints);
     $('#viewpoints-ul li').hide().remove();
-  
-    if(subject)
-    $.each(subject,function(i,viewpoint){
-      $("#viewpoints-ul").append("<li id='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
-                                 + viewpoint.name + "</a></li>");
-    });
+    logger.debug(typeof(viewpoints));
+    logger.debug(viewpoints.length);
+    if(typeof(viewpoints) == "object" && viewpoints.length > 0)
+      for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++){
+        logger.debug("adding:" + viewpoint.name);
+        $("#viewpoints-ul").append("<li id='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
+                                   + viewpoint.name + "</a></li>");
+      }
   },
   
   showUsers : function(users){
@@ -323,6 +330,11 @@ lasuli.ui = {
       var content = "<li class='actor'><a uri='" + user + "'>" + user + "</a></li>";
       $("#actors ul").append(content);
     }
+    $("li.actor a").click(function(){
+      var user = $(this).attr("uri");
+      Observers.notify("lasuli.core.actionOpenViewpointByUser", user);
+      return false;
+    });
   },
   
   showItemName : function(itemName){
@@ -375,6 +387,19 @@ lasuli.ui = {
     }
     $(".tagcloudSortAlphabetically").data("desc", true);
     $("#tags ul li").tsort({order:"asc"});
+    $("#tags ul li a").click(function(){
+      var topicName = $(this).text();
+      Observers.notify("lasuli.core.actionOpenViewpointByTopicName", topicName);
+      return false;
+    });
+  },
+  
+  showViewpointPanels : function(viewpoints){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.showViewpoints");
+    if(!viewpoints) return false;
+    //logger.debug(viewpoints);
+    viewpoints = $.unique(viewpoints);
+    logger.debug(viewpoints);
   }
 }
 
