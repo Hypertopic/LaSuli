@@ -1,5 +1,5 @@
 include("resource://lasuli/modules/Observers.js");
-  
+include("resource://lasuli/modules/Sync.js");  
 lasuli.ui = {
   initTabs : function()
   {
@@ -89,51 +89,50 @@ lasuli.ui = {
   },
   
   initAttributeGrid : function(){
-    $('#attribute-delete').button({
-			label: _('delete'),
-			icons: {
-				primary: 'ui-icon-minus'
-			}
-		});
-		$('#attribute-add').button({
-			label: _('new'),
-			icons: {
-				primary: 'ui-icon-plus'
-			}
-		});
-		$('#attribute-modify').button({
-			label: _('modify'),
-			icons: {
-				primary: 'ui-icon-comment'
-			}
-		});
-		
-		$("#gird-attribute").jqGrid({
+    //If the jqGrid script isn't loaded yet.
+    while(!("jqGrid" in $("#attribute-grid")))
+      Sync.sleep(10);
+		$("#attribute-grid").jqGrid({
       url: "#",
       datatype: "local",
       height: "100%",
+      width: "98%",
       colNames:[_('name'),_('value')],
       colModel:[
-           {name:'name',index:'name',editable:true},
-           {name:'value',index:'value',editable:true}    
+           {name:'name', index:'name',editable:true},
+           {name:'value', index:'value',editable:true}    
          ],
       sortname: 'name',
       viewrecords: true,
       sortorder: "desc",
       multiselect: false,
       cellsubmit: 'clientArray',
-      /*ondblClickRow: function(id){
-        if(id && id!==lastsel){
-          jQuery('#gird-attribute').jqGrid('restoreRow',lastsel);
-          jQuery('#gird-attribute').jqGrid('editRow',id, true, false, false, 'clientArray');
-          lastsel=id;
-        }
-      },
-      afterSaveCell : function(rowid,name,val,iRow,iCol) {
-        alert("a");
-      },*/
+      toolbar: [true, "bottom"],
       caption: _("attributes")
     });
+    $(window).bind('resize', function() {
+        $("#attribute-grid").setGridWidth($('#h3-entity-name').width());
+    }).trigger('resize');
+    //initial toolbar
+    $('#t_attribute-grid').html("<button id='attribute-del'></button><button id='attribute-modify'></button><button id='attribute-add'></button>");
+    $('#attribute-add').button({
+			text: false,
+			icons: {
+				primary: 'ui-icon-plus'
+			}
+		});
+		$('#attribute-del').button({
+			text: false,
+			icons: {
+				primary: 'ui-icon-trash'
+			}
+		});
+		$('#attribute-modify').button({
+			text: false,
+			icons: {
+				primary: 'ui-icon-pencil'
+			}
+		})
   },  
   //Auto register all observers
   register: function(){
@@ -213,18 +212,61 @@ lasuli.ui = {
     $("#h3-entity-name").html(itemName);
   },
   
-  showAttributes : function(attributes)
-  {
+  showAttributes : function(attributes){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.showAttributes");
+    logger.debug(attributes);
+    $("#attribute-grid").jqGrid('clearGridData');
+    if(!attributes) return false;
+    var index = 1;
+    for(var i=0, attribute; attribute = attributes[i]; i++)
+      for(var k in attribute)
+        if(typeof(attribute[k]) == "string")
+        {
+          logger.debug({"name": k, "value": attribute[k]});
+          logger.debug(index);
+          $("#attribute-grid").addRowData(index, {"name": k, "value": attribute[k]});
+          index++;
+        }
+        else
+          for(var j=0, v; v = attribute[k][j]; j++)
+          {
+            logger.debug({"name": k, "value": v});
+            $("#attribute-grid").addRowData(index, {"name": k, "value": v});
+            index++;
+          }
+  },
+  
+  showTopics : function(topics){
+    $("#tags ul li").hide().remove();
+    if(!topics) return false;
+    
+    var max = 0;
+    var min = 32768;
+    for(var name in topics)
+    {
+      if(topics[name].length > max) max = topics[name].length;
+      if(topics[name].length < min) min = topics[name].length;
+    }
+    //var_dump("UI.init.js", "max:" + max + ", min:" + min, 4);
+    for(var name in topics)
+    {
+      var size = Math.round((topics[name].length - min) / (max-min) * 4) + 1;
+      //var_dump("UI.init.js", "topics[name].length:" + topics[name].length, 4);
+      var content = "<li class='tag" + size + "'><a>" + name + "</a></li>";
+      $("#tags ul").append(content);
+    }
   }
 }
 
 
 $(window).bind("load", function(){
+  lasuli.jqGirdLoader();
   lasuli.ui.register();
   lasuli.ui.initTabs();
   lasuli.ui.initViewpointPanel();
-  lasuli.ui.initDocumentPanel();
   lasuli.ui.initAttributeGrid();
+  lasuli.ui.initDocumentPanel();
+  
 });
 
 $(window).bind("unload", function(){

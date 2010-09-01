@@ -101,7 +101,8 @@ lasuli.core = {
       arg.users = corpus.user;
       arg.attributes = [{"foo" : "bar"}];
       //logger.debug(corpus);
-      
+      //TODO value is array
+      Observers.notify("lasuli.ui.showAttributes", arg.attributes);
       var item = HypertopicMapV2.getItem(corpusID, itemID);
       //logger.debug("==================item =========");
       //logger.debug(item);
@@ -129,12 +130,12 @@ lasuli.core = {
           this.topics[result.name] = new Array();
         this.topics[result.name].push(result);
       },arg);
-      //logger.debug(arg);
+      Observers.notify("lasuli.ui.showTopics", arg.topics);
     }catch(e)
     {
       logger.error(e);
     }
-    Observers.notify("lasuli.ui.showDocumentInfo", arg);
+    
   }
 }
 

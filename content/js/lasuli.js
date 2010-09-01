@@ -11,6 +11,8 @@ if(typeof(Exception) == "undefined")
 
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/StringBundle.js");
+include("resource://lasuli/modules/Services.js");
+include("resource://lasuli/modules/Preferences.js");
 
 /**
  * LaSuli namespace.
@@ -57,6 +59,25 @@ var lasuli = {
     var appender = new lasuli.Log4Moz.RotatingFileAppender(logFile, formatter);
     appender.level = lasuli.Log4Moz.Level["Debug"];
     root.addAppender(appender);*/
+  },
+  
+  jqGirdLoader : function()
+  {
+    var locale = Preferences.get("general.useragent.locale", "en-US");
+    var i18nUrl = "chrome://lasuli/content/js/i18n/grid.locale-en.js";
+    if(locale == "fr-FR")
+      i18nUrl = "chrome://lasuli/content/js/i18n/grid.locale-fr.js";
+    this._include(i18nUrl);
+    this._include("chrome://lasuli/content/js/jquery.jqGrid.min.js");
+  },
+  
+  _include : function(url){
+    var oHead = document.getElementsByTagName('head')[0];
+    var oScript = document.createElement('script');
+    oScript.type = 'text/javascript';
+    oScript.charset = 'utf-8';
+    oScript.src = url;
+    oHead.appendChild(oScript);
   }
 };
 
@@ -66,7 +87,7 @@ function _(n,arg)
   var logger = Log4Moz.repository.getLogger("i18n");
   var i18nStrings = new StringBundle("chrome://lasuli/locale/lasuli.properties");
   try{
-    logger.debug("get string:" + n + ", return:" + i18nStrings.get(n,arg));
+    //logger.debug("get string:" + n + ", return:" + i18nStrings.get(n,arg));
     return i18nStrings.get(n,arg);
   }catch(e)
   {

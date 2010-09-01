@@ -83,14 +83,10 @@ div#create-viewpoint input
 	opacity: 0;
 }
 
-span#attribute-toolbar
+#t_attribute-grid button
 {
-  padding: 6px 3px;
-}
-
-span#attribute-toolbar button
-{
-  font-size: 0.9em;
-  margin-right: 0px;
-  -moz-border-radius: 2px 2px 2px 2px;
+  margin-top:2px;
+  padding-bottom:4px;
+  padding-top:3px;
+  float: right;
 }
