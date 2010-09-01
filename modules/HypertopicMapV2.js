@@ -27,16 +27,6 @@ const include = Cu.import;
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/RESTDatabase.js");
 
-Array.prototype.remove = function(value)
-{
-  var j = 0;
-  while (j < this.length)
-    if (this[j] == value)
-      this.splice(j, 1);
-    else
-      j++;
-}
-
 let HypertopicMapV2 = {
   set baseUrl(url)
   {
@@ -181,23 +171,56 @@ let HypertopicMapV2 = {
     return RESTDatabase.httpDelete(object);
   },
   
+  listItemDescriptions : function(itemID)
+  {
+    var item = RESTDatabase.httpGet(itemID);
+    if(!item) return false;
+    delete item._id;
+    delete item._rev;
+    delete item.highlights;
+    delete item.item_corpus;
+    delete item.item_name;
+    delete item.resource;
+    delete item.topics;
+    return item;
+  },
+  
   describeItem : function(itemID, attribute, value)
   {
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
     if(!item[attribute])
-      item[attribute] = new Array();
-    item[attribute].push(value);
+      item[attribute] = value;
+    else{
+      if(typeof(item[attribute]) == "string")
+      {
+        item[attribute] = new Array(item[attribute]);
+      }
+      item[attribute].push(value);
+    }
     return RESTDatabase.httpPut(item);
   },
   
   undescribeItem : function(itemID, attribute, value)
   {
+    var logger = Log4Moz.repository.getLogger("HypertopicMapV2.undescribeItem");
     var item = RESTDatabase.httpGet(itemID);
-    if(!item[attribute] || !(item[attribute].length > 0)) return true;
-    item[attribute].remove(value);
-    if(item[attribute].length == 0)
-      delete item[attribute];
+    logger.debug(item);
+    if(!item[attribute]) return true;
+    logger.debug(attribute + "," + value);
+    if(typeof(item[attribute]) == "string")
+    {
+      if(item[attribute] == value) delete item[attribute];
+    }
+    else
+    {
+      while(item[attribute].indexOf(value) >=0 )
+        item[attribute].splice(item[attribute].indexOf(value), 1);
+      
+      if(item[attribute].length == 0)
+        delete item[attribute];
+    }
+    logger.debug(item);
     return RESTDatabase.httpPut(item);
   },
   
@@ -360,7 +383,13 @@ let HypertopicMapV2 = {
     for(var t in viewpoint.topics)
     {
       if(viewpoint.topics[t] && viewpoint.topics[t].broader && viewpoint.topics[t].broader.length > 0)
-        viewpoint.topics[t].broader.remove(topicID);
+      {
+        while(viewpoint.topics[t].broader.indexOf(topicID) >=0 )
+          viewpoint.topics[t].broader.splice(viewpoint.topics[t].broader.indexOf(topicID), 1);
+        
+        if(viewpoint.topics[t].broader.length == 0)
+          delete viewpoint.topics[t].broader;
+      }
     }
     var result = RESTDatabase.httpPut(viewpoint);
     return (!result) ? false : result;

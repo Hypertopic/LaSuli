@@ -90,3 +90,75 @@ div#create-viewpoint input
   padding-top:3px;
   float: right;
 }
+
+#actors li a
+{
+	cursor: pointer;
+}
+
+/* Tag cloud */
+
+#tags ul{
+  -moz-border-radius-bottomleft:6px;
+  -moz-border-radius-bottomright:6px;
+  -moz-border-radius-topleft:6px;
+  -moz-border-radius-topright:6px;
+	margin:1em 0;
+	padding:.5em 10px;
+	text-align:center;
+	background:#FF9999 url(blitzer/images/bg_tags.gif) repeat-x;		
+	}
+#tags li{
+	margin:0;
+	padding:0;
+	list-style:none;
+	display:inline-block;
+	}
+#tags li a{
+	text-decoration:none;
+	color:#fff;
+	padding:0 2px;
+	cursor: pointer;
+	}
+#tags li a:hover{	
+	color:#cff400;
+	}		
+
+.tag1{font-size:100%;}
+.tag2{font-size:120%;}
+.tag3{font-size:140%;}
+.tag4{font-size:160%;}
+.tag5{font-size:180%;}
+
+/* alternative layout */
+
+#tags .alt{
+	text-align:left;
+	padding:0;
+	background:none;
+}
+#tags .alt li{
+	padding:2px 10px;
+	background:#FF9999;
+	display:block;
+}
+#tags .alt .tag1, 
+#tags .alt .tag2, 
+#tags .alt .tag3, 
+#tags .alt .tag4, 
+#tags .alt .tag5{font-size:100%;}
+#tags .alt .tag1{background:#FF0000;}
+#tags .alt .tag2{background:#EE0000;}
+#tags .alt .tag3{background:#DD0000;}
+#tags .alt .tag4{background:#CD0000;}
+#tags .alt .tag5{background:#8B0000;}
+
+#tags .alt li:first-child{
+  -moz-border-radius-topleft:4px;
+  -moz-border-radius-topright:4px;
+}
+
+#tags .alt li:last-child{
+  -moz-border-radius-bottomleft:4px;
+  -moz-border-radius-bottomright:4px;
+}

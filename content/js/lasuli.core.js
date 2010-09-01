@@ -82,28 +82,49 @@ lasuli.core = {
     this.actionListViewpoints();
   },
   
+  actionCreateAttribute : function(attribute){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.actionCreateAttribute");
+    logger.debug(attribute);
+    var result = HypertopicMapV2.describeItem(this.itemID, attribute.name, attribute.value);
+    logger.debug(result);
+    var attributes = HypertopicMapV2.listItemDescriptions(this.itemID);
+    Observers.notify("lasuli.ui.showAttributes", attributes);
+  },
+  
+  actionDestroyAttribute : function(attribute){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.actionDestroyAttribute");
+    logger.debug(attribute);
+    var result = HypertopicMapV2.undescribeItem(this.itemID, attribute.name, attribute.value);
+    logger.debug(result);
+    var attributes = HypertopicMapV2.listItemDescriptions(this.itemID);
+    Observers.notify("lasuli.ui.showAttributes", attributes);
+  },
+  
   actionLoadDocument : function(url){
     var logger = Log4Moz.repository.getLogger("lasuli.core.actionLoadDocument");
     logger.debug("Browsing web page url:" + url);
     var arg = {};
     try{
+      this.itemID = null;
+      this.corpusID = null;
       var result = HypertopicMapV2.getResources(url);
       //logger.debug(result);
-      var itemID = result[url].item[0].id;
-      var corpusID = result[url].item[0].corpus;
+      this.itemID = result[url].item[0].id;
+      this.corpusID = result[url].item[0].corpus;
+      
       //logger.debug("Item ID:" + itemID);
       //logger.debug("Corpus ID:" + corpusID);
       
-      var corpus = HypertopicMapV2.getCorpus(corpusID);
+      var corpus = HypertopicMapV2.getCorpus(this.corpusID);
       Observers.notify("lasuli.ui.showUsers", corpus.user);
       Observers.notify("lasuli.ui.showItemName", corpus.name[0]);
       arg.corpus_name = corpus.name[0];
       arg.users = corpus.user;
-      arg.attributes = [{"foo" : "bar"}];
+      arg.attributes = HypertopicMapV2.listItemDescriptions(this.itemID);
       //logger.debug(corpus);
       //TODO value is array
       Observers.notify("lasuli.ui.showAttributes", arg.attributes);
-      var item = HypertopicMapV2.getItem(corpusID, itemID);
+      var item = HypertopicMapV2.getItem(this.corpusID, this.itemID);
       //logger.debug("==================item =========");
       //logger.debug(item);
       
