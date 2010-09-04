@@ -28,9 +28,9 @@ lasuli.ui = {
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
         logger.info(viewpointID);
-        Observers.notify("lasuli.core.actionLoadKeywords", viewpointID);
-        Observers.notify("lasuli.core.actionLoadTopics", viewpointID);
-        Observers.notify("lasuli.core.actionLoadFragments", viewpointID);
+        Observers.notify("lasuli.core.doLoadKeywords", viewpointID);
+        Observers.notify("lasuli.core.doLoadTopics", viewpointID);
+        Observers.notify("lasuli.core.doLoadFragments", viewpointID);
       }
     });
     
@@ -42,13 +42,13 @@ lasuli.ui = {
     $('img.add-topic-img').live('click', function(){
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.add-topic-img.click");
       var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
-      Observers.notify("lasuli.core.actionLoadFragments", viewpointID);
+      Observers.notify("lasuli.core.doLoadFragments", viewpointID);
     });
   },
   
   initDocumentPanel : function(){
     var browsingUrl = "http://cassandre/text/d0";
-    Observers.notify("lasuli.core.actionLoadDocument", browsingUrl);
+    Observers.notify("lasuli.core.doLoadDocument", browsingUrl);
   },
   
   initViewpointPanel : function(){
@@ -67,7 +67,7 @@ lasuli.ui = {
 		    return false;
 		  }
 		  logger.debug("Create viewpoint button click.\nViewpoint name:" + viewpointName);
-		  Observers.notify("lasuli.core.actionCreateViewpoint", viewpointName);
+		  Observers.notify("lasuli.core.doCreateViewpoint", viewpointName);
 		});
 		
 		var resizeInput = function(){
@@ -78,7 +78,7 @@ lasuli.ui = {
 		resizeInput();
 		
 		//Noticy the core to load all viewpoints.
-		Observers.notify("lasuli.core.actionListViewpoints", null);
+		Observers.notify("lasuli.core.doListViewpoints", null);
 		
 		//When click enter key also create viewpoint
 		$('#txtViewpoint').keyup(function(event){
@@ -102,7 +102,7 @@ lasuli.ui = {
       message.title = _("Warning");
       message.content = _("delete.viewpoint.warning", [viewpointName]);
       message.callback = function() {
-        Observers.notify("lasuli.core.actionDestroyViewpoint", viewpointID);
+        Observers.notify("lasuli.core.doDestroyViewpoint", viewpointID);
       };
       Observers.notify("lasuli.ui.doShowMessage", message);
     });
@@ -141,7 +141,7 @@ lasuli.ui = {
           
           if (bValid) {
             var attribute = {"name": $('#attribute-name').val(), "value": $('#attribute-value').val()};
-            Observers.notify("lasuli.core.actionCreateAttribute", attribute);
+            Observers.notify("lasuli.core.doCreateAttribute", attribute);
             $('#attribute-dialog').dialog('close');
           }
         }
@@ -208,7 +208,7 @@ lasuli.ui = {
       {
         var data = $("#attribute-grid").jqGrid('getRowData',gr);
         var attribute = {"name": data.name, "value": data.value};
-        Observers.notify("lasuli.core.actionDestroyAttribute", attribute);
+        Observers.notify("lasuli.core.doDestroyAttribute", attribute);
       }
       else
       {
@@ -353,7 +353,7 @@ lasuli.ui = {
     }
     $("li.actor a").click(function(){
       var user = $(this).attr("uri");
-      Observers.notify("lasuli.core.actionOpenViewpointByUser", user);
+      Observers.notify("lasuli.core.doOpenViewpointByUser", user);
       return false;
     });
   },
@@ -388,20 +388,29 @@ lasuli.ui = {
   },
   
   doShowTopics : function(topics){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTopics");
+    logger.debug(topics);
     $("#tags ul li").hide().remove();
     if(!topics) return false;
     
+    var tags = {};
+    for(var i=0, topic; topic = topics[i]; i++)
+      if(!tags[topic.name])
+        tags[topic.name] = 1;
+      else
+        tags[topic.name] = tags[topic.name] + 1;
+    
     var max = 0;
     var min = 32768;
-    for(var name in topics)
+    for(var name in tags)
     {
-      if(topics[name].length > max) max = topics[name].length;
-      if(topics[name].length < min) min = topics[name].length;
+      if(tags[name] > max) max = tags[name];
+      if(tags[name] < min) min = tags[name];
     }
     //var_dump("UI.init.js", "max:" + max + ", min:" + min, 4);
-    for(var name in topics)
+    for(var name in tags)
     {
-      var size = Math.round((topics[name].length - min) / (max-min) * 4) + 1;
+      var size = Math.round((tags[name] - min) / (max-min) * 4) + 1;
       //var_dump("UI.init.js", "topics[name].length:" + topics[name].length, 4);
       var content = "<li class='tag" + size + "'><a>" + name + "</a></li>";
       $("#tags ul").append(content);
@@ -410,16 +419,12 @@ lasuli.ui = {
     $("#tags ul li").tsort({order:"asc"});
     $("#tags ul li a").click(function(){
       var topicName = $(this).text();
-      Observers.notify("lasuli.core.actionOpenViewpointByTopicName", topicName);
+      Observers.notify("lasuli.core.doOpenViewpointByTopicName", topicName);
       return false;
     });
   },
   
   doShowViewpointPanels : function(viewpoints){
-    // Clear the attribute grid
-    $("#attribute-grid").jqGrid('clearGridData');
-    // Clear the tag cloud
-    $("#tags ul li").hide().remove();
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpointPanels");
     if(!viewpoints) return false;
     //logger.debug(viewpoints);
@@ -446,6 +451,15 @@ lasuli.ui = {
   
   doClearDocumentPanel : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doClearDocumentPanel");
+    logger.info("clear the document panel");
+    // Clear the document name
+    $("#h3-entity-name").html(_("no.name"));
+    // Clear the attribute grid
+    $("#attribute-grid").jqGrid('clearGridData');
+    // Clear the tag cloud
+    $("#tags ul li").hide().remove();
+    // Clear the users list
+    $("#actors ul li").hide().remove();
   }
 }
 

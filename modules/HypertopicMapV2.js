@@ -80,7 +80,10 @@ let HypertopicMapV2 = {
   },
   
   getCorpus : function(corpusID) {
+    let logger = Log4Moz.repository.getLogger("HypertopicMapV2.getCorpus");
     var obj = RESTDatabase.httpGet("corpus/" + corpusID);
+    //logger.debug(corpusID);
+    //logger.debug(obj);
     if(!obj) 
       return false;
     else

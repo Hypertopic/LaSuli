@@ -111,7 +111,10 @@ var RESTDatabase = {
     let logger = Log4Moz.repository.getLogger("RESTDatabase._send");
     httpAction = (httpAction) ? httpAction : "GET";
     httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
-  
+    //logger.debug(httpUrl);
+    //httpUrl = (httpUrl.indexOf('?') > 0) ? httpUrl + "&_t=" + (new Date()).getTime() : httpUrl + "?_t=" + (new Date()).getTime();
+    //logger.debug(httpUrl);
+    
     httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object") ? JSON.stringify(httpBody) : httpBody);
     let result = null;
   

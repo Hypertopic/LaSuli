@@ -36,7 +36,7 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.register");
     //logger.warn("start to register");
     for(var func in this)
-      if(func.substr(0, 6) == "action")
+      if(func.substr(0, 2) == "do")
       {
         //logger.warn(func);
         Observers.add("lasuli.core." + func, lasuli.core[func], lasuli.core);
@@ -44,7 +44,7 @@ lasuli.core = {
   },
   unregister: function(){
     for(var func in this)
-      if(func.substr(0, 6) == "action")
+      if(func.substr(0, 2) == "do")
         Observers.remove("lasuli.core." + func, lasuli.core[func], lasuli.core);
   },
   
@@ -91,8 +91,8 @@ lasuli.core = {
     return true;
   },
   
-  actionPrefChange : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionPrefChange");
+  doPrefChange : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doPrefChange");
     logger.level = Log4Moz.Level["Debug"];
     if(lasuli.core.isSidebarOpen())
     {
@@ -103,31 +103,31 @@ lasuli.core = {
     lasuli.core.loadSetting();
   },
   
-  actionListViewpoints: function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionLoadDocument");
+  doListViewpoints: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doListViewpoints");
     var viewpoints = HypertopicMapV2.listViewpoints();
     logger.debug(viewpoints);
     //Notify lasuli.ui to show the viewpoints
     Observers.notify("lasuli.ui.doShowViewpoints", viewpoints);
   },
   
-  actionCreateViewpoint : function(viewpointName){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionCreateViewpoint");
+  doCreateViewpoint : function(viewpointName){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateViewpoint");
     logger.debug("Name:" + viewpointName);
     var result = HypertopicMapV2.createViewpoint(viewpointName);
     logger.debug(result);
     //reload the viewpoints
-    this.actionListViewpoints();
+    this.doListViewpoints();
   },
   
-  actionDestroyViewpoint : function(viewpointID){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionDestroyViewpoint");
+  doDestroyViewpoint : function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyViewpoint");
     HypertopicMapV2.destroyViewpoint(viewpointID);
-    this.actionListViewpoints();
+    this.doListViewpoints();
   },
   
-  actionCreateAttribute : function(attribute){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionCreateAttribute");
+  doCreateAttribute : function(attribute){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateAttribute");
     logger.debug(attribute);
     var result = HypertopicMapV2.describeItem(this.itemID, attribute.name, attribute.value);
     logger.debug(result);
@@ -135,8 +135,8 @@ lasuli.core = {
     Observers.notify("lasuli.ui.doShowAttributes", attributes);
   },
   
-  actionDestroyAttribute : function(attribute){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionDestroyAttribute");
+  doDestroyAttribute : function(attribute){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyAttribute");
     logger.debug(attribute);
     var result = HypertopicMapV2.undescribeItem(this.itemID, attribute.name, attribute.value);
     logger.debug(result);
@@ -144,8 +144,10 @@ lasuli.core = {
     Observers.notify("lasuli.ui.doShowAttributes", attributes);
   },
   
-  actionLoadDocument : function(url){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionLoadDocument");
+  doLoadDocument : function(url){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
+    Observers.notify("lasuli.ui.doClearDocumentPanel", null);
+    
     logger.debug("Browsing web page url:" + url);
     if(this.myCorpusID == null)
       if(!this.getMyCorpusID()) return false;
@@ -159,7 +161,7 @@ lasuli.core = {
     this.itemID = null;
     try{
       var result = HypertopicMapV2.getResources(url);
-      logger.debug(result);
+      //logger.debug(result);
       for(var i=0, row; row = result[url].item[i]; i++)
       {
         if(this.itemID == null)
@@ -176,67 +178,105 @@ lasuli.core = {
     }catch(e){
       logger.fatal("error when try to get the information on resource : " + url);
       logger.fatal(e);
+      return false;
     }
     
+    if(this.itemID == null) return false;
     try{  
       // Get the document name and attributes.
       var item = HypertopicMapV2.getItem(this.corpusID, this.itemID);
-      
-      var corpus = HypertopicMapV2.getCorpus(this.corpusID);
-      Observers.notify("lasuli.ui.doShowUsers", corpus.user);
-      Observers.notify("lasuli.ui.doShowItemName", corpus.name[0]);
-      arg.corpus_name = corpus.name[0];
-      arg.users = corpus.user;
-      arg.attributes = HypertopicMapV2.listItemDescriptions(this.itemID);
-      //logger.debug(corpus);
-      //TODO value is array
-      Observers.notify("lasuli.ui.doShowAttributes", arg.attributes);
-      var item = HypertopicMapV2.getItem(this.corpusID, this.itemID);
-      //logger.debug("==================item =========");
+      //logger.debug("=========item===========");
       //logger.debug(item);
+      // Show the item name as the document name
+      if(item && item.name && item.name[0])
+        Observers.notify("lasuli.ui.doShowItemName", item.name[0]);
       
-      var topics = item.topic;
-      for(var k in item)
-        if("coordinates" in item[k])
-          if(item[k].topic)
-            topics = topics.concat(item[k].topic);
-      //logger.debug(topics);
-      arg.topics = {};
-      topics.forEach(function(topic, index, topics){
+      // List all discription on the attribute grid
+      var attributes = HypertopicMapV2.listItemDescriptions(this.itemID);
+      if(attributes)
+        Observers.notify("lasuli.ui.doShowAttributes", attributes);
+    }catch(e){
+      logger.fatal("error when try to get the attribute and item name on item : " + this.itemID);
+      logger.fatal(e);
+    }
+    //logger.debug("=========tags===========");
+    //Get the users list, tags, all related topics.
+    this.users = new Array();
+    this.tags = new Array();
+    this.topics = new Array();
+    for(var corpusID in this.items)
+    {
+      logger.debug("coprusID:" + corpusID);
+      //Get the users list from corpus
+      var corpus = HypertopicMapV2.getCorpus(corpusID);
+      //logger.debug("===============users===========");
+      //logger.debug(corpus);
+      if(corpus.user)
+        for(var i=0,user; user = corpus.user[i]; i++)
+          if(this.users.indexOf(user) == -1)
+            this.users.push(user);
+      //logger.debug(this.users);
+      
+      //logger.debug("===============keywords, topics===========");
+      //Get the keyword and the fragments topics
+      var itemIDs = this.items[corpusID];
+      for(var i=0, itemID; itemID = itemIDs[i]; i++)
+      {
+        //logger.debug(itemID);
+        var item = HypertopicMapV2.getItem(corpusID, itemID);
+        //logger.debug(item);
+        if(item.topic && item.topic.length > 0)
+          for(var j=0, topic; topic = item.topic[j]; j++)
+            this.tags.push(topic);
+        
+        // go through the highlights
+        for each (var prop in item)
+          if("topic" in prop)
+            for(var j=0, topic; topic = prop.topic[j]; j++)
+              this.topics.push(topic);
+      }
+    }
+    //logger.debug("===============keywords, topics===========");
+    //logger.debug(this.tags);
+    //logger.debug(this.topics);
+    var getTopic = function(topic, index, topics){
         var result = HypertopicMapV2.getTopic(topic.viewpoint, topic.id);
         //logger.debug(result);
         result.viewpoint = topic.viewpoint;
         result.id = topic.id;
-        if(result.highlight)
-          delete result.highlight;
         if(result.broader)
           delete result.broader;
         if(result.narrower)
           delete result.narrower;
-          
-        if(!this.topics[result.name])
-          this.topics[result.name] = new Array();
-        this.topics[result.name].push(result);
-      },arg);
-      this.topics = arg.topics;
-      //logger.error(this.topics);
-      Observers.notify("lasuli.ui.doShowTopics", arg.topics);
-    }catch(e)
-    {
-      logger.error(e);
-    }
+        if(!result.name)
+          result.name = _("no.name");
+        topics[index] = result;
+      };
     
+    Observers.notify("lasuli.ui.doShowUsers", this.users);
+    logger.debug("===getTopic===");
+    this.tags.forEach(getTopic);
+    this.topics.forEach(getTopic);
+    Observers.notify("lasuli.ui.doShowTopics", this.topics.concat(this.tags));
+    
+    //TODO highlight all fragments
   },
   
-  actionOpenViewpointByTopicName : function(topicName) {
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionOpenViewpointByTopicName");
-    //logger.debug("topicName: " + topicName);
-    if(!this.topics) return false;
+  doOpenViewpointByTopicName : function(topicName) {
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doOpenViewpointByTopicName");
+    logger.debug("topicName: " + topicName);
+    if(!this.topics && !this.tags) return false;
     var viewpointIDs = new Array();
-    var strTopics = JSON.stringify(this.topics);
-    while( result = /\"viewpoint\":\s?\"([a-zA-z0-9]+)\"/ig.exec(strTopics))
-        if(typeof(result[1]) != "undefined" && viewpointIDs.indexOf(result[1]) == -1) viewpointIDs.push(result[1]);
+    var topics = this.topics.concat(this.tags);
     
+    for(var i=0, topic; topic = topics[i]; i++)
+    {
+      if(topic.name == topicName)
+      {
+        logger.debug(topic);
+        viewpointIDs.push(topic.viewpoint);
+      }
+    }
     logger.debug(viewpointIDs);
     var viewpoints = new Array();
     for(var i=0, viewpointID; viewpointID = viewpointIDs[i]; i++)
@@ -247,8 +287,8 @@ lasuli.core = {
     Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
   
-  actionOpenViewpointByUser : function(user){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionOpenViewpointByUser");
+  doOpenViewpointByUser : function(user){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doOpenViewpointByUser");
     //logger.debug("user: " + user);
     var corpora = HypertopicMapV2.listCorpora(user);
     //logger.debug(corpora);
@@ -269,11 +309,12 @@ lasuli.core = {
       var viewpoint = HypertopicMapV2.getViewpoint(viewpointID);
       if(viewpoint) viewpoints.push(viewpoint);
     }
+    //TODO filter not related viewpoints
     Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
   
-  actionLoadKeywords : function(viewpoint){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.actionLoadKeywords");
+  doLoadKeywords : function(viewpoint){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadKeywords");
     logger.debug(this.corpusID);
   }
 }
@@ -299,7 +340,7 @@ var lasuliPrefObserver = {
   observe: function(aSubject, aTopic, aData) {
     if(aTopic != "nsPref:changed") return;
     this.logger.debug("extensions.lasuli." + aData + " changed!");
-    lasuli.core.actionPrefChange();
+    lasuli.core.doPrefChange();
   }
 }
 
