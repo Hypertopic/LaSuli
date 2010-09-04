@@ -72,8 +72,10 @@ let HypertopicMapV2 = {
    * @param user e.g. "cecile@hypertopic.org"
    */
   listCorpora : function(user) {
+    let logger = Log4Moz.repository.getLogger("HypertopicMapV2.listCorpora");
     var obj = RESTDatabase.httpGet("user/" + user);
-    if(!obj) return false;
+    if(!obj || !obj[user]) return false;
+    logger.debug(obj);
     return obj[user].corpus;
   },
   
@@ -296,7 +298,7 @@ let HypertopicMapV2 = {
   {
     var result = RESTDatabase.httpGet("viewpoint/" + viewpointID);
     if(!result || !result[viewpointID] ) return false;
-    
+    result[viewpointID].id = viewpointID;
     return result[viewpointID];
   },
   

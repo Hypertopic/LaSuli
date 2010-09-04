@@ -1,27 +1,48 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Sync.js");  
 lasuli.ui = {
-  initTabs : function()
-  {
+  initTabs : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs");
     $tabs = $('#tabs').tabs({
       tabTemplate: '<li><a href="#{href}" class="tab-viewpoint">#{label}</a> <span class="ui-icon ui-icon-close">Remove Tab</span></li>',
       selected:0,
       add: function(event, ui) {
-        $(ui.panel).append('' + ui.panel.id);
+        logger.info(ui.tab.href);
+        var viewpointPanelHtml = '<div class="topics" ><p class="h3-title"><span>' + _("Index") + '</span>'
+                          		 + '<img class="add-topic-img" src="css/blitzer/images/add.png"></p><ul class="topics-ul"></ul></div>'
+                          		 + '<div class="fragments-container"><p class="h3-title"><span>' + _("Analysis") + '</span>'
+                          		 + '<img class="add-analyses-img" src="css/blitzer/images/add.png"></p></div>';
+        $(ui.panel).append(viewpointPanelHtml);
       },
       remove: function(event, ui)
       {
-        //debug(ui.panel.id);
+        logger.info(ui);
         if($('#' + ui.panel.id))
           $('#' + ui.panel.id).remove();
       }
     });
     
     $tabs.bind('tabsselect', function(event, ui) {
-      //jsHighLighter.removeHighlighter();
-      if($(ui.tab).hasClass("tab-add"))
+      var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.tabsselect");
+      if($(ui.tab).hasClass("tab-viewpoint"))
       {
+        var viewpointID = $(ui.tab).attr("href").substr(1);
+        logger.info(viewpointID);
+        Observers.notify("lasuli.core.actionLoadKeywords", viewpointID);
+        Observers.notify("lasuli.core.actionLoadTopics", viewpointID);
+        Observers.notify("lasuli.core.actionLoadFragments", viewpointID);
       }
+    });
+    
+    $('#tabs span.ui-icon-close').live('click', function() {
+      var index = $('li',$tabs).index($(this).parent());
+      $tabs.tabs('remove', index);
+    });
+    
+    $('img.add-topic-img').live('click', function(){
+      var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.add-topic-img.click");
+      var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
+      Observers.notify("lasuli.core.actionLoadFragments", viewpointID);
     });
   },
   
@@ -42,7 +63,7 @@ lasuli.ui = {
 		  if(viewpointName == "")
 		  {
 		    var message = {"title": _("Warning"), "content": _('create.viewpoint.warning')};
-		    Observers.notify("lasuli.ui.showMessage", message);
+		    Observers.notify("lasuli.ui.doShowMessage", message);
 		    return false;
 		  }
 		  logger.debug("Create viewpoint button click.\nViewpoint name:" + viewpointName);
@@ -83,12 +104,12 @@ lasuli.ui = {
       message.callback = function() {
         Observers.notify("lasuli.core.actionDestroyViewpoint", viewpointID);
       };
-      Observers.notify("lasuli.ui.showMessage", message);
+      Observers.notify("lasuli.ui.doShowMessage", message);
     });
     $('#viewpoints-ul li a').live('click', function(){
       var viewpointID = $(this).parent().attr("id");
       var viewpoints = new Array(viewpointID);
-      Observers.notify("lasuli.ui.showViewpointPanels", viewpoints);
+      Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
       return false;
     });
   },
@@ -194,7 +215,7 @@ lasuli.ui = {
         var message = {};
         message.title = _("Warning");
         message.content = _("no-attribute-selected");
-        Observers.notify("lasuli.ui.showMessage", message);
+        Observers.notify("lasuli.ui.doShowMessage", message);
       }
 		});
 		//Modify selected attribute
@@ -212,7 +233,7 @@ lasuli.ui = {
         var message = {};
         message.title = _("Warning");
         message.content = _("no-attribute-selected");
-        Observers.notify("lasuli.ui.showMessage", message);
+        Observers.notify("lasuli.ui.doShowMessage", message);
       }
 		});*/
   },
@@ -263,7 +284,7 @@ lasuli.ui = {
   register: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.register");
     for(var func in this)
-      if(func.substr(0, 4) == "show")
+      if(func.substr(0, 2) == "do")
       {
         //logger.debug("registering function: " + func);
         Observers.add("lasuli.ui." + func, lasuli.ui[func], lasuli.ui);
@@ -271,11 +292,11 @@ lasuli.ui = {
   },
   unregister: function(){
     for(var func in this)
-      if(func.substr(0, 4) == "show")
+      if(func.substr(0, 2) == "do")
         Observers.remove("lasuli.ui." + func, lasuli.ui[func], lasuli.ui);
   },
   
-  showMessage : function(subject, data){
+  doShowMessage : function(subject, data){
     var msgTitle = (typeof(subject.title) == "string") ? subject.title : "Information";
     $("#message").html(subject.content);
     if(subject.callback)
@@ -307,8 +328,8 @@ lasuli.ui = {
     $("#ui-dialog-title-message-dialog").html(msgTitle);
   },
   
-  showViewpoints : function(viewpoints){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.showViewpoints");
+  doShowViewpoints : function(viewpoints){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpoints");
     logger.debug(viewpoints);
     $('#viewpoints-ul li').hide().remove();
     logger.debug(typeof(viewpoints));
@@ -321,7 +342,7 @@ lasuli.ui = {
       }
   },
   
-  showUsers : function(users){
+  doShowUsers : function(users){
     $("#actors ul li").hide().remove();
     if(!users) return;
     users.sort();
@@ -337,15 +358,15 @@ lasuli.ui = {
     });
   },
   
-  showItemName : function(itemName){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.showItemName");
+  doShowItemName : function(itemName){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowItemName");
     logger.debug(itemName);
     if(!itemName) itemName = _("no.name");
     $("#h3-entity-name").html(itemName);
   },
   
-  showAttributes : function(attributes){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.showAttributes");
+  doShowAttributes : function(attributes){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowAttributes");
     logger.debug(attributes);
     $("#attribute-grid").jqGrid('clearGridData');
     if(!attributes) return false;
@@ -366,7 +387,7 @@ lasuli.ui = {
       }
   },
   
-  showTopics : function(topics){
+  doShowTopics : function(topics){
     $("#tags ul li").hide().remove();
     if(!topics) return false;
     
@@ -394,12 +415,37 @@ lasuli.ui = {
     });
   },
   
-  showViewpointPanels : function(viewpoints){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.showViewpoints");
+  doShowViewpointPanels : function(viewpoints){
+    // Clear the attribute grid
+    $("#attribute-grid").jqGrid('clearGridData');
+    // Clear the tag cloud
+    $("#tags ul li").hide().remove();
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpointPanels");
     if(!viewpoints) return false;
     //logger.debug(viewpoints);
-    viewpoints = $.unique(viewpoints);
-    logger.debug(viewpoints);
+    var tabIndex = -1;
+    for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++)
+    {
+      //If this viewpoint tab is already created.
+      if($("#"+viewpoint.id).length > 0) continue;
+      //Create the tab for this viewpoint
+      logger.info("adding viewpoint:" + viewpoint.id + ", " + viewpoint.name);
+      tabIndex = $tabs.tabs('length')-1;
+      $tabs.tabs('add', '#' + viewpoint.id, viewpoint.name, tabIndex);
+    }
+    
+    //Open created tab
+    if(tabIndex > 0)
+      $tabs.tabs('option', 'selected', tabIndex);
+    else
+      $("#tabs ul li").each(function(){
+        if($(this).find("a").attr("href") == "#" + viewpoints[0].id)
+          $(this).find("a").click();
+      });
+  },
+  
+  doClearDocumentPanel : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doClearDocumentPanel");
   }
 }
 
