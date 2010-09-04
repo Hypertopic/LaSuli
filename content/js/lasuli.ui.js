@@ -169,9 +169,76 @@ lasuli.ui = {
       event.stopImmediatePropagation();
       return false;
     });
+    
+    //Open dialog for add topic
+    $('.add-topic-img').live("click", function(){
+      //$("#topic-dialog").dialog('open');
+      Observers.notify("lasuli.core.doCreateTag", {"viewpointID":"5a03d6d794ec4b9215f7cba8600c0739", "name": "topicName"});
+    });
+    
+    var topicDialogButtons = {};
+    topicDialogButtons[_('Cancel')] = function() { $(this).dialog('close');  };
+  	topicDialogButtons[_('Okay')] = function() { 
+  	  $('#topic-name').removeClass('ui-state-error');
+      if ( $('#topic-name').val().length == 0)
+      {
+        $('#topic-name').addClass('ui-state-error');
+        return false;
+      }
+       
+      var topicName = $('#topic-name').val();
+      var viewpointID = $("#tabs ul li.ui-state-active").find("a").attr("href").substr(1);
+      Observers.notify("lasuli.core.doCreateTag", {"viewpointID":viewpointID, "name": topicName});
+      $(this).dialog('close');  
+    };
+    
+    //Initial topic dialog
+    $("#topic-dialog").dialog({
+      bgiframe: true,
+      autoOpen: false,
+      modal: true,
+      width: 170,
+      title: _("add-topic-dialog-title"),
+      buttons: topicDialogButtons,
+      close: function() {
+        $('#topic-name').removeClass('ui-state-error');
+      }
+    });
+    
+    $('#topic-name').keyup(function(event){
+      if (event.keyCode == 13)
+      {
+        var buttons = $('#topic-dialog').dialog('option','buttons');
+        if(typeof(buttons[_('Okay')]) == "function")
+          buttons[_('Okay')].call();
+      }
+    });
   },
   
   initAttributeGrid : function(){
+    var attributesDialogButtons = {};
+  	attributesDialogButtons[_('Okay')] = function() { 
+  	  var bValid = true;
+      $('#attribute-name').removeClass('ui-state-error');
+      $('#attribute-value').removeClass('ui-state-error');
+      if ( $('#attribute-name').val().length == 0)
+      {
+        $('#attribute-name').addClass('ui-state-error');
+        bValid = false;
+      }
+      
+      if ( $('#attribute-value').val().length == 0) 
+      {
+        $('#attribute-value').addClass('ui-state-error');
+        bValid = false;
+      }
+      
+      if (bValid) {
+        var attribute = {"name": $('#attribute-name').val(), "value": $('#attribute-value').val()};
+        Observers.notify("lasuli.core.doCreateAttribute", attribute);
+        $('#attribute-dialog').dialog('close');
+      }
+    };
     
     $("#attribute-dialog").dialog({
       bgiframe: true,
@@ -179,30 +246,7 @@ lasuli.ui = {
       modal: true,
       width: 170,
       title: _("add-attribute-dialog-title"),
-      buttons: {
-        'OK': function() {
-          var bValid = true;
-          $('#attribute-name').removeClass('ui-state-error');
-          $('#attribute-value').removeClass('ui-state-error');
-          if ( $('#attribute-name').val().length == 0)
-          {
-            $('#attribute-name').addClass('ui-state-error');
-            bValid = false;
-          }
-          
-          if ( $('#attribute-value').val().length == 0) 
-          {
-            $('#attribute-value').addClass('ui-state-error');
-            bValid = false;
-          }
-          
-          if (bValid) {
-            var attribute = {"name": $('#attribute-name').val(), "value": $('#attribute-value').val()};
-            Observers.notify("lasuli.core.doCreateAttribute", attribute);
-            $('#attribute-dialog').dialog('close');
-          }
-        }
-      },
+      buttons: attributesDialogButtons,
       close: function() 
       {
         $('#attribute-name').removeClass('ui-state-error');
@@ -216,7 +260,11 @@ lasuli.ui = {
     });
     $('#attribute-value').keyup(function(event){
       if (event.keyCode == 13)
-        $('#attribute-dialog').dialog('option','buttons').OK();
+      {
+        var buttons = $('#attribute-dialog').dialog('option','buttons');
+        if(typeof(buttons[_('Okay')]) == "function")
+          buttons[_('Okay')].call();
+      }
     });
     
     //If the jqGrid script isn't loaded yet.
@@ -525,8 +573,12 @@ lasuli.ui = {
     var viewpointID = null;
     for(var i=0; topic = tags[i]; i++)
     {
-      if(!viewpointID) viewpointID = topic.viewpoint;
-      html += '<li class="topic"><img src="css/blitzer/images/delete.png" class="remove-tag-img hide"><a uri="' + topic.id + '">' + topic.name + '</a></li>';
+      if(!viewpointID) viewpointID = topic.viewpointID;
+      var el = 'div#' + topic.viewpointID + ' ul.topics-ul li a[uri="' + topic.topicID + '"]';
+      logger.info(el);
+      if($(el).length > 0)
+        continue;
+      html += '<li class="topic"><img src="css/blitzer/images/delete.png" class="remove-tag-img hide"><a uri="' + topic.topicID + '">' + topic.name + '</a></li>';
       //logger.debug(html);
     }
     //logger.info(viewpointID);

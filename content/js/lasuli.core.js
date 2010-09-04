@@ -326,16 +326,81 @@ lasuli.core = {
     var tags = new Array();
     if(this.tags.length > 0)
       for(var i=0, tag; tag = this.tags[i]; i++)
-        if(tag.viewpoint == viewpoint)
+        if(tag.viewpointID == viewpoint)
+        {
+          tag.topicID = tag.id;
           tags.push(tag);
+        }
     logger.debug(tags);
     Observers.notify("lasuli.ui.doShowTags", tags);
+  },
+  
+  doCreateTag : function(tag) {
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateTag");
+    logger.debug(tag);
+    var viewpoint = HypertopicMapV2.getViewpoint(tag.viewpointID);
+    logger.debug(viewpoint);
+    for(var name in viewpoint)
+    {
+      logger.debug("viewpoint[name]");
+      logger.debug(viewpoint[name]);
+      logger.debug(typeof(viewpoint[name]));
+      if(typeof(viewpoint[name]) != "object" || !("name" in viewpoint[name]))
+        continue;
+      
+      var topic = viewpoint[name];
+      logger.debug(topic);
+      logger.debug("topic.name[0] == tag.name");
+      logger.debug(topic.name[0] == tag.name);
+      if(topic.name[0] == tag.name && !("highlight" in topic))
+      {
+        tag.topicID = name;
+        break;
+      }
+    }
+    logger.debug(tag);
+    if(!("topicID" in tag))
+      try{
+        tag.topicID = HypertopicMapV2.createTopicIn(tag.viewpointID, new Array());
+        if(!tag.topicID)
+          throw Exception("can not create topic");
+        HypertopicMapV2.renameTopic(tag.viewpointID, tag.topicID, tag.name);
+      }
+      catch(e)
+      {
+        logger.fatal("error when try to create tag");
+        logger.fatal(tag);
+        logger.fatal(e);
+        //TODO show message
+      }
+    logger.debug(tag);
+    try{
+      result = HypertopicMapV2.tagItem(this.itemID, tag.viewpointID, tag.topicID);
+    }catch(e){
+      logger.fatal("error when try to tag the item: " + this.itemID);
+      logger.fatal(tag);
+      logger.fatal(e);
+      //TODO show message
+    }
+    Observers.notify("lasuli.ui.doShowTags", new Array(tag));
   },
   
   doRemoveTag : function(tag) {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doRemoveTag");
     logger.debug(tag);
-    Observers.notify("lasuli.ui.doRemoveTag",tag);
+    var result = false;
+    try{
+      result = HypertopicMapV2.untagItem(this.itemID, tag.viewpointID, tag.topicID);
+    }catch(e){
+      logger.fatal("error when try to remove the following tag from item: " + this.itemID);
+      logger.fatal(tag);
+      logger.fatal(e);
+    }
+    if(!result)
+      //TODO show message?
+      return false;
+    else      
+      Observers.notify("lasuli.ui.doRemoveTag",tag);
   },
   
   doRenameTag : function(tag){
