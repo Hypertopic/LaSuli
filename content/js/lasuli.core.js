@@ -1,5 +1,6 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Preferences.js");
+include("resource://lasuli/modules/log4moz.js");
 
 include("resource://lasuli/modules/HypertopicMapV2.js");
 
@@ -46,11 +47,6 @@ lasuli.core = {
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.remove("lasuli.core." + func, lasuli.core[func], lasuli.core);
-  },
-  
-  domWindowLoaded : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.domWindowLoaded");
-    logger.info("load");
   },
   
   getMyCorpusID : function(){
@@ -204,6 +200,7 @@ lasuli.core = {
     this.users = new Array();
     this.tags = new Array();
     this.topics = new Array();
+    var coordinates = new Array();
     for(var corpusID in this.items)
     {
       logger.debug("coprusID:" + corpusID);
@@ -231,9 +228,17 @@ lasuli.core = {
         
         // go through the highlights
         for each (var prop in item)
+        {
           if("topic" in prop)
             for(var j=0, topic; topic = prop.topic[j]; j++)
               this.topics.push(topic);
+          if("coordinates" in prop)
+            for(var j=0, coordinate; coordinate = prop.coordinates[j]; j++)
+            {
+              
+              coordinates.push({ "startPos": coordinate[0], "endPos": coordinate[1], "color": "#FFFF00"});
+            }
+        }
       }
     }
     //logger.debug("===============keywords, topics===========");
@@ -259,7 +264,9 @@ lasuli.core = {
     this.topics.forEach(getTopic);
     Observers.notify("lasuli.ui.doShowTopics", this.topics.concat(this.tags));
     
-    //TODO highlight all fragments
+    // Highlight all fragments
+    Observers.notify("lasuli.highlighter.doHighlight", coordinates);
+    
   },
   
   doOpenViewpointByTopicName : function(topicName) {

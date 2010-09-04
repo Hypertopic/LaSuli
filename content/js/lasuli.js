@@ -18,6 +18,9 @@ include("resource://lasuli/modules/Preferences.js");
  * LaSuli namespace.
  */
 var lasuli = {
+  _class : "_LASULI_APPEND_CLASS_",
+  _htClass : "_LASULI_HIGHTLIGHT_CLASS_",
+  
   getLocalDirectory : function() {
     var directoryService =
       Cc["@mozilla.org/file/directory_service;1"].
