@@ -320,9 +320,47 @@ lasuli.core = {
     Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
   
-  doLoadKeywords : function(viewpoint){
+  doLoadTags : function(viewpoint){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadKeywords");
-    logger.debug(this.corpusID);
+    logger.debug(viewpoint);
+    var tags = new Array();
+    if(this.tags.length > 0)
+      for(var i=0, tag; tag = this.tags[i]; i++)
+        if(tag.viewpoint == viewpoint)
+          tags.push(tag);
+    logger.debug(tags);
+    Observers.notify("lasuli.ui.doShowTags", tags);
+  },
+  
+  doRemoveTag : function(tag) {
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doRemoveTag");
+    logger.debug(tag);
+    Observers.notify("lasuli.ui.doRemoveTag",tag);
+  },
+  
+  doRenameTag : function(tag){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameTag");
+    var result = false;
+    if(tag.newName == tag.name)
+      result = true;
+    else
+      try{
+        result = HypertopicMapV2.renameTopic(tag.viewpointID, tag.topicID, tag.newName);
+      }catch(e){
+        logger.fatal("error when try to rename tag : ");
+        logger.fatal(tag);
+        logger.fatal(e);
+      }
+      
+    if(result)
+    {
+      tag.name = tag.newName;
+      delete tag.newName;
+      Observers.notify("lasuli.ui.doRestoreTag",tag);
+    }
+    else
+      Observers.notify("lasuli.ui.doRestoreTag",tag);
+      //TODO show why cannot rename the tag.
   }
 }
 

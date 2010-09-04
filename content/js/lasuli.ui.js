@@ -28,7 +28,7 @@ lasuli.ui = {
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
         logger.info(viewpointID);
-        Observers.notify("lasuli.core.doLoadKeywords", viewpointID);
+        Observers.notify("lasuli.core.doLoadTags", viewpointID);
         Observers.notify("lasuli.core.doLoadTopics", viewpointID);
         Observers.notify("lasuli.core.doLoadFragments", viewpointID);
       }
@@ -110,6 +110,63 @@ lasuli.ui = {
       var viewpointID = $(this).parent().attr("id");
       var viewpoints = new Array(viewpointID);
       Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
+      return false;
+    });
+    
+    // Delete a tag by click the trash icon
+    $('.remove-tag-img').live('click', function(){
+      var topicID = $(this).next("a").attr("uri");
+      var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
+      if(typeof(topicID) == "string" && topicID.length >0)
+        Observers.notify("lasuli.core.doRemoveTag", {"topicID":topicID, "viewpointID": viewpointID});
+      return false;
+    });
+    
+    //Mouse over the tag shows the trash icon
+    $(".topic").live("mouseover", function(){
+      $(this).find("img").removeClass("hide");
+      return false;
+    }).live("mouseout", function(){
+      $(this).find("img").addClass("hide");
+      return false;
+    });
+    
+    //Edit in place of a tag
+    $(".topic a").live("click", function(event){
+      var el = $(this);
+      
+      //Save the content for future restore it back
+      var container = $('ul.topics-ul');
+      container.data("topicName", $(this).html());
+      container.data("topicID", $(this).attr("uri"));
+      
+      el.replaceWith("<input type='text' class='edit-in-place' value=''>");
+      var in_element = container.find("input");
+      in_element.val(container.data("topicName"));
+      in_element.focus().select();
+      
+      in_element.blur(function(){
+        var topicID = container.data("topicID");
+        //var_dump("[UI.init.js] edit in place topic name", uri, 4);
+        var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
+        var topicName = container.data("topicName");
+        var topicNewName = $(this).val();
+        Observers.notify("lasuli.core.doRenameTag", {"viewpointID":viewpointID, "topicID":topicID, "name": topicName, "newName": topicNewName});
+        return false;
+      });
+      
+      in_element.keyup(function(event){
+        if (event.keyCode == 27) 
+        {
+          $(this).replaceWith("<a uri='" + container.data("topicID") + "'>" + container.data("topicName") + "</a>");
+        }
+        if (event.keyCode == 13)
+        {
+          $(this).blur();
+        }
+      });
+      
+      event.stopImmediatePropagation();
       return false;
     });
   },
@@ -460,6 +517,34 @@ lasuli.ui = {
     $("#tags ul li").hide().remove();
     // Clear the users list
     $("#actors ul li").hide().remove();
+  },
+  
+  doShowTags : function(tags){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTags");
+    var html = "";
+    var viewpointID = null;
+    for(var i=0; topic = tags[i]; i++)
+    {
+      if(!viewpointID) viewpointID = topic.viewpoint;
+      html += '<li class="topic"><img src="css/blitzer/images/delete.png" class="remove-tag-img hide"><a uri="' + topic.id + '">' + topic.name + '</a></li>';
+      //logger.debug(html);
+    }
+    //logger.info(viewpointID);
+    //logger.debug(html);
+    if(viewpointID && $('#' + viewpointID).length > 0)
+      $('#' + viewpointID).find(".topics-ul").append(html);
+  },
+  
+  doRemoveTag : function(tag){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveTag");
+    //logger.debug('div#' + tag.viewpointID + ' ul.topics-ul li a[uri="' + tag.topicID + '"]');
+    var el = 'div#' + tag.viewpointID + ' ul.topics-ul li a[uri="' + tag.topicID + '"]';
+    if($(el).length > 0)
+      $(el).parent().remove();
+  },
+  
+  doRestoreTag : function(tag){
+    $('ul.topics-ul').find('input').replaceWith("<a uri='" + tag.topicID + "'>" + tag.name + "</a>");
   }
 }
 
@@ -472,7 +557,6 @@ $(window).bind("load", function(){
   lasuli.ui.initAttributeGrid();
   lasuli.ui.initTagCloud();
   lasuli.ui.initDocumentPanel();
-  
 });
 
 $(window).bind("unload", function(){
