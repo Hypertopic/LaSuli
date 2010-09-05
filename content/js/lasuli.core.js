@@ -265,7 +265,7 @@ lasuli.core = {
     logger.debug("===getTopic===");
     this.tags.forEach(lasuli.core._getTopic);
     this.topics.forEach(lasuli.core._getTopic);
-    Observers.notify("lasuli.ui.doShowTopics", this.topics.concat(this.tags));
+    Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
     
     // Highlight all fragments
     Observers.notify("lasuli.highlighter.doHighlight", coordinates);
@@ -473,7 +473,52 @@ lasuli.core = {
         break;
     }
     logger.debug(this.tags);
-    Observers.notify("lasuli.ui.doShowTopics", this.topics.concat(this.tags));
+    Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+  },
+  
+  doLoadFragments : function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadFragments");
+    logger.debug(this.topics);
+    var items = new Array();
+    for each (var rows in this.items){
+      items = items.concat(rows);
+    }
+    logger.debug(items);
+    var topics = new Array();
+    var fragments = new Array();
+    var topicIDs = new Array();
+    var tmps = {};
+    for(var i=0, topic; topic = this.topics[i];i++)
+    {
+      if(!topic.highlight) continue;
+      if(topic.viewpoint != viewpointID) continue;
+      
+      if(topicIDs.indexOf(topic.id) < 0)
+      {
+        topics.push({"viewpointID": viewpointID, "topicID": topic.id, "name": topic.name, "color": colorUtil.index2rgb(i)});
+        topicIDs.push(topic.id);
+      }
+      
+      for each (var row in topic.highlight){
+        if(items.indexOf(row.item) >= 0)
+          tmps[JSON.stringify({"fragmentID": row.id, "startPos": row.coordinates[0], "endPos": row.coordinates[1], "text": row.text,
+                        "corpusID": row.corpus, "itemID": row.item, "topicID": topic.id, "viewpointID": viewpointID})] = '';
+      }
+    }
+    for(var fragment in tmps)
+      fragments.push(JSON.parse(fragment));
+    
+    logger.debug(topics);
+    logger.debug(fragments);
+    Observers.notify("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments} );
+  },
+  
+  doMoveFragment : function(arg){
+    var helper = arg.helper;
+    //helper.fadeOut();
+    //Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
+    Observers.notify("lasuli.ui.doDropFragmentDenied", arg );
+    
   }
 }
 

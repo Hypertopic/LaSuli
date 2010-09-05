@@ -28,8 +28,8 @@ lasuli.ui = {
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
         logger.info(viewpointID);
+        Observers.notify("lasuli.ui.doClearViewpointPanel", viewpointID);
         Observers.notify("lasuli.core.doLoadTags", viewpointID);
-        Observers.notify("lasuli.core.doLoadTopics", viewpointID);
         Observers.notify("lasuli.core.doLoadFragments", viewpointID);
       }
     });
@@ -297,7 +297,7 @@ lasuli.ui = {
       caption: _("attributes")
     });
     $(window).bind('resize', function() {
-        $("#attribute-grid").setGridWidth($('#h3-entity-name').width());
+        $("#attribute-grid").setGridWidth($('#tabs').innerWidth() - 38);
     }).trigger('resize');
     //initial toolbar
     $('#t_attribute-grid').html("<button id='attribute-del'></button><button id='attribute-modify' class='hide'></button><button id='attribute-add'></button>");
@@ -506,8 +506,8 @@ lasuli.ui = {
       }
   },
   
-  doShowTopics : function(topics){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTopics");
+  doShowTagCloud : function(topics){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTagCloud");
     logger.debug(topics);
     $("#tags ul li").hide().remove();
     if(!topics) return false;
@@ -615,6 +615,95 @@ lasuli.ui = {
     $('ul.topics-ul').find('input').prev('a').addClass('hide');
     $('ul.topics-ul').find('input').replaceWith("<a uri='" + tag.topicID + "'>" + tag.name + "</a>");
     
+  },
+  
+  _initFragmentsContainer : function(topic){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui._initFragmentsContainer");
+    var html = '<div class="fragments ui-widget" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
+       +'<div class="fragment-header" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
+       +'<img class="fragment-toggle" src="css/blitzer/images/toggle-close.png" style="vertical-align:middle">'
+       +'<span class="ui-corner-right" style="background-color:'+ topic.color + '">'
+       + topic.name + '</span></div><ul>'
+       + '</ul></div>';
+    $('div#' + topic.viewpointID).find(".fragments-container").append(html);
+  },
+  
+  doAddFragments : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doAddFragments");
+    var fragments = arg.fragments;
+    for(var i=0, fragment; fragment = fragments[i]; i++)
+    {
+      var li_html = '<li class="fragment ui-corner-bottom" fragmentID="' + fragment.fragmentID + '" startPos="' + fragment.startPos + '">'
+             +'<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'
+             + fragment.text + '</li>';
+      logger.debug(li_html);
+      var el = "div.fragments[viewpointID='" + fragment.viewpointID + "'][topicID='" + fragment.topicID + "']";
+      logger.debug(el);
+      if($(el).length > 0)
+        $(el).find("ul").append(li_html);
+    }
+    $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
+    Observers.notify("lasuli.ui.doMakeFragmentsDragable", null);
+  },
+  
+  doShowFragments : function(arg){
+    var topics = arg.topics;
+    
+    for(var i=0, topic; topic = topics[i]; i++)
+    {
+      lasuli.ui._initFragmentsContainer(topic);
+    }
+    Observers.notify("lasuli.ui.doMakeFragmentsDroppable", null);
+    Observers.notify("lasuli.ui.doAddFragments", {"fragments": arg.fragments, "highlight": true} );
+  },
+  
+  doClearViewpointPanel : function(viewpointID){
+    $("div#" + viewpointID).find("ul.topics-ul li").hide().remove();
+    $("div#" + viewpointID).find("div.fragments").hide().remove();
+  },
+  
+  doMakeFragmentsDragable : function(){
+    $(".fragment").draggable(
+      {
+        connectToSortable: '.fragments ul',
+        cursor: 'move',
+        helper: 'clone',
+        revert: 'invalid' 
+      });
+  },
+  
+  doMakeFragmentsDroppable : function(){
+    $(".fragments").droppable({
+      accept: '.fragment',
+      drop: function(event, ui) 
+      {
+        var logger = Log4Moz.repository.getLogger("lasuli.ui.doMakeFragmentsDroppable.drop");
+        logger.debug($(this).html());
+        var li_element = ui.draggable;
+        var ul_element = ui.draggable.parent();
+        logger.debug(ul_element.prev("div").attr("class"));
+        var sourceTopicID = ul_element.prev("div").attr("topicID");
+        var targetTopicID = $(this).attr("topicID");
+        var fragmentID = li_element.attr("fragmentID");
+        
+        logger.debug("sourceTopicID:" + sourceTopicID + ", targetTopicID:" + targetTopicID + ",fragmentID:" + fragmentID);
+        
+        if(targetTopicID == sourceTopicID)
+        {
+          ui.helper.fadeOut();
+          return;
+        }
+        Observers.notify("lasuli.core.doMoveFragment", {"fragmentID": fragmentID, "sourceTopicID": sourceTopicID, "targetTopicID": targetTopicID, "helper": ui.helper} );
+      }
+    });
+  },
+  
+  doDropFragmentAccepted : function(arg){
+    $('li[fragmentID="' + arg.fragmentID + '"]').hide().remove();
+  },
+  
+  doDropFragmentDenied : function(arg){
+    arg.helper.fadeOut();
   }
 }
 

@@ -185,7 +185,7 @@ div#create-viewpoint input
 
 .topics {margin-bottom: 15px;}
 .topics ul{ list-style-type: none;  list-style-position: outside; list-style-image:none; margin: 0; padding: 0px;}
-.topics ul li {display: inline;}
+.topics ul li {display:inline-block;}
 .topics ul li img{ vertical-align: middle; cursor: pointer;}
 
 .topic a { 
@@ -208,3 +208,19 @@ div#create-viewpoint input
   color:#E0EAF1;
   text-decoration:none;
 }
+
+.fragments {margin-bottom: 20px;}
+.fragments ul { list-style-type: none; margin: 0; padding: 5px 0 0 0; }
+.fragments ul li { 
+  margin: 0 3px 3px 3px; 
+  padding: 4px; 
+  padding-left: 15px; 
+  font-size: 12px; 
+  border-bottom:1px solid #EEEEEE;
+  cursor:pointer;
+}
+.fragments ul li span { position: relative; float:left; margin-left: -1.3em; }
+
+.fragment-header span { padding: 3px 10px 3px 10px; margin:10px 0 20px 0}
+
+.fragment-toggle { cursor: pointer; }
