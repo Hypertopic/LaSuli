@@ -120,6 +120,7 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyViewpoint");
     HypertopicMapV2.destroyViewpoint(viewpointID);
     this.doListViewpoints();
+    Observers.notify("lasuli.ui.doCloseViewpointPanel", viewpointID);
   },
   
   doCreateAttribute : function(attribute){
@@ -138,6 +139,21 @@ lasuli.core = {
     logger.debug(result);
     var attributes = HypertopicMapV2.listItemDescriptions(this.itemID);
     Observers.notify("lasuli.ui.doShowAttributes", attributes);
+  },
+  
+  // A callback function for topics array to get all topic detail information
+  _getTopic : function(topic, index, topics){
+    var result = HypertopicMapV2.getTopic(topic.viewpoint, topic.id);
+    //logger.debug(result);
+    result.viewpoint = topic.viewpoint;
+    result.id = topic.id;
+    if(result.broader)
+      delete result.broader;
+    if(result.narrower)
+      delete result.narrower;
+    if(!result.name)
+      result.name = _("no.name");
+    topics[index] = result;
   },
   
   doLoadDocument : function(url){
@@ -241,27 +257,14 @@ lasuli.core = {
         }
       }
     }
-    //logger.debug("===============keywords, topics===========");
-    //logger.debug(this.tags);
+    logger.debug("===============keywords, topics===========");
+    logger.debug(this.tags);
     //logger.debug(this.topics);
-    var getTopic = function(topic, index, topics){
-        var result = HypertopicMapV2.getTopic(topic.viewpoint, topic.id);
-        //logger.debug(result);
-        result.viewpoint = topic.viewpoint;
-        result.id = topic.id;
-        if(result.broader)
-          delete result.broader;
-        if(result.narrower)
-          delete result.narrower;
-        if(!result.name)
-          result.name = _("no.name");
-        topics[index] = result;
-      };
     
     Observers.notify("lasuli.ui.doShowUsers", this.users);
     logger.debug("===getTopic===");
-    this.tags.forEach(getTopic);
-    this.topics.forEach(getTopic);
+    this.tags.forEach(lasuli.core._getTopic);
+    this.topics.forEach(lasuli.core._getTopic);
     Observers.notify("lasuli.ui.doShowTopics", this.topics.concat(this.tags));
     
     // Highlight all fragments
@@ -320,15 +323,17 @@ lasuli.core = {
     Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
   
-  doLoadTags : function(viewpoint){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadKeywords");
-    logger.debug(viewpoint);
+  doLoadTags : function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadTags");
+    logger.debug(viewpointID);
     var tags = new Array();
+    logger.debug(this.tags);
     if(this.tags.length > 0)
       for(var i=0, tag; tag = this.tags[i]; i++)
-        if(tag.viewpointID == viewpoint)
+        if(tag.viewpoint == viewpointID)
         {
           tag.topicID = tag.id;
+          tag.viewpointID = viewpointID;
           tags.push(tag);
         }
     logger.debug(tags);
@@ -371,7 +376,7 @@ lasuli.core = {
         logger.fatal("error when try to create tag");
         logger.fatal(tag);
         logger.fatal(e);
-        //TODO show message
+        Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.createtopic.failed', [tag.name])});
       }
     logger.debug(tag);
     try{
@@ -380,8 +385,9 @@ lasuli.core = {
       logger.fatal("error when try to tag the item: " + this.itemID);
       logger.fatal(tag);
       logger.fatal(e);
-      //TODO show message
+      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.failed', [tag.name])});
     }
+    Observers.notify("lasuli.core.doUpdateTags", {"action": "add", "tag": tag});
     Observers.notify("lasuli.ui.doShowTags", new Array(tag));
   },
   
@@ -397,17 +403,22 @@ lasuli.core = {
       logger.fatal(e);
     }
     if(!result)
-      //TODO show message?
+    {
+      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.delete.failed', [tag.name])});
       return false;
-    else      
+    }
+    else
+    {
+      Observers.notify("lasuli.core.doUpdateTags", {"action": "remove", "tag": tag});
       Observers.notify("lasuli.ui.doRemoveTag",tag);
+    }
   },
   
   doRenameTag : function(tag){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameTag");
     var result = false;
     if(tag.newName == tag.name)
-      result = true;
+      return false;
     else
       try{
         result = HypertopicMapV2.renameTopic(tag.viewpointID, tag.topicID, tag.newName);
@@ -419,13 +430,50 @@ lasuli.core = {
       
     if(result)
     {
+      Observers.notify("lasuli.core.doUpdateTags", {"action": "rename", "tag": tag});
       tag.name = tag.newName;
       delete tag.newName;
       Observers.notify("lasuli.ui.doRestoreTag",tag);
     }
     else
+    {
       Observers.notify("lasuli.ui.doRestoreTag",tag);
-      //TODO show why cannot rename the tag.
+      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.rename.failed', [tag.name,tag.newName])});
+    }
+  },
+  
+  doUpdateTags : function(act){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doUpdateTags");
+    logger.debug(act);
+    logger.debug(this.tags);
+    switch(act.action){
+      case "rename":
+        for(var i=0, tag; tag = this.tags[i]; i++)
+          if(tag.id == act.tag.topicID && tag.viewpoint == act.tag.viewpointID)
+            this.tags[i].name = act.tag.newName;
+        break;
+      case "remove":
+        for(var i=0, tag; tag = this.tags[i]; i++)
+          if(tag.id == act.tag.topicID && tag.viewpoint == act.tag.viewpointID)
+            this.tags.splice(i,1);
+        break;
+      case "add":
+        var found = false;
+        for(var i=0, tag; tag = this.tags[i]; i++)
+          if(tag.id == act.tag.topicID && tag.viewpoint == act.tag.viewpointID)
+            found = true;
+        if(!found)
+        {
+          var tags = new Array({"viewpoint": act.tag.viewpointID, "id":act.tag.topicID, "name": act.tag.name});
+          logger.debug(tags);
+          tags.forEach(lasuli.core._getTopic);
+          logger.debug(tags);
+          this.tags = this.tags.concat(tags);
+        }
+        break;
+    }
+    logger.debug(this.tags);
+    Observers.notify("lasuli.ui.doShowTopics", this.topics.concat(this.tags));
   }
 }
 
