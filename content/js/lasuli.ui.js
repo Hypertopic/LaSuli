@@ -220,6 +220,48 @@ lasuli.ui = {
           buttons[_('Okay')].call();
       }
     });
+    
+    //Topic side icon click
+    $(".fragment-toggle").live('click', function(event){
+      if($(this).attr('src').indexOf('toggle-close.png') > 0)
+      {
+        $(this).parent().next().slideUp({duration: 1000, easing: 'easeOutBounce'});
+        $(this).attr('src','css/blitzer/images/toggle-open.png');
+        return false;
+      }
+      if($(this).attr('src').indexOf('toggle-open.png') > 0)
+      {
+        $(this).parent().next().slideDown({duration: 600, easing: 'easeInBounce'});
+        $(this).attr('src','css/blitzer/images/toggle-close.png');
+        return false;
+      }
+    });
+    
+    $(".fragment").live("mouseover", function(){
+      $(this).find("span").removeClass("ui-icon-arrowthick-2-n-s");
+      $(this).find("span").addClass("ui-icon-trash");
+    });
+    
+    $(".fragment").live("mouseout", function(){
+      $(this).find("span").removeClass("ui-icon-trash");
+      $(this).find("span").addClass("ui-icon-arrowthick-2-n-s");
+    });
+    
+    $(".fragment").live("click", function(){
+      //TODO
+      /*var itemUri = $(this).attr('uri');
+      var nodes = findNodeByItem(itemUri);
+      if(nodes)
+        nodes[0].scrollIntoView(true);*/
+    });
+    
+    $("li.fragment span.ui-icon-trash").live("click", function(){
+      var fragmentID = $(this).parent().attr("fragmentID");
+      var viewpointID = $(this).parent().attr("viewpointID");
+      var topicID = $(this).parent().attr("topicID");
+      var itemID = $(this).parent().attr("itemID");
+      Observers.notify("lasuli.core.doUntagFragment", {"fragmentID": fragmentID, "viewpointID":viewpointID, "topicID": topicID, "itemID": itemID});
+    });
   },
   
   initAttributeGrid : function(){
@@ -633,7 +675,7 @@ lasuli.ui = {
     var fragments = arg.fragments;
     for(var i=0, fragment; fragment = fragments[i]; i++)
     {
-      var li_html = '<li class="fragment ui-corner-bottom" fragmentID="' + fragment.fragmentID + '" viewpointID="' + fragment.viewpointID 
+      var li_html = '<li class="fragment ui-corner-bottom" itemID="' + fragment.itemID + '" fragmentID="' + fragment.fragmentID + '" viewpointID="' + fragment.viewpointID 
              + '" topicID="' + fragment.topicID + '" startPos="' + fragment.startPos + '" >'
              +'<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'
              + fragment.text + '</li>';
@@ -708,15 +750,20 @@ lasuli.ui = {
     var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + arg.targetTopicID + "'] ul";
     logger.debug(el);
     $('li[fragmentID="' + arg.fragmentID + '"]').clone().appendTo($(el)).attr("topicID", arg.targetTopicID);
-    //TODO Update the highlight
     $('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').hide().remove();
     $('li.ui-draggable-dragging[fragmentID="' + arg.fragmentID + '"]').hide().remove();
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
+    //TODO Update the highlight
     Observers.notify("lasuli.ui.doMakeFragmentsDragable", null);
   },
   
   doDropFragmentDenied : function(arg){
     arg.helper.fadeOut();
+  },
+  
+  doRemoveFragment : function(fragmentID) {
+    var el = "li.fragment[fragmentID='" + fragmentID + "']";
+    $(el).hide({duration: 500, easing: 'easeInSine', complete: function(){ $(this).remove();}});
   }
 }
 

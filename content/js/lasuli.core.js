@@ -418,7 +418,10 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameTag");
     var result = false;
     if(tag.newName == tag.name)
+    {
+      Observers.notify("lasuli.ui.doRestoreTag",tag);
       return false;
+    }
     else
       try{
         result = HypertopicMapV2.renameTopic(tag.viewpointID, tag.topicID, tag.newName);
@@ -519,6 +522,14 @@ lasuli.core = {
     Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
     //Observers.notify("lasuli.ui.doDropFragmentDenied", arg );
     
+  },
+  
+  doUntagFragment : function(fragment){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doUntagFragment");
+    logger.debug(fragment);
+    var result = HypertopicMapV2.untagFragment(fragment.itemID, fragment.fragmentID);
+    if(result)
+     Observers.notify("lasuli.ui.doRemoveFragment", fragment.fragmentID ); 
   }
 }
 

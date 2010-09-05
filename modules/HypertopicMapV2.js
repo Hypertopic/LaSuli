@@ -274,6 +274,7 @@ let HypertopicMapV2 = {
     return highlightID;
   },
   
+  //TODO need debug
   untagFragment : function(itemID, highlightID)
   {
     var item = RESTDatabase.httpGet(itemID);
