@@ -633,7 +633,8 @@ lasuli.ui = {
     var fragments = arg.fragments;
     for(var i=0, fragment; fragment = fragments[i]; i++)
     {
-      var li_html = '<li class="fragment ui-corner-bottom" fragmentID="' + fragment.fragmentID + '" startPos="' + fragment.startPos + '">'
+      var li_html = '<li class="fragment ui-corner-bottom" fragmentID="' + fragment.fragmentID + '" viewpointID="' + fragment.viewpointID 
+             + '" topicID="' + fragment.topicID + '" startPos="' + fragment.startPos + '" >'
              +'<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'
              + fragment.text + '</li>';
       logger.debug(li_html);
@@ -699,7 +700,19 @@ lasuli.ui = {
   },
   
   doDropFragmentAccepted : function(arg){
-    $('li[fragmentID="' + arg.fragmentID + '"]').hide().remove();
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doDropFragmentAccepted");
+    logger.debug(arg);
+    var viewpointID = $('li[fragmentID="' + arg.fragmentID + '"]').attr("viewpointID");
+    logger.debug(viewpointID);
+    
+    var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + arg.targetTopicID + "'] ul";
+    logger.debug(el);
+    $('li[fragmentID="' + arg.fragmentID + '"]').clone().appendTo($(el)).attr("topicID", arg.targetTopicID);
+    //TODO Update the highlight
+    $('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').hide().remove();
+    $('li.ui-draggable-dragging[fragmentID="' + arg.fragmentID + '"]').hide().remove();
+    $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
+    Observers.notify("lasuli.ui.doMakeFragmentsDragable", null);
   },
   
   doDropFragmentDenied : function(arg){

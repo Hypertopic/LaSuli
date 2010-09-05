@@ -516,8 +516,8 @@ lasuli.core = {
   doMoveFragment : function(arg){
     var helper = arg.helper;
     //helper.fadeOut();
-    //Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
-    Observers.notify("lasuli.ui.doDropFragmentDenied", arg );
+    Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
+    //Observers.notify("lasuli.ui.doDropFragmentDenied", arg );
     
   }
 }
