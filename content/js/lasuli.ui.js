@@ -223,6 +223,8 @@ lasuli.ui = {
     
     //Topic side icon click
     $(".fragment-toggle").live('click', function(event){
+      var logger = Log4Moz.repository.getLogger("lasuli.ui.fragment-toggle.click");
+      logger.debug($(this).attr('src'));
       if($(this).attr('src').indexOf('toggle-close.png') > 0)
       {
         $(this).parent().next().slideUp({duration: 1000, easing: 'easeOutBounce'});
@@ -234,6 +236,14 @@ lasuli.ui = {
         $(this).parent().next().slideDown({duration: 600, easing: 'easeInBounce'});
         $(this).attr('src','css/blitzer/images/toggle-close.png');
         return false;
+      }
+      if($(this).attr('src').indexOf('delete.png') > 0)
+      {
+        var viewpointID = $(this).parent().attr("viewpointID");
+        var topicID = $(this).parent().attr("topicID");
+        var name = $(this).next().val();
+        Observers.notify("lasuli.core.doDestroyAnalysis", {"viewpointID":viewpointID, "topicID": topicID, "name": name});
+        //return false;
       }
     });
     
@@ -261,7 +271,55 @@ lasuli.ui = {
       var viewpointID = $(this).parent().attr("viewpointID");
       var topicID = $(this).parent().attr("topicID");
       var itemID = $(this).parent().attr("itemID");
-      Observers.notify("lasuli.core.doUntagFragment", {"fragmentID": fragmentID, "viewpointID":viewpointID, "topicID": topicID, "itemID": itemID});
+      Observers.notify("lasuli.core.doUntagFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID, "itemID": itemID});
+    });
+    
+    //Add analysis topic
+    $('.add-analyses-img').live("click", function(){
+    });
+    
+    //Edit analysis topic
+    $('.fragment-header span').live('click', function(event){
+      var divContainer = $(this).parent();
+      var originalSpan = $(this).clone();
+      var originalTopicName = $(this).text();
+      var img = $(this).prev();
+      var originalImage = img.attr('src');
+      img.attr('src','css/blitzer/images/delete.png');
+      //var_dump("[UI.init.js] fragment header edit", $(this).html(), 4);
+      $(this).replaceWith("<input type='text' class='edit-in-place' value=''>");
+      var in_element = divContainer.find("input");
+      in_element.val(originalSpan.html());
+      in_element.focus().select();
+      
+      in_element.blur(function(){
+        var viewpointID = divContainer.attr("viewpointID");
+        var topicID = divContainer.attr("topicID");
+        var newName = $(this).val();
+        
+        if(newName == originalTopicName)
+        {
+          //Sleep 500ms for capture the click on the delete icon
+          Sync.sleep(500);
+          Observers.notify("lasuli.ui.doRestoreAnalysis", {
+            "viewpointID": viewpointID, "topicID": topicID, "name": originalTopicName, 
+            "newName": newName, "originalSpan": originalSpan, "originalImage": originalImage});
+        }
+        else
+          Observers.notify("lasuli.core.doRenameAnalysis", {
+            "viewpointID": viewpointID, "topicID": topicID, "name": originalTopicName, 
+            "newName": newName, "originalSpan": originalSpan, "originalImage": originalImage});
+      });
+      in_element.keyup(function(event){
+        if (event.keyCode == 27) 
+        {
+          $(this).replaceWith(originalSpan);
+          setTimeout("restoreImg('" + originalImage + "');", 500);
+        }
+        if (event.keyCode == 13)
+          $(this).blur();
+      });
+      event.stopImmediatePropagation();
     });
   },
   
@@ -767,6 +825,21 @@ lasuli.ui = {
     var el = "li.fragment[fragmentID='" + fragmentID + "']";
     logger.debug(el);
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
+  },
+  
+  doRestoreAnalysis : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRestoreAnalysis");
+    logger.debug(arg);
+    
+    var viewpointID = arg.viewpointID;
+    var topicID = arg.topicID;
+    var originalImage = arg.originalImage;
+    var originalSpan = arg.originalSpan;
+    if(!arg.name)
+      originalSpan.text(arg.newName);
+    var el="div.fragment-header[viewpointID='" + viewpointID + "'][topicID='" + topicID + "']";
+    $(el).find('img.fragment-toggle').attr("src", originalImage);
+    $(el).find('input').replaceWith(originalSpan);
   }
 }
 

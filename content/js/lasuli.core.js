@@ -526,11 +526,41 @@ lasuli.core = {
   
   doUntagFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doUntagFragment");
-    logger.debug(fragment);
-    /*var result = HypertopicMapV2.untagFragment(fragment.itemID, fragment.fragmentID);
-    logger.debug(result);
-    if(result)*/
+    //logger.debug(fragment);
+    var result = HypertopicMapV2.untagFragment(fragment.itemID, fragment.fragmentID);
+    //logger.debug(result);
+    if(result)
      Observers.notify("lasuli.ui.doRemoveFragment", fragment.fragmentID ); 
+  },
+  
+  doRenameAnalysis : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameAnalysis");
+    var viewpointID = arg.viewpointID;
+    var topicID = arg.topicID;
+    var name = arg.name;
+    var newName = arg.newName;
+    var result = HypertopicMapV2.renameTopic(viewpointID, topicID, newName);
+    logger.debug(result);
+    if(result)
+      delete arg.name;
+    //TODO updated the cache
+    Observers.notify("lasuli.ui.doRestoreAnalysis", arg ); 
+  },
+  
+  doDestroyAnalysis : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyAnalysis");
+    var viewpointID = arg.viewpointID;
+    var topicID = arg.topicID;
+    var result = HypertopicMapV2.destroyTopic(viewpointID, topicID);
+    logger.debug(result);
+    if(result)
+    //TODO updated the cache
+      Observers.notify("lasuli.ui.doDestroyAnalysis", arg ); 
+    else
+    {
+      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
+      return false;
+    }
   }
 }
 
