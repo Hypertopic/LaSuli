@@ -274,13 +274,17 @@ let HypertopicMapV2 = {
     return highlightID;
   },
   
-  //TODO need debug
   untagFragment : function(itemID, highlightID)
   {
+    var logger = Log4Moz.repository.getLogger("HypertopicMapV2.untagFragment");
+    //logger.debug(itemID);
+    //logger.debug(highlightID);
     var item = RESTDatabase.httpGet(itemID);
+    //logger.debug(item);
     if(!item) return false;
-    if(!item.highlights[highlightID]) return true;
-    delete item.highlights[highlightID];
+    //logger.debug(item["highlights"][highlightID]);
+    if(!item["highlights"][highlightID]) return true;
+    delete item["highlights"][highlightID];
     return RESTDatabase.httpPut(item);
   },
   

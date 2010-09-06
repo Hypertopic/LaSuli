@@ -255,6 +255,7 @@ lasuli.ui = {
         nodes[0].scrollIntoView(true);*/
     });
     
+    //Delete fragment
     $("li.fragment span.ui-icon-trash").live("click", function(){
       var fragmentID = $(this).parent().attr("fragmentID");
       var viewpointID = $(this).parent().attr("viewpointID");
@@ -762,8 +763,10 @@ lasuli.ui = {
   },
   
   doRemoveFragment : function(fragmentID) {
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveFragment");
     var el = "li.fragment[fragmentID='" + fragmentID + "']";
-    $(el).hide({duration: 500, easing: 'easeInSine', complete: function(){ $(this).remove();}});
+    logger.debug(el);
+    $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
   }
 }
 

@@ -527,8 +527,9 @@ lasuli.core = {
   doUntagFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doUntagFragment");
     logger.debug(fragment);
-    var result = HypertopicMapV2.untagFragment(fragment.itemID, fragment.fragmentID);
-    if(result)
+    /*var result = HypertopicMapV2.untagFragment(fragment.itemID, fragment.fragmentID);
+    logger.debug(result);
+    if(result)*/
      Observers.notify("lasuli.ui.doRemoveFragment", fragment.fragmentID ); 
   }
 }
