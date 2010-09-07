@@ -288,6 +288,18 @@ let HypertopicMapV2 = {
     return RESTDatabase.httpPut(item);
   },
   
+  moveFragment : function(itemID, highlightID, viewpointID, topicID)
+  {
+    var logger = Log4Moz.repository.getLogger("HypertopicMapV2.moveFragment");
+    var item = RESTDatabase.httpGet(itemID);
+    
+    if(!item || !item["highlights"][highlightID]) return false;
+    logger.debug(item);
+    item["highlights"][highlightID].viewpoint = viewpointID;
+    item["highlights"][highlightID].topic = topicID;
+    return RESTDatabase.httpPut(item);
+  },
+  
   //=================================================================== VIEWPOINT
   /**
    * @param actor e.g. "cecile@hypertopic.org"

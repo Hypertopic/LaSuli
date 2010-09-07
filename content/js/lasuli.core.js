@@ -517,11 +517,51 @@ lasuli.core = {
   },
   
   doMoveFragment : function(arg){
-    var helper = arg.helper;
-    //helper.fadeOut();
-    Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
-    //Observers.notify("lasuli.ui.doDropFragmentDenied", arg );
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doMoveFragment");
+    //logger.debug(arg);
     
+    var result = HypertopicMapV2.moveFragment(arg.itemID, arg.fragmentID, arg.viewpointID, arg.targetTopicID);
+    if(result){
+      //Update cache
+      var tmp = null;
+      //logger.debug(this.topics);
+      for(var i=0, topic; topic = this.topics[i];i++)
+      {
+        if(!topic.highlight) continue;
+        if(topic.viewpoint != arg.viewpointID) continue;
+        
+        for(var j=0, row; row = this.topics[i].highlight[j]; j++)
+          if(row.id == arg.fragmentID){
+            tmp = row;
+            //logger.debug("Row num:" + j);
+            //logger.debug(this.topics[i].highlight);
+            this.topics[i].highlight.splice(j, 1);
+            //logger.debug(this.topics[i].highlight);
+            j--;
+          }
+      }
+      //logger.debug(this.topics);
+      //logger.debug(tmp);
+      if(tmp)
+        for(var i=0, topic; topic = this.topics[i];i++)
+        {
+          if(topic.viewpoint != arg.viewpointID) continue;
+          
+          if(topic.id == arg.targetTopicID){
+            if(!topic.highlight) this.topics[i].highlight = new Array();
+            this.topics[i].highlight.push(tmp);
+          }
+        }
+      //Update tagcloud
+      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+      Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
+    }
+    else{
+      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});
+      Observers.notify("lasuli.ui.doDropFragmentDenied", arg );
+    }
+    
+          
   },
   
   doUntagFragment : function(fragment){
@@ -529,8 +569,16 @@ lasuli.core = {
     //logger.debug(fragment);
     var result = HypertopicMapV2.untagFragment(fragment.itemID, fragment.fragmentID);
     //logger.debug(result);
-    if(result)
-     Observers.notify("lasuli.ui.doRemoveFragment", fragment.fragmentID ); 
+    if(result){
+      for(var i=0, topic; topic = this.topics[i];i++)
+        for(var j=0, row; row = this.topics[i].highlight[j]; j++)
+          if(row.id == fragment.fragmentID){
+            this.topics[i].highlight.splice(j, 1);
+            j--;
+          }
+      Observers.notify("lasuli.ui.doRemoveFragment", fragment.fragmentID ); 
+      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+    }
   },
   
   doRenameAnalysis : function(arg){
@@ -541,9 +589,20 @@ lasuli.core = {
     var newName = arg.newName;
     var result = HypertopicMapV2.renameTopic(viewpointID, topicID, newName);
     logger.debug(result);
-    if(result)
+    if(result){
+      for(var i=0, topic; topic = this.topics[i]; i++)
+      {
+        logger.debug(topic.id + "," + topic.viewpoint + "|" + topicID + "," + viewpointID);
+        if(topic.id == topicID && topic.viewpoint == viewpointID){
+          logger.debug("found:" + i);
+          this.topics[i].name = newName;
+        }
+      }
+      //Repaint the tagcloud
+      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
       delete arg.name;
-    //TODO updated the cache
+    }
+    
     Observers.notify("lasuli.ui.doRestoreAnalysis", arg ); 
   },
   
@@ -554,8 +613,18 @@ lasuli.core = {
     var result = HypertopicMapV2.destroyTopic(viewpointID, topicID);
     logger.debug(result);
     if(result)
-    //TODO updated the cache
+    {
+      for(var i=0, topic; topic = this.topics[i]; i++)
+        if(topic.id == topicID && topic.viewpoint == viewpointID)
+        {  
+          this.topics.splice(i, 1);
+          i--;
+        }
+      //Repaint the tagcloud
+      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+      
       Observers.notify("lasuli.ui.doDestroyAnalysis", arg ); 
+    }
     else
     {
       Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
