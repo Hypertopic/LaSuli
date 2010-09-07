@@ -5,7 +5,7 @@ $(function(){
     map,*/
     
     setup: function() {
-      this.map = new HypertopicMapV2('http://127.0.0.1/argos_dev/');
+      this.map = new HypertopicMap('http://127.0.0.1/argos_dev/');
       this.corpusID = this.map.createCorpus("my corpus", "me");
     	this.itemID = this.map.createItem("my item", this.corpusID);
     	this.viewpointID = this.map.createViewpoint("my viewpoint", "me");

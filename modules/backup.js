@@ -1,6 +1,6 @@
 //========================================================= CORPUS OR VIEWPOINT
 
-HypertopicMapV2.prototype.register = function(objectID, user) {
+HypertopicMap.prototype.register = function(objectID, user) {
   var obj = RESTDatabase.httpGet(objectID);
   if(!obj) return false;
   if(obj.users)
@@ -14,7 +14,7 @@ HypertopicMapV2.prototype.register = function(objectID, user) {
   return RESTDatabase.httpPut(obj);
 }
 
-HypertopicMapV2.prototype.unregister = function(objectID, user) {
+HypertopicMap.prototype.unregister = function(objectID, user) {
   var obj = RESTDatabase.httpGet(objectID);
   if(!obj) return false;
   if(!obj.users) return true;
@@ -27,13 +27,13 @@ HypertopicMapV2.prototype.unregister = function(objectID, user) {
 /**
  * @param user e.g. "cecile@hypertopic.org"
  */
-HypertopicMapV2.prototype.listCorpora = function(user) {
+HypertopicMap.prototype.listCorpora = function(user) {
   var obj = RESTDatabase.httpGet("user/" + user);
   if(!obj) return false;
   return obj[user].corpus;
 }
 
-HypertopicMapV2.prototype.getCorpus = function(corpusID) {
+HypertopicMap.prototype.getCorpus = function(corpusID) {
   var obj = RESTDatabase.httpGet("corpus/" + corpusID);
   if(!obj) 
     return false;
@@ -44,7 +44,7 @@ HypertopicMapV2.prototype.getCorpus = function(corpusID) {
 /**
  * @return corpusID
  */
-HypertopicMapV2.prototype.createCorpus = function(name, user){
+HypertopicMap.prototype.createCorpus = function(name, user){
   var obj = {};
   obj.corpus_name = name;
   obj.users = [user];
@@ -52,7 +52,7 @@ HypertopicMapV2.prototype.createCorpus = function(name, user){
   return (!result) ? false : result._id;
 }
 
-HypertopicMapV2.prototype.renameCorpus = function(corpusID, name) {
+HypertopicMap.prototype.renameCorpus = function(corpusID, name) {
   var obj = RESTDatabase.httpGet(corpusID);
   if(!obj) return false;
   obj.corpus_name = name;
@@ -62,7 +62,7 @@ HypertopicMapV2.prototype.renameCorpus = function(corpusID, name) {
 /**
  * Destroy the nodes of the corpus and of all its documents.
  */
-HypertopicMapV2.prototype.destroyCorpus = function(corpusID)
+HypertopicMap.prototype.destroyCorpus = function(corpusID)
 {
   //TODO
   log(corpusID, "[destroyCorpus] corpusID");
@@ -90,7 +90,7 @@ HypertopicMapV2.prototype.destroyCorpus = function(corpusID)
  * @param corpus e.g. "MISS"
  * @param item e.g. null, or "d0" to get only an item and its fragments
  */
-HypertopicMapV2.prototype.listItems = function(corpusID){
+HypertopicMap.prototype.listItems = function(corpusID){
   var obj = this.getCorpus(corpusID);
   var items = [];
   for(var k in obj)
@@ -101,7 +101,7 @@ HypertopicMapV2.prototype.listItems = function(corpusID){
   return items;
 }
 
-HypertopicMapV2.prototype.getItem = function(corpusID, itemID) {
+HypertopicMap.prototype.getItem = function(corpusID, itemID) {
   var obj = this.getCorpus(corpusID);
   if(!obj) 
     return false;
@@ -112,7 +112,7 @@ HypertopicMapV2.prototype.getItem = function(corpusID, itemID) {
 /**
  * @return itemID
  */
-HypertopicMapV2.prototype.createItem = function(name, corpusID) {
+HypertopicMap.prototype.createItem = function(name, corpusID) {
   var object = {};
   object.item_name = name;
   object.item_corpus = corpusID;
@@ -121,14 +121,14 @@ HypertopicMapV2.prototype.createItem = function(name, corpusID) {
   return (!result) ? false : result._id;
 }
 
-HypertopicMapV2.prototype.destroyItem = function(itemID){
+HypertopicMap.prototype.destroyItem = function(itemID){
   var object = RESTDatabase.httpGet(itemID);
   if(!object)
    return false;
   return RESTDatabase.httpDelete(object);
 }
 
-HypertopicMapV2.prototype.describeItem = function(itemID, attribute, value)
+HypertopicMap.prototype.describeItem = function(itemID, attribute, value)
 {
   var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
@@ -138,7 +138,7 @@ HypertopicMapV2.prototype.describeItem = function(itemID, attribute, value)
   return RESTDatabase.httpPut(item);
 }
 
-HypertopicMapV2.prototype.undescribeItem = function(itemID, attribute, value)
+HypertopicMap.prototype.undescribeItem = function(itemID, attribute, value)
 {
   var item = RESTDatabase.httpGet(itemID);
   if(!item[attribute] || !(item[attribute].length > 0)) return true;
@@ -148,7 +148,7 @@ HypertopicMapV2.prototype.undescribeItem = function(itemID, attribute, value)
   return RESTDatabase.httpPut(item);
 }
 
-HypertopicMapV2.prototype.tagItem = function(itemID, viewpointID, topicID)
+HypertopicMap.prototype.tagItem = function(itemID, viewpointID, topicID)
 {
   var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
@@ -160,7 +160,7 @@ HypertopicMapV2.prototype.tagItem = function(itemID, viewpointID, topicID)
   return RESTDatabase.httpPut(item);
 }
 
-HypertopicMapV2.prototype.untagItem = function(itemID, viewpointID, topicID)
+HypertopicMap.prototype.untagItem = function(itemID, viewpointID, topicID)
 {
   var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
@@ -173,7 +173,7 @@ HypertopicMapV2.prototype.untagItem = function(itemID, viewpointID, topicID)
  * @param itemID Note: replaced by a corpusID in Cassandre.
  * @return the ID of the highlight
  */
-HypertopicMapV2.prototype.tagFragment = function(itemID, coordinates, text, viewpointID, topicID)
+HypertopicMap.prototype.tagFragment = function(itemID, coordinates, text, viewpointID, topicID)
 {
   var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
@@ -193,7 +193,7 @@ HypertopicMapV2.prototype.tagFragment = function(itemID, coordinates, text, view
   return highlightID;
 }
 
-HypertopicMapV2.prototype.untagFragment = function(itemID, highlightID)
+HypertopicMap.prototype.untagFragment = function(itemID, highlightID)
 {
   var item = RESTDatabase.httpGet(itemID);
   if(!item) return false;
@@ -207,7 +207,7 @@ HypertopicMapV2.prototype.untagFragment = function(itemID, highlightID)
 /**
  * @param actor e.g. "cecile@hypertopic.org"
  */
-HypertopicMapV2.prototype.listViewpoints = function(user)
+HypertopicMap.prototype.listViewpoints = function(user)
 {
   var result = RESTDatabase.httpGet("user/" + user);
   if(!result || !result[user]) return false;
@@ -216,7 +216,7 @@ HypertopicMapV2.prototype.listViewpoints = function(user)
   return (obj.viewpoint) ? obj.viewpoint : false;
 }
 
-HypertopicMapV2.prototype.getViewpoint = function(viewpointID)
+HypertopicMap.prototype.getViewpoint = function(viewpointID)
 {
   var result = RESTDatabase.httpGet("viewpoint/" + viewpointID);
   if(!result || !result[viewpointID] ) return false;
@@ -224,7 +224,7 @@ HypertopicMapV2.prototype.getViewpoint = function(viewpointID)
   return result[viewpointID];
 }
 
-HypertopicMapV2.prototype.createViewpoint = function(name, user)
+HypertopicMap.prototype.createViewpoint = function(name, user)
 {
   
   var viewpoint = {};
@@ -235,7 +235,7 @@ HypertopicMapV2.prototype.createViewpoint = function(name, user)
   return (!result) ? false : result._id;
 }
 
-HypertopicMapV2.prototype.renameViewpoint = function(viewpointID, name)
+HypertopicMap.prototype.renameViewpoint = function(viewpointID, name)
 {
   var obj = RESTDatabase.httpGet(viewpointID);
   if(!obj) return false;
@@ -245,7 +245,7 @@ HypertopicMapV2.prototype.renameViewpoint = function(viewpointID, name)
   return (result) ? true : false;
 }
 
-HypertopicMapV2.prototype.destroyViewpoint = function(viewpointID)
+HypertopicMap.prototype.destroyViewpoint = function(viewpointID)
 {
   var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
@@ -261,7 +261,7 @@ HypertopicMapV2.prototype.destroyViewpoint = function(viewpointID)
  * @param topicID null for the virtual root
  * @return an object with broader, narrower and name 
  */
-HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID) 
+HypertopicMap.prototype.getTopic = function(viewpointID, topicID) 
 {
   var obj = this.getViewpoint(viewpointID);
   log(obj, "[getTopic] obj:");
@@ -274,7 +274,7 @@ HypertopicMapV2.prototype.getTopic = function(viewpointID, topicID)
  * @param topics can be empty
  * @return topic ID
  */
-HypertopicMapV2.prototype.createTopicIn = function(viewpointID, topicsIDs) 
+HypertopicMap.prototype.createTopicIn = function(viewpointID, topicsIDs) 
 {
   var topicID = this.getUUID();
   var viewpoint = RESTDatabase.httpGet(viewpointID);
@@ -289,7 +289,7 @@ HypertopicMapV2.prototype.createTopicIn = function(viewpointID, topicsIDs)
   return (!result) ? false : topicID;
 }
 
-HypertopicMapV2.prototype.renameTopic = function(viewpointID, topicID, name)
+HypertopicMap.prototype.renameTopic = function(viewpointID, topicID, name)
 {
   var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
@@ -303,7 +303,7 @@ HypertopicMapV2.prototype.renameTopic = function(viewpointID, topicID, name)
   return (!result) ? false : result;
 }
 
-HypertopicMapV2.prototype.destroyTopic = function(viewpointID, topicID)
+HypertopicMap.prototype.destroyTopic = function(viewpointID, topicID)
 {
   var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
@@ -323,7 +323,7 @@ HypertopicMapV2.prototype.destroyTopic = function(viewpointID, topicID)
 /**
  * @param topicID can be empty (to unlik from parents)
  */
-HypertopicMapV2.prototype.moveTopicsIn = function(topicsIDs, viewpointID, topicID) 
+HypertopicMap.prototype.moveTopicsIn = function(topicsIDs, viewpointID, topicID) 
 {
   var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
@@ -340,7 +340,7 @@ HypertopicMapV2.prototype.moveTopicsIn = function(topicsIDs, viewpointID, topicI
   return (!result) ? false : result;
 }
 
-HypertopicMapV2.prototype.linkTopicsIn = function(topicsIDs, viewpointID, topicID) 
+HypertopicMap.prototype.linkTopicsIn = function(topicsIDs, viewpointID, topicID) 
 {
   var viewpoint = RESTDatabase.httpGet(viewpointID);
   if(!viewpoint) return false;
@@ -363,14 +363,14 @@ HypertopicMapV2.prototype.linkTopicsIn = function(topicsIDs, viewpointID, topicI
 /**
  * @param resource e.g. "http://cassandre/text/d0"
  */
-HypertopicMapV2.prototype.getResources = function(resource)
+HypertopicMap.prototype.getResources = function(resource)
 {
   return RESTDatabase.httpGet("resource/?resource=" + encodeURIComponent(resource));
 }
 
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HypertopicMapV2
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HypertopicMap
 
-HypertopicMapV2.prototype.getUUID = function()
+HypertopicMap.prototype.getUUID = function()
 {
   var uuidGenerator = 
     Components.classes["@mozilla.org/uuid-generator;1"]

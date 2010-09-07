@@ -16,7 +16,7 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details:
 http://www.gnu.org/licenses/lgpl.html
 */
-let EXPORTED_SYMBOLS = ["HypertopicMapV2"];
+let EXPORTED_SYMBOLS = ["HypertopicMap"];
 
 const Exception = Components.Exception;
 const Cc = Components.classes;
@@ -27,7 +27,7 @@ const include = Cu.import;
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/RESTDatabase.js");
 
-let HypertopicMapV2 = {
+let HypertopicMap = {
   set baseUrl(url)
   {
     this._baseUrl = url;
@@ -57,7 +57,7 @@ let HypertopicMapV2 = {
   
   
   init: function(){
-    let logger = Log4Moz.repository.getLogger("HypertopicMapV2.init");
+    let logger = Log4Moz.repository.getLogger("HypertopicMap.init");
     let designDocument = this.designDocument || "_design/argos";
     RESTDatabase.init(this.baseUrl + designDocument + "/_rewrite/");
     logger.debug(this.baseUrl + designDocument + "/_rewrite/");
@@ -72,7 +72,7 @@ let HypertopicMapV2 = {
    * @param user e.g. "cecile@hypertopic.org"
    */
   listCorpora : function(user) {
-    let logger = Log4Moz.repository.getLogger("HypertopicMapV2.listCorpora");
+    let logger = Log4Moz.repository.getLogger("HypertopicMap.listCorpora");
     var obj = RESTDatabase.httpGet("user/" + user);
     if(!obj || !obj[user]) return false;
     logger.debug(obj);
@@ -80,7 +80,7 @@ let HypertopicMapV2 = {
   },
   
   getCorpus : function(corpusID) {
-    let logger = Log4Moz.repository.getLogger("HypertopicMapV2.getCorpus");
+    let logger = Log4Moz.repository.getLogger("HypertopicMap.getCorpus");
     var obj = RESTDatabase.httpGet("corpus/" + corpusID);
     //logger.debug(corpusID);
     //logger.debug(obj);
@@ -176,22 +176,21 @@ let HypertopicMapV2 = {
     return RESTDatabase.httpDelete(object);
   },
   
+  
+  reservedWords : new Array("highlight","name","resource","thumbnail","topic","upper","user","resource", "item_name", "item_corpus", "highlights", "_id", "_rev"),
+  
   listItemDescriptions : function(itemID)
   {
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
-    delete item._id;
-    delete item._rev;
-    delete item.highlights;
-    delete item.item_corpus;
-    delete item.item_name;
-    delete item.resource;
-    delete item.topics;
+    for each ( var word in reservedWords)
+      if(item[word]) delete item[word];
     return item;
   },
   
   describeItem : function(itemID, attribute, value)
   {
+    if(reservedWords.indexOf(attribute) >= 0) return false;
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
     if(!item[attribute])
@@ -208,7 +207,8 @@ let HypertopicMapV2 = {
   
   undescribeItem : function(itemID, attribute, value)
   {
-    var logger = Log4Moz.repository.getLogger("HypertopicMapV2.undescribeItem");
+    if(reservedWords.indexOf(attribute) >= 0) return false;
+    var logger = Log4Moz.repository.getLogger("HypertopicMap.undescribeItem");
     var item = RESTDatabase.httpGet(itemID);
     logger.debug(item);
     if(!item[attribute]) return true;
@@ -276,7 +276,7 @@ let HypertopicMapV2 = {
   
   untagFragment : function(itemID, highlightID)
   {
-    var logger = Log4Moz.repository.getLogger("HypertopicMapV2.untagFragment");
+    var logger = Log4Moz.repository.getLogger("HypertopicMap.untagFragment");
     //logger.debug(itemID);
     //logger.debug(highlightID);
     var item = RESTDatabase.httpGet(itemID);
@@ -290,7 +290,7 @@ let HypertopicMapV2 = {
   
   moveFragment : function(itemID, highlightID, viewpointID, topicID)
   {
-    var logger = Log4Moz.repository.getLogger("HypertopicMapV2.moveFragment");
+    var logger = Log4Moz.repository.getLogger("HypertopicMap.moveFragment");
     var item = RESTDatabase.httpGet(itemID);
     
     if(!item || !item["highlights"][highlightID]) return false;
@@ -359,7 +359,14 @@ let HypertopicMapV2 = {
   {
     var obj = this.getViewpoint(viewpointID);
     
-    return (obj && obj[topicID]) ? obj[topicID] : false;
+    if(obj && obj[topicID])
+    {
+      obj[topicID].id = topicID;
+      obj[topicID].viewpoint = viewpointID;
+      return obj[topicID];
+    }
+    else
+      return false;
   },
   
   /**

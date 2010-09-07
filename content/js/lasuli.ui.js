@@ -31,6 +31,7 @@ lasuli.ui = {
         Observers.notify("lasuli.ui.doClearViewpointPanel", viewpointID);
         Observers.notify("lasuli.core.doLoadTags", viewpointID);
         Observers.notify("lasuli.core.doLoadFragments", viewpointID);
+        Observers.notify("lasuli.core.doLoadNonRelatedTopics", viewpointID);
       }
     });
     
