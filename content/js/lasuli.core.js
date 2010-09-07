@@ -605,6 +605,28 @@ lasuli.core = {
     }
   },
   
+  doAddAnalysis: function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doAddAnalysis");
+    var topicID = HypertopicMap.createTopicIn(viewpointID, new Array());
+    if(!topicID)
+    {
+      //TODO show message
+      return false;
+    }
+    logger.debug(topicID);
+    var topicName = _("no.name");
+    var result = HypertopicMap.renameTopic(viewpointID, topicID, topicName);
+    logger.debug(result);
+    var topic = HypertopicMap.getTopic(viewpointID, topicID);
+    this.topics.push(topic);
+    topic.color = colorUtil.index2rgb(this.topics.length);
+    topic.viewpointID = topic.viewpoint;
+    topic.topicID = topic.id;
+    logger.debug(topic);
+    
+    Observers.notify("lasuli.ui.doAddAnalysis", topic );
+  },
+  
   doRenameAnalysis : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameAnalysis");
     var viewpointID = arg.viewpointID;
@@ -654,6 +676,51 @@ lasuli.core = {
       Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
       return false;
     }
+  },
+  
+  doHighlightMenuClick: function(topic){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doHighlightMenuClick");
+    logger.debug(topic);
+    var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);  
+    var win = wm.getMostRecentWindow("navigator:browser");
+    var content = win.getBrowser().contentWindow;
+    var selection = content.getSelection();
+    logger.debug("selection:" + selection);
+    var strContent = selection + "";
+    strContent = strContent.trim();
+    if(strContent == ""){
+      alert(_("null.content.selected"));
+      return false;
+    }
+    var range = selection.getRangeAt(0);
+    var startContainer = range.startContainer;
+    var endContainer = range.endContainer;
+    var startOffset = range.startOffset;
+    var endOffset = range.endOffset;
+    
+    var treewalker = lasuli.highlighter.getTreeWalker();
+    var curPos = 0;
+    var startPos,endPos;
+    while(treewalker.nextNode())
+    {
+        var node = treewalker.currentNode;
+        if(node.isSameNode(startContainer))
+        {
+          startPos = curPos + startOffset;
+          //debug("found start pos:" + fragment.startPos);
+        }
+        if(node.isSameNode(endContainer))
+        {
+          endPos = curPos + endOffset;
+          //debug("found end pos:" + fragment.endPos);
+        }
+          
+        curPos += node.data.length;
+    }
+    if(!startPos || !endPos) return false;
+    logger.debug(new Array(startPos, endPos));
+    logger.debug(strContent);
+    //HypertopicMap.tagFragment(this.itemID, new Array(startPos, endPos), strContent, topic.viewpointID, topic.topicID);
   }
 }
 

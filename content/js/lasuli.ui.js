@@ -39,7 +39,6 @@ lasuli.ui = {
       var index = $('li',$tabs).index($(this).parent());
       $tabs.tabs('remove', index);
     });
-    
   },
   
   initDocumentPanel : function(){
@@ -272,6 +271,8 @@ lasuli.ui = {
     
     //Add analysis topic
     $('.add-analyses-img').live("click", function(){
+      var viewpointID = $(this).parents("div.ui-tabs-panel").attr("id");
+      Observers.notify("lasuli.core.doAddAnalysis", viewpointID);
     });
     
     //Edit analysis topic
@@ -824,6 +825,14 @@ lasuli.ui = {
     var el = "li.fragment[fragmentID='" + fragmentID + "']";
     logger.debug(el);
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
+  },
+  
+  doAddAnalysis: function(topic){
+    lasuli.ui._initFragmentsContainer(topic);
+    var el = "div.fragment-header[viewpointID='" + topic.viewpointID + "'][topicID='" + topic.topicID + "']";
+    var span = $(el).find("span");
+    span[0].scrollIntoView(true);
+    span.fadeOut(1000).fadeIn(1000).fadeOut(1000).fadeIn(1000).fadeOut(1000).fadeIn(1000);
   },
   
   doRestoreAnalysis : function(arg){

@@ -190,55 +190,6 @@ lasuli.highlighter = {
     }
   },
   
-  doGetSelectionPos: function()
-  {
-    var fragment = {};
-    var m_Window = getRecentWindow();
-    var m_gBrowser = m_Window.getBrowser();
-    var m_window = m_gBrowser.contentWindow;
-    var selection = m_window.getSelection();
-    var strContent = selection + "";
-    strContent = strContent.trim();
-    if(strContent == ""){
-      alert("Please select a fragment!");
-      return false;
-    }
-    var range = selection.getRangeAt(0);
-    var startContainer = range.startContainer;
-    var endContainer = range.endContainer;
-    var startOffset = range.startOffset;
-    var endOffset = range.endOffset;
-    
-    //debug("start:" + startContainer.nodeType);
-    //debug("start:" + startContainer.data);
-    //debug("start offset:" + startOffset);
-    var treewalker = this.getTreeWalker();
-    var curPos = 0;
-    while(treewalker.nextNode())
-    {
-        var node = treewalker.currentNode;
-        if(node.isSameNode(startContainer))
-        {
-          fragment.startPos = curPos + startOffset;
-          //debug("found start pos:" + fragment.startPos);
-        }
-        if(node.isSameNode(endContainer))
-        {
-          fragment.endPos = curPos + endOffset;
-          //debug("found end pos:" + fragment.endPos);
-        }
-          
-        curPos += node.data.length;
-    }
-    if(strContent.length > 480) strContent = strContent.substring(0,477) + "...";
-    fragment.content = strContent;
-    if(typeof(fragment.startPos) == "undefined"
-      || typeof(fragment.endPos) == "undefined")
-      return false;
-      
-    return fragment;
-  },
-  
   //Auto register all observers
   register: function(){
     for(var func in this)

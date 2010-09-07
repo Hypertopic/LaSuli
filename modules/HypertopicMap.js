@@ -383,7 +383,8 @@ let HypertopicMap = {
       viewpoint.topics = {};
     if(!viewpoint.topics[topicID])
       viewpoint.topics[topicID] = {};
-    viewpoint.topics[topicID].broader = topicsIDs;
+    if(topicsIDs)
+      viewpoint.topics[topicID].broader = topicsIDs;
     var result = RESTDatabase.httpPut(viewpoint);
     return (!result) ? false : topicID;
   },
