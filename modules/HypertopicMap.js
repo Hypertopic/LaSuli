@@ -8,7 +8,7 @@ Copyright (C) 2010 Chao ZHOU, Aurelien Benel.
 
 LEGAL ISSUES
 This library is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free 
+the terms of the GNU Lesser General Public License as published by the Free
 Software Foundation, either version 3 of the license, or (at your option) any
 later version.
 This library is distributed in the hope that it will be useful, but WITHOUT ANY
@@ -36,7 +36,7 @@ let HypertopicMap = {
   {
     return this._baseUrl;
   },
-  
+
   set user(str)
   {
     this._user = str;
@@ -45,7 +45,7 @@ let HypertopicMap = {
   {
     return this._user;
   },
-  
+
   set pass(str)
   {
     this._pass = str;
@@ -54,15 +54,15 @@ let HypertopicMap = {
   {
     return this._pass;
   },
-  
-  
+
+
   init: function(){
     let logger = Log4Moz.repository.getLogger("HypertopicMap.init");
     let designDocument = this.designDocument || "_design/argos";
     RESTDatabase.init(this.baseUrl + designDocument + "/_rewrite/");
     logger.debug(this.baseUrl + designDocument + "/_rewrite/");
   },
-  
+
   get : function(objectID) {
     return RESTDatabase.httpGet(objectID);
   },
@@ -78,18 +78,18 @@ let HypertopicMap = {
     logger.debug(obj);
     return obj[user].corpus;
   },
-  
+
   getCorpus : function(corpusID) {
     let logger = Log4Moz.repository.getLogger("HypertopicMap.getCorpus");
     var obj = RESTDatabase.httpGet("corpus/" + corpusID);
     //logger.debug(corpusID);
     //logger.debug(obj);
-    if(!obj) 
+    if(!obj)
       return false;
     else
       return obj[corpusID];
   },
-  
+
   /**
    * @return corpusID
    */
@@ -100,14 +100,14 @@ let HypertopicMap = {
     var result = RESTDatabase.httpPost(obj);
     return (!result) ? false : result._id;
   },
-  
+
   renameCorpus : function(corpusID, name) {
     var obj = RESTDatabase.httpGet(corpusID);
     if(!obj) return false;
     obj.corpus_name = name;
     return RESTDatabase.httpPut(obj);
   },
-  
+
   /**
    * Destroy the nodes of the corpus and of all its documents.
    */
@@ -117,11 +117,11 @@ let HypertopicMap = {
     log(corpusID, "[destroyCorpus] corpusID");
     var obj = RESTDatabase.httpGet(corpusID);
     if(!obj) return false;
-  
+
     log(obj, "[destroyCorpus] obj");
     var result = RESTDatabase.httpDelete(obj);
     if(!result) return false;
-    
+
     var items = this.listItems(corpusID);
     log(items, "[destroyCorpus] items");
     for(var i=0, documentID; documentID = items[i]; i++)
@@ -148,15 +148,15 @@ let HypertopicMap = {
     }
     return items;
   },
-  
+
   getItem : function(corpusID, itemID) {
     var obj = this.getCorpus(corpusID);
-    if(!obj) 
+    if(!obj)
       return false;
     else
       return obj[itemID];
   },
-  
+
   /**
    * @return itemID
    */
@@ -164,33 +164,43 @@ let HypertopicMap = {
     var object = {};
     object.item_name = name;
     object.item_corpus = corpusID;
-  
+
     var result = RESTDatabase.httpPost(object);
     return (!result) ? false : result._id;
   },
-  
+
   destroyItem : function(itemID){
     var object = RESTDatabase.httpGet(itemID);
     if(!object)
      return false;
     return RESTDatabase.httpDelete(object);
   },
-  
-  
-  reservedWords : new Array("highlight","name","resource","thumbnail","topic","upper","user","resource", "item_name", "item_corpus", "highlights", "_id", "_rev"),
-  
-  listItemDescriptions : function(itemID)
-  {
+
+  renameItem : function(itemID, item_name){
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
-    for each ( var word in reservedWords)
-      if(item[word]) delete item[word];
+    item.item_name = item_name;
+    return RESTDatabase.httpPut(item);
+  },
+
+  reservedWords : new Array("highlight","name","resource","thumbnail","topic","upper","user","resource", "item_name", "item_corpus", "highlights", "_id", "_rev"),
+
+  listItemDescriptions : function(itemID)
+  {
+    var logger = Log4Moz.repository.getLogger("HypertopicMap.listItemDescriptions");
+    var item = RESTDatabase.httpGet(itemID);
+    logger.debug(item);
+    if(!item) return false;
+    for(var i=0, word; word = this.reservedWords[i]; i++)
+      if(word in item)
+        delete item[word];
+
+    logger.debug(item);
     return item;
   },
-  
+
   describeItem : function(itemID, attribute, value)
   {
-    if(reservedWords.indexOf(attribute) >= 0) return false;
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
     if(!item[attribute])
@@ -204,10 +214,9 @@ let HypertopicMap = {
     }
     return RESTDatabase.httpPut(item);
   },
-  
+
   undescribeItem : function(itemID, attribute, value)
   {
-    if(reservedWords.indexOf(attribute) >= 0) return false;
     var logger = Log4Moz.repository.getLogger("HypertopicMap.undescribeItem");
     var item = RESTDatabase.httpGet(itemID);
     logger.debug(item);
@@ -221,14 +230,14 @@ let HypertopicMap = {
     {
       while(item[attribute].indexOf(value) >=0 )
         item[attribute].splice(item[attribute].indexOf(value), 1);
-      
+
       if(item[attribute].length == 0)
         delete item[attribute];
     }
     logger.debug(item);
     return RESTDatabase.httpPut(item);
   },
-  
+
   tagItem : function(itemID, viewpointID, topicID)
   {
     var item = RESTDatabase.httpGet(itemID);
@@ -240,7 +249,7 @@ let HypertopicMap = {
     item.topics[topicID].viewpoint = viewpointID;
     return RESTDatabase.httpPut(item);
   },
-  
+
   untagItem : function(itemID, viewpointID, topicID)
   {
     var item = RESTDatabase.httpGet(itemID);
@@ -249,7 +258,7 @@ let HypertopicMap = {
     delete item.topics[topicID];
     return RESTDatabase.httpPut(item);
   },
-  
+
   /**
    * @param itemID Note: replaced by a corpusID in Cassandre.
    * @return the ID of the highlight
@@ -258,22 +267,22 @@ let HypertopicMap = {
   {
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
-    
+
     if (!item.highlights)
       item.highlights = {};
-  
+
     var highlights = {};
     highlights.coordinates = coordinates;
     highlights.text = text;
     highlights.viewpoint = viewpointID;
     highlights.topic = topicID;
-    
+
     var highlightID = this.getUUID();
     item.highlights[highlightID] = highlights;
     RESTDatabase.httpPut(item);
     return highlightID;
   },
-  
+
   untagFragment : function(itemID, highlightID)
   {
     var logger = Log4Moz.repository.getLogger("HypertopicMap.untagFragment");
@@ -287,19 +296,19 @@ let HypertopicMap = {
     delete item["highlights"][highlightID];
     return RESTDatabase.httpPut(item);
   },
-  
+
   moveFragment : function(itemID, highlightID, viewpointID, topicID)
   {
     var logger = Log4Moz.repository.getLogger("HypertopicMap.moveFragment");
     var item = RESTDatabase.httpGet(itemID);
-    
+
     if(!item || !item["highlights"][highlightID]) return false;
     logger.debug(item);
     item["highlights"][highlightID].viewpoint = viewpointID;
     item["highlights"][highlightID].topic = topicID;
     return RESTDatabase.httpPut(item);
   },
-  
+
   //=================================================================== VIEWPOINT
   /**
    * @param actor e.g. "cecile@hypertopic.org"
@@ -309,11 +318,11 @@ let HypertopicMap = {
     user = user || this.user;
     var result = RESTDatabase.httpGet("user/" + user);
     if(!result || !result[user]) return false;
-    
+
     var obj = result[user];
     return (obj.viewpoint) ? obj.viewpoint : false;
   },
-  
+
   getViewpoint : function(viewpointID)
   {
     var result = RESTDatabase.httpGet("viewpoint/" + viewpointID);
@@ -321,18 +330,18 @@ let HypertopicMap = {
     result[viewpointID].id = viewpointID;
     return result[viewpointID];
   },
-  
+
   createViewpoint : function(name, user)
   {
     user = user || this.user;
     var viewpoint = {};
     viewpoint.viewpoint_name = name;
     viewpoint.users = [ user ];
-  
+
     var result = RESTDatabase.httpPost(viewpoint);
     return (!result) ? false : result._id;
   },
-  
+
   renameViewpoint : function(viewpointID, name)
   {
     var obj = RESTDatabase.httpGet(viewpointID);
@@ -342,7 +351,7 @@ let HypertopicMap = {
     //log(result, '[renameViewpoint] result');
     return (result) ? true : false;
   },
-  
+
   destroyViewpoint : function(viewpointID)
   {
     var viewpoint = RESTDatabase.httpGet(viewpointID);
@@ -353,12 +362,12 @@ let HypertopicMap = {
 
   /**
    * @param topicID null for the virtual root
-   * @return an object with broader, narrower and name 
+   * @return an object with broader, narrower and name
    */
-  getTopic : function(viewpointID, topicID) 
+  getTopic : function(viewpointID, topicID)
   {
     var obj = this.getViewpoint(viewpointID);
-    
+
     if(obj && obj[topicID])
     {
       obj[topicID].id = topicID;
@@ -368,17 +377,17 @@ let HypertopicMap = {
     else
       return false;
   },
-  
+
   /**
    * @param topics can be empty
    * @return topic ID
    */
-  createTopicIn : function(viewpointID, topicsIDs) 
+  createTopicIn : function(viewpointID, topicsIDs)
   {
     var topicID = this.getUUID();
     var viewpoint = RESTDatabase.httpGet(viewpointID);
     if(!viewpoint) return false;
-    
+
     if(!viewpoint.topics)
       viewpoint.topics = {};
     if(!viewpoint.topics[topicID])
@@ -388,12 +397,12 @@ let HypertopicMap = {
     var result = RESTDatabase.httpPut(viewpoint);
     return (!result) ? false : topicID;
   },
-  
+
   renameTopic : function(viewpointID, topicID, name)
   {
     var viewpoint = RESTDatabase.httpGet(viewpointID);
     if(!viewpoint) return false;
-    
+
     if(!viewpoint.topics)
       viewpoint.topics = {};
     if(!viewpoint.topics[topicID])
@@ -402,21 +411,21 @@ let HypertopicMap = {
     var result = RESTDatabase.httpPut(viewpoint);
     return (!result) ? false : result;
   },
-  
+
   destroyTopic : function(viewpointID, topicID)
   {
     var viewpoint = RESTDatabase.httpGet(viewpointID);
     if(!viewpoint) return false;
     if(!viewpoint.topics || !viewpoint.topics[topicID]) return true;
     delete viewpoint.topics[topicID];
-    
+
     for(var t in viewpoint.topics)
     {
       if(viewpoint.topics[t] && viewpoint.topics[t].broader && viewpoint.topics[t].broader.length > 0)
       {
         while(viewpoint.topics[t].broader.indexOf(topicID) >=0 )
           viewpoint.topics[t].broader.splice(viewpoint.topics[t].broader.indexOf(topicID), 1);
-        
+
         if(viewpoint.topics[t].broader.length == 0)
           delete viewpoint.topics[t].broader;
       }
@@ -424,46 +433,46 @@ let HypertopicMap = {
     var result = RESTDatabase.httpPut(viewpoint);
     return (!result) ? false : result;
   },
-  
-  
+
+
   /**
    * @param topicID can be empty (to unlik from parents)
    */
-  moveTopicsIn : function(topicsIDs, viewpointID, topicID) 
+  moveTopicsIn : function(topicsIDs, viewpointID, topicID)
   {
     var viewpoint = RESTDatabase.httpGet(viewpointID);
     if(!viewpoint) return false;
-    
+
     if(!viewpoint.topics) viewpoint.topics = {};
-    
+
     for(var i=0, t; t = topicsIDs[i]; i++)
     {
       if(!viewpoint.topics[t]) viewpoint.topics[t] = {};
-      
+
       viewpoint.topics[t].broader = new Array(topicID);
     }
     var result = RESTDatabase.httpPut(viewpoint);
     return (!result) ? false : result;
   },
-  
-  linkTopicsIn : function(topicsIDs, viewpointID, topicID) 
+
+  linkTopicsIn : function(topicsIDs, viewpointID, topicID)
   {
     var viewpoint = RESTDatabase.httpGet(viewpointID);
     if(!viewpoint) return false;
-    
+
     if(!viewpoint.topics) viewpoint.topics = {};
-    
+
     for(var i=0, t; t = topicsIDs[i]; i++)
     {
       if(!viewpoint.topics[t]) viewpoint.topics[t] = {};
       if(!viewpoint.topics[t].broader) viewpoint.topics[t].broader = new Array();
-      
+
       viewpoint.topics[t].broader.push(topicID);
     }
     var result = RESTDatabase.httpPut(viewpoint);
     return (!result) ? false : result;
   },
-  
+
   //==================================================================== RESOURCE
   /**
    * @param resource e.g. "http://cassandre/text/d0"
@@ -472,16 +481,16 @@ let HypertopicMap = {
   {
     return RESTDatabase.httpGet("resource/" + encodeURIComponent(resource));
   },
-  
+
   //==================================== GUID
   getUUID : function()
   {
-    var uuidGenerator = 
+    var uuidGenerator =
       Components.classes["@mozilla.org/uuid-generator;1"]
               .getService(Components.interfaces.nsIUUIDGenerator);
     var uuid = uuidGenerator.generateUUID();
     var uuidString = uuid.toString();
-    
+
     return uuidString.replace('{', '').replace('}', '').replace(/-/gi, '');
   }
 }

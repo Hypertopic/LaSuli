@@ -1,7 +1,7 @@
 body
-{ 
-  font: 62.5% "Trebuchet MS", sans-serif; 
-  margin: 0px; 
+{
+  font: 62.5% "Trebuchet MS", sans-serif;
+  margin: 0px;
   min-height:100%;
   background-color: #CCCCCC;
   overflow-y:hidden;
@@ -11,7 +11,6 @@ body
 {
 	background-color: #000000;
 	opacity:0.5;
-	cursor: wait;
 	border:none;
 	margin:0;
 	padding:0;
@@ -23,7 +22,7 @@ body
 	position:absolute;
 }
 
-#status-bar { 
+#status-bar {
   position: fixed;
   background-color: #BBBBBB;
   width: 100%;
@@ -39,8 +38,8 @@ body
 
 div#create-viewpoint
 {
-  width: 100%; 
-  padding: 4px; 
+  width: 100%;
+  padding: 4px;
 }
 
 div#create-viewpoint input
@@ -54,7 +53,7 @@ div#create-viewpoint input
   margin-top: 0px;
   margin-right: 2px;
   margin-bottom: auto;
-  margin-left: 2px; 
+  margin-left: 2px;
 }
 #tabs li .ui-icon-close { float: left; margin: 4px 2px 0 0; cursor: pointer; }
 #tabs li .ui-icon-tabplus { float: left; margin: 6px 2px 0 6px; cursor: pointer; padding: 1px 2px;}
@@ -63,15 +62,15 @@ div#create-viewpoint input
 #viewpointListContainer {margin-top: 30px;}
 #viewpointListContainer span {margin: 0px; padding:6px;}
 #viewpointListContainer ul {list-style-type: none; margin-top: 6px;}
-#viewpointListContainer ul li { 
-  margin: 4px 3px 3px -20px; 
-  padding: 4px; 
-  padding-left: 0px; 
-  font-size: 12px; 
+#viewpointListContainer ul li {
+  margin: 4px 3px 3px -20px;
+  padding: 4px;
+  padding-left: 0px;
+  font-size: 12px;
   border-bottom:1px solid #EEEEEE;
   cursor:pointer;
 }
-#viewpointListContainer ul li:last-child { 
+#viewpointListContainer ul li:last-child {
   border-bottom:0px;
 }
 
@@ -106,7 +105,7 @@ div#create-viewpoint input
 	margin:1em 0;
 	padding:.5em 10px;
 	text-align:center;
-	background:#FF9999 url(blitzer/images/bg_tags.gif) repeat-x;		
+	background:#FF9999 url(blitzer/images/bg_tags.gif) repeat-x;
 	}
 #tags li{
 	margin:0;
@@ -120,9 +119,9 @@ div#create-viewpoint input
 	padding:0 2px;
 	cursor: pointer;
 	}
-#tags li a:hover{	
+#tags li a:hover{
 	color:#cff400;
-	}		
+	}
 
 .tag1{font-size:100%;}
 .tag2{font-size:120%;}
@@ -142,10 +141,10 @@ div#create-viewpoint input
 	background:#FF9999;
 	display:block;
 }
-#tags .alt .tag1, 
-#tags .alt .tag2, 
-#tags .alt .tag3, 
-#tags .alt .tag4, 
+#tags .alt .tag1,
+#tags .alt .tag2,
+#tags .alt .tag3,
+#tags .alt .tag4,
 #tags .alt .tag5{font-size:100%;}
 #tags .alt .tag1{background:#FF0000;}
 #tags .alt .tag2{background:#EE0000;}
@@ -188,7 +187,7 @@ div#create-viewpoint input
 .topics ul li {display:inline-block;}
 .topics ul li img{ vertical-align: middle; cursor: pointer;}
 
-.topic a { 
+.topic a {
   margin-left:15px;
   background-color:#FBB0AE;
   border-bottom:1px solid #3E6D8E;
@@ -211,11 +210,11 @@ div#create-viewpoint input
 
 .fragments {margin-bottom: 20px;}
 .fragments ul { list-style-type: none; margin: 0; padding: 5px 0 0 0; }
-.fragments ul li { 
-  margin: 0 3px 3px 3px; 
-  padding: 4px; 
-  padding-left: 15px; 
-  font-size: 12px; 
+.fragments ul li {
+  margin: 0 3px 3px 3px;
+  padding: 4px;
+  padding-left: 15px;
+  font-size: 12px;
   border-bottom:1px solid #EEEEEE;
   cursor:pointer;
 }
