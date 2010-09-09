@@ -116,14 +116,14 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLocationChange");
     //Check the sidebar status
     logger.debug(url);
-    //If the sidebar is not opened yet, do nothing.
-    if(!lasuli.core.isSidebarOpen()) return false;
     //If the url is unchanged, do nothing. (e.g. switch between two tabs on the same url)
     if(url == this.currentUrl) return false;
-    this.currentUrl = url;
-    logger.debug("doCloseViewpointPanel and doLoadDocument on url:" + url);
+      this.currentUrl = url;
+    //If the sidebar is not opened yet, do nothing.
+    if(!lasuli.core.isSidebarOpen()) return false;
+    logger.debug("doCloseViewpointPanel and doLoadDocument on url:" + this.currentUrl);
     Observers.notify("lasuli.ui.doCloseViewpointPanel", null);
-    Observers.notify("lasuli.core.doLoadDocument", url);
+    Observers.notify("lasuli.core.doLoadDocument", this.currentUrl);
     //document.getElementById("sidebar").contentWindow.location.reload();
   },
 
@@ -192,7 +192,17 @@ lasuli.core = {
   doLoadDocument : function(url){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
     Observers.notify("lasuli.ui.doClearDocumentPanel", null);
-    url = url || this.currentUrl;
+    url = (typeof(url) == "string") ? url : this.currentUrl;
+    logger.debug("the current url:" + url);
+    // all items used for this resources
+    this.items = {};
+    // document item
+    this.corpusID = null;
+    this.itemID = null;
+    this.users = new Array();
+    this.tags = new Array();
+    this.topics = new Array();
+
     if(!url || url == "about:blank")
     {
       Observers.notify("lasuli.ui.doBlockUI", null);
@@ -205,12 +215,9 @@ lasuli.core = {
       if(!this.getMyCorpusID()) return false;
 
     logger.info(this.myCorpusID);
-    // all items used for this resources
-    this.items = {};
 
-    // document item
-    this.corpusID = null;
-    this.itemID = null;
+
+
     try{
       var result = HypertopicMap.getResources(url);
       //logger.debug(result);
@@ -253,9 +260,7 @@ lasuli.core = {
     }
     //logger.debug("=========tags===========");
     //Get the users list, tags, all related topics.
-    this.users = new Array();
-    this.tags = new Array();
-    this.topics = new Array();
+
     var coordinates = new Array();
     for(var corpusID in this.items)
     {
@@ -367,8 +372,10 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadTags");
     logger.debug(viewpointID);
     var tags = new Array();
-    logger.debug(this.tags);
-    if(this.tags.length > 0)
+
+    if(this.tags && this.tags.length > 0)
+    {
+      logger.debug(this.tags);
       for(var i=0, tag; tag = this.tags[i]; i++)
         if(tag.viewpoint == viewpointID)
         {
@@ -376,6 +383,7 @@ lasuli.core = {
           tag.viewpointID = viewpointID;
           tags.push(tag);
         }
+    }
     logger.debug(tags);
     Observers.notify("lasuli.ui.doShowTags", tags);
   },
@@ -522,7 +530,6 @@ lasuli.core = {
 
   doLoadFragments : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadFragments");
-    logger.debug(this.topics);
     var items = new Array();
     for each (var rows in this.items){
       items = items.concat(rows);
@@ -532,23 +539,24 @@ lasuli.core = {
     var fragments = new Array();
     var topicIDs = new Array();
     var tmps = {};
-    for(var i=0, topic; topic = this.topics[i];i++)
-    {
-      if(!topic.highlight) continue;
-      if(topic.viewpoint != viewpointID) continue;
-
-      if(topicIDs.indexOf(topic.id) < 0)
+    if(this.topics && this.topics.length > 0)
+      for(var i=0, topic; topic = this.topics[i];i++)
       {
-        topics.push({"viewpointID": viewpointID, "topicID": topic.id, "name": topic.name, "color": colorUtil.index2rgb(i)});
-        topicIDs.push(topic.id);
-      }
+        if(!topic.highlight) continue;
+        if(topic.viewpoint != viewpointID) continue;
 
-      for each (var row in topic.highlight){
-        if(items.indexOf(row.item) >= 0)
-          tmps[JSON.stringify({"fragmentID": row.id, "startPos": row.coordinates[0], "endPos": row.coordinates[1], "text": row.text,
-                        "corpusID": row.corpus, "itemID": row.item, "topicID": topic.id, "viewpointID": viewpointID})] = '';
+        if(topicIDs.indexOf(topic.id) < 0)
+        {
+          topics.push({"viewpointID": viewpointID, "topicID": topic.id, "name": topic.name, "color": colorUtil.index2rgb(i)});
+          topicIDs.push(topic.id);
+        }
+
+        for each (var row in topic.highlight){
+          if(items.indexOf(row.item) >= 0)
+            tmps[JSON.stringify({"fragmentID": row.id, "startPos": row.coordinates[0], "endPos": row.coordinates[1], "text": row.text,
+                          "corpusID": row.corpus, "itemID": row.item, "topicID": topic.id, "viewpointID": viewpointID})] = '';
+        }
       }
-    }
     for(var fragment in tmps)
       fragments.push(JSON.parse(fragment));
 
@@ -571,7 +579,7 @@ lasuli.core = {
     topics = topics.concat(analysisTopics);
     Observers.notify("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments} );
     //Enable the mozilla context menu
-    Observers.notify('lasuli.contextmenu.enable', topics);
+    Observers.notify('lasuli.contextmenu.doShow', topics);
   },
 
   doRenameItem : function(arg){
@@ -675,13 +683,14 @@ lasuli.core = {
     var result = HypertopicMap.renameTopic(viewpointID, topicID, topicName);
     logger.debug(result);
     var topic = HypertopicMap.getTopic(viewpointID, topicID);
-    this.topics.push(topic);
+    //this.topics.push(topic);
     topic.color = colorUtil.index2rgb(this.topics.length);
     topic.viewpointID = topic.viewpoint;
     topic.topicID = topic.id;
     logger.debug(topic);
 
     Observers.notify("lasuli.ui.doAddAnalysis", topic );
+    Observers.notify("lasuli.contextmenu.doAddMenuItem", topic );
   },
 
   doRenameAnalysis : function(arg){
@@ -702,7 +711,11 @@ lasuli.core = {
         }
       }
       //Repaint the tagcloud
+      logger.debug("this.topics");
+      logger.debug(this.topics);
+      logger.debug(this.tags);
       Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+      Observers.notify("lasuli.contextmenu.doUpdateMenuItem", {"viewpointID": viewpointID, "topicID": topicID, "name": newName});
       delete arg.name;
     }
 

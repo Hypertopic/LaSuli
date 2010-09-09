@@ -31,10 +31,9 @@ lasuli.ui = {
         Observers.notify("lasuli.ui.doClearViewpointPanel", viewpointID);
         Observers.notify("lasuli.core.doLoadTags", viewpointID);
         Observers.notify("lasuli.core.doLoadFragments", viewpointID);
-        Observers.notify("lasuli.core.doLoadNonRelatedTopics", viewpointID);
       }
       else
-        Observers.notify('lasuli.contextmenu.disable', null);
+        Observers.notify('lasuli.contextmenu.doHide', null);
     });
 
     $('#tabs span.ui-icon-close').live('click', function() {
@@ -608,13 +607,13 @@ lasuli.ui = {
 
   doShowViewpoints : function(viewpoints){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpoints");
-    logger.debug(viewpoints);
+    //logger.debug(viewpoints);
     $('#viewpoints-ul li').hide().remove();
-    logger.debug(typeof(viewpoints));
-    logger.debug(viewpoints.length);
+    //logger.debug(typeof(viewpoints));
+    //logger.debug(viewpoints.length);
     if(typeof(viewpoints) == "object" && viewpoints.length > 0)
       for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++){
-        logger.debug("adding:" + viewpoint.name);
+        //logger.debug("adding:" + viewpoint.name);
         $("#viewpoints-ul").append("<li uri='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
                                    + viewpoint.name + "</a></li>");
       }
@@ -735,15 +734,30 @@ lasuli.ui = {
     // Clear the document name
     $("#h3-entity-name").html(_("no.name"));
     // Clear the attribute grid
-    $("#attribute-grid").jqGrid('clearGridData');
+    try{
+      $("#attribute-grid").jqGrid('clearGridData');
+    }catch(e){
+      logger.fatal(e);
+    }
     // Clear the tag cloud
-    $("#tags ul li").hide().remove();
+    try{
+      if($("#tags ul li").length > 0) $("#tags ul li").hide().remove();
+    }catch(e){
+      logger.fatal(e);
+    }
     // Clear the users list
-    $("#actors ul li").hide().remove();
+    try{
+      if($("#actors ul li").length > 0) $("#actors ul li").hide().remove();
+    }catch(e){
+      logger.fatal(e);
+    }
+
   },
 
   doShowTags : function(tags){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTags");
+    logger.debug(tags);
+    if(tags.length == 0) return false;
     var html = "";
     var viewpointID = null;
     for(var i=0; topic = tags[i]; i++)
@@ -893,7 +907,7 @@ lasuli.ui = {
     var el = "div.fragment-header[viewpointID='" + topic.viewpointID + "'][topicID='" + topic.topicID + "']";
     var span = $(el).find("span");
     span[0].scrollIntoView(true);
-    span.fadeOut(1000).fadeIn(1000).fadeOut(1000).fadeIn(1000).fadeOut(1000).fadeIn(1000);
+    span.fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
   },
 
   doRestoreAnalysis : function(arg){
@@ -942,5 +956,5 @@ $(window).bind("load", function(){
 
 $(window).bind("unload", function(){
   lasuli.ui.unregister();
-  Observers.notify('lasuli.contextmenu.disable', null);
+  Observers.notify('lasuli.contextmenu.doHide', null);
 });

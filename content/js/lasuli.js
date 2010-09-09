@@ -13,6 +13,9 @@ include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/StringBundle.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Preferences.js");
+include("resource://lasuli/modules/Observers.js");
+
+var dispatch = Observers.notify;
 
 /**
  * LaSuli namespace.
@@ -20,39 +23,39 @@ include("resource://lasuli/modules/Preferences.js");
 var lasuli = {
   _class : "_LASULI_APPEND_CLASS_",
   _htClass : "_LASULI_HIGHTLIGHT_CLASS_",
-  
+
   getLocalDirectory : function() {
     var directoryService =
       Cc["@mozilla.org/file/directory_service;1"].
         getService(Ci.nsIProperties);
     // this is a reference to the profile dir (ProfD) now.
     var localDir = directoryService.get("ProfD", Ci.nsIFile);
-  
+
     localDir.append("lasuli");
-  
+
     if (!localDir.exists() || !localDir.isDirectory()) {
       // read and write permissions to owner and group, read-only for others.
       localDir.create(Ci.nsIFile.DIRECTORY_TYPE, 0774);
     }
-  
+
     return localDir;
   },
-  
+
   // Setup log4moz
   setupLogging: function() {
     // The basic formatter will output lines like:
-    // DATE/TIME	LoggerName	LEVEL	(log message) 
+    // DATE/TIME	LoggerName	LEVEL	(log message)
     var formatter = new Log4Moz.BasicFormatter();
-  
+
     // Loggers are hierarchical, lowering this log level will affect all output
     var root = Log4Moz.repository.rootLogger;
     if(root.appenders.length > 0) return;
     root.level = Log4Moz.Level["All"];
-    
+
     /*var dapp = new lasuli.Log4Moz.DumpAppender(formatter);
     dapp.level = lasuli.Log4Moz.Level["Debug"];
     root.addAppender(dapp);*/
-    
+
     var capp = new Log4Moz.ConsoleAppender(formatter);
     capp.level = Log4Moz.Level["All"];
     root.addAppender(capp);
@@ -63,7 +66,7 @@ var lasuli = {
     appender.level = lasuli.Log4Moz.Level["Debug"];
     root.addAppender(appender);*/
   },
-  
+
   jqGirdLoader : function()
   {
     var locale = Preferences.get("general.useragent.locale", "en-US");
@@ -73,7 +76,7 @@ var lasuli = {
     this._include(i18nUrl);
     this._include("chrome://lasuli/content/js/jquery.jqGrid.min.js");
   },
-  
+
   _include : function(url){
     var oHead = document.getElementsByTagName('head')[0];
     var oScript = document.createElement('script');
@@ -106,7 +109,7 @@ var colorUtil = {
    *
    * H runs from 0 to 360 degrees
    * S and V run from 0 to 100
-   * 
+   *
    * Ported from the excellent java algorithm by Eugene Vishnevsky at:
    * http://www.cs.rit.edu/~ncs/color/t_convert.html
    */
@@ -114,25 +117,25 @@ var colorUtil = {
   	var r, g, b;
   	var i;
   	var f, p, q, t;
-  	
+
   	// Make sure our arguments stay in-range
   	h = Math.max(0, Math.min(360, h));
   	s = Math.max(0, Math.min(100, s));
   	v = Math.max(0, Math.min(100, v));
-  	
+
   	// We accept saturation and value arguments from 0 to 100 because that's
   	// how Photoshop represents those values. Internally, however, the
   	// saturation and value are calculated from a range of 0 to 1. We make
   	// That conversion here.
   	s /= 100;
   	v /= 100;
-  	
+
   	if(s == 0) {
   		// Achromatic (grey)
   		r = g = b = v;
   		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
   	}
-  	
+
   	h /= 60; // sector 0 to 5
   	i = Math.floor(h);
   	f = h - i; // factorial part of h
@@ -146,40 +149,40 @@ var colorUtil = {
 			g = t;
 			b = p;
 			break;
-			
+
 		case 1:
 			r = q;
 			g = v;
 			b = p;
 			break;
-			
+
 		case 2:
 			r = p;
 			g = v;
 			b = t;
 			break;
-			
+
 		case 3:
 			r = p;
 			g = q;
 			b = v;
 			break;
-			
+
 		case 4:
 			r = t;
 			g = p;
 			b = v;
 			break;
-			
+
 		default: // case 5:
 			r = v;
 			g = p;
 			b = q;
 	  }
-	
+
 	  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
   },
-  
+
   colorCalc: function(a,b)
   {
     var R1,R2,G1,G2,B1,B2,R,G,B;

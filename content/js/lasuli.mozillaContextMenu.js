@@ -1,57 +1,16 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/log4moz.js");
 
-var mozillaContextMenu = {
-  set topics(topics){
-    this._topics = topics || new Array();
-    this._topics.push({"name": _('new.topic.for.analysis')});
-  },
+lasuli.contextmenu = {
+  _appendDefaultTopic : function(topics){
+    topics = topics || new Array();
 
-  init : function(){
-    var logger = Log4Moz.repository.getLogger("mozillaContextMenu.init");
-    this.mainWindow = window.QueryInterface(Ci.nsIInterfaceRequestor)
-                   .getInterface(Ci.nsIWebNavigation)
-                   .QueryInterface(Ci.nsIDocShellTreeItem)
-                   .rootTreeItem
-                   .QueryInterface(Ci.nsIInterfaceRequestor)
-                   .getInterface(Ci.nsIDOMWindow);
-    logger.debug('init');
-    this.cacm = this.mainWindow.document.getElementById("contentAreaContextMenu");
-  },
+    if(topics.length > 0 && topics[topics.length - 1].name == _('new.topic.for.analysis'))
+      return topics;
+    else
+      topics.push({"name": _('new.topic.for.analysis')});
 
-  disable: function(){
-    var logger = Log4Moz.repository.getLogger("mozillaContextMenu.disable");
-    logger.debug("disable");
-    for (var i = 0, node; node = this.cacm.childNodes[i]; i++){
-      //logger.debug(node.getAttribute("id"));
-      if(node.getAttribute("id") == 'lasuliContextMenu')
-        this.cacm.removeChild(node);
-    }
-  },
-
-  enable: function(topics){
-    var logger = Log4Moz.repository.getLogger("mozillaContextMenu.enable");
-    //Clear the menu items
-    this.disable();
-    if(topics)
-      mozillaContextMenu.topics = topics;
-
-    var menu = this.mainWindow.document.createElement('menu');
-    menu.setAttribute('id', 'lasuliContextMenu');
-    menu.setAttribute('label', _("lasuliContextMenu"));
-    menu.setAttribute('insertafter', "context-cut");
-    var menupopup = this.mainWindow.document.createElement('menupopup');
-    menupopup.setAttribute('id', 'lasuliMenuPopup');
-    menu.appendChild(menupopup);
-    //logger.debug(this._topics.length);
-    for(var i=0, topic; topic = this._topics[i]; i++)
-    {
-      //logger.debug("topic");
-      //logger.debug(topic);
-      var menuitem = this._createItem(topic);
-      menupopup.appendChild(menuitem);
-    }
-    this.cacm.appendChild(menu);
+    return topics;
   },
 
   _createItem : function(topic){
@@ -68,16 +27,96 @@ var mozillaContextMenu = {
     if(topic.color)
       menu.setAttribute('style','-moz-appearance: none !important; background-color: ' + topic.color + ' !important;');
     return menu;
+  },
+
+  init : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.init");
+    this.mainWindow = window.QueryInterface(Ci.nsIInterfaceRequestor)
+                   .getInterface(Ci.nsIWebNavigation)
+                   .QueryInterface(Ci.nsIDocShellTreeItem)
+                   .rootTreeItem
+                   .QueryInterface(Ci.nsIInterfaceRequestor)
+                   .getInterface(Ci.nsIDOMWindow);
+    logger.debug('init');
+    this.cacm = this.mainWindow.document.getElementById("contentAreaContextMenu");
+  },
+  //Auto register all observers
+  register: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.register");
+    for(var func in this)
+      if(func.substr(0, 2) == "do")
+        Observers.add("lasuli.contextmenu." + func, lasuli.contextmenu[func], lasuli.contextmenu);
+  },
+  unregister: function(){
+    for(var func in this)
+      if(func.substr(0, 2) == "do")
+        Observers.remove("lasuli.contextmenu." + func, lasuli.contextmenu[func], lasuli.contextmenu);
+  },
+  doHide: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doHide");
+    //logger.debug("disable");
+    for (var i = 0, node; node = this.cacm.childNodes[i]; i++){
+      //logger.debug(node.getAttribute("id"));
+      if(node.getAttribute("id") == 'lasuliContextMenu')
+        this.cacm.removeChild(node);
+    }
+  },
+
+  doShow: function(topics){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doShow");
+    //Clear the menu items
+    this.doHide();
+    //logger.debug(topics);
+    if(!topics)
+      topics = new Array();
+
+    this.topics = this._appendDefaultTopic(topics);
+
+    //logger.debug("show menu");
+    var menu = this.mainWindow.document.createElement('menu');
+    menu.setAttribute('id', 'lasuliContextMenu');
+    menu.setAttribute('label', _("lasuli.contextMenu"));
+    menu.setAttribute('insertafter', "context-cut");
+    var menupopup = this.mainWindow.document.createElement('menupopup');
+    menupopup.setAttribute('id', 'lasuliMenuPopup');
+    menu.appendChild(menupopup);
+    //logger.debug(this._topics.length);
+    for(var i=0, topic; topic = this.topics[i]; i++)
+    {
+      //logger.debug("topic");
+      //logger.debug(topic);
+      var menuitem = this._createItem(topic);
+      menupopup.appendChild(menuitem);
+    }
+    this.cacm.appendChild(menu);
+  },
+
+  doAddMenuItem : function(topic){
+    var topics = this.topics;
+    if(topics && topics.length > 0)
+      topics[topics.length - 1] = topic;
+    else
+      topics = new Array(topic);
+    this.doShow(topics);
+  },
+
+  doUpdateMenuItem : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doUpdateMenuItem");
+    //logger.debug(arg);
+    for(var i=0, topic; topic = this.topics[i]; i++)
+    {
+      if(topic.id == arg.topicID || topic.topicID == arg.topicID)
+        this.topics[i].name = arg.name;
+    }
+    this.doShow(this.topics);
   }
 }
 
 window.addEventListener("load", function() {
-  mozillaContextMenu.init();
-  Observers.add("lasuli.contextmenu.enable", mozillaContextMenu.enable, mozillaContextMenu);
-  Observers.add("lasuli.contextmenu.disable", mozillaContextMenu.disable, mozillaContextMenu);
+  lasuli.contextmenu.init();
+  lasuli.contextmenu.register();
 }, false);
 
 window.addEventListener("unload", function() {
-  Observers.remove("lasuli.contextmenu.enable", mozillaContextMenu.enable, mozillaContextMenu);
-  Observers.remove("lasuli.contextmenu.disable", mozillaContextMenu.disable, mozillaContextMenu);
+  lasuli.contextmenu.unregister();
 }, false);

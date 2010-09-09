@@ -3,24 +3,24 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>Hypertopic JavaScript Library</title>
-		
-		<link type="text/css" href="css/blitzer/jquery-ui-1.8.4.custom.css" rel="stylesheet" />	
+
+		<link type="text/css" href="css/blitzer/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
 		<link type="text/css" href="css/lasuli.css" rel="stylesheet" />
 		<link type="text/css" href="css/ui.jqgrid.css" rel="stylesheet" />
-		
+
 		<script type="text/javascript" src="js/jquery-1.4.2.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
 		<!--<script type="text/javascript" src="js/i18n/grid.locale-en.js"></script>
 		<script type="text/javascript" src="js/jquery.jqGrid.min.js"></script>//-->
-		
+
 		<link type="text/css" href="css/jquery.contextMenu.css" rel="stylesheet" />
 		<script type="text/javascript" src="js/jquery.contextMenu.js"></script>
 		<script type="text/javascript" src="js/jquery.tinysort.js"></script>
 		<script type="text/javascript" src="js/jquery.easing.1.3.js"></script>
-		
+
 		<script type="text/javascript" src="js/lasuli.js"></script>
 		<script type="text/javascript" src="js/lasuli.ui.js"></script>
-		
+
   	<script language="javascript">
   		function reload_sidebar()
   		{
@@ -28,7 +28,7 @@
   		}
   		$(document).bind('dblclick',reload_sidebar);
   	</script>
-  	
+
 	</head>
 <body>
 <!-- Add attribute dialog //-->
@@ -55,11 +55,11 @@
 </div>
 
 <!-- message dialog //-->
-<div id="message-dialog" title="Information" class="hide"> 
-	<p> 
-		<span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 50px 0;"></span> 
+<div id="message-dialog" title="Information" class="hide">
+	<p>
+		<span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 50px 0;"></span>
 		<span id="message"></span>
-	</p> 
+	</p>
 </div>
 
 <!-- Context menu for tagcloud //-->
@@ -85,7 +85,7 @@
 	  <h3 id="h3-entity-name">Entity Name</h3>
 	  <table id="attribute-grid"></table>
 	  <div id="attribute-toolbar"></div>
-	  
+
 	  <h3 id="h3-related-topics">Related Topics</h3>
 	  <div id="tags">
   		<ul></ul>
@@ -109,12 +109,12 @@
 	</div>
 </div>
 
-<!-- status bar //-->	
+<!-- status bar //-->
 <div id="overlay-div" class="hide"></div>
 <div id="status-bar" class="hide">
   <div id="progressbar"></div>
 </div>
-<input type="button" onclick="Observers.notify('lasuli.contextmenu.enable', null);" value="enable">
-<input type="button" onclick="Observers.notify('lasuli.contextmenu.disable', null);" value="disable">
+<!--<input type="button" onclick="Observers.notify('lasuli.contextmenu.doShow', null);" value="enable">
+<input type="button" onclick="Observers.notify('lasuli.contextmenu.doHide', null);" value="disable"> //-->
 </body>
 </html>
