@@ -6,6 +6,7 @@
 <overlay id="lasuliOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 <script src="chrome://lasuli/content/js/lasuli.js" type="application/x-javascript" />
+<script src="chrome://lasuli/content/js/lasuli.hypertopic.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.core.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.highlighter.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.mozillaContextMenu.js" type="application/x-javascript" />

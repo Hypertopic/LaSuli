@@ -29,7 +29,7 @@ lasuli.ui = {
         var viewpointID = $(ui.tab).attr("href").substr(1);
         logger.info(viewpointID);
         Observers.notify("lasuli.ui.doClearViewpointPanel", viewpointID);
-        Observers.notify("lasuli.core.doLoadTags", viewpointID);
+        Observers.notify("lasuli.core.doLoadKeywords", viewpointID);
         Observers.notify("lasuli.core.doLoadFragments", viewpointID);
       }
       else
@@ -75,6 +75,8 @@ lasuli.ui = {
 
 		//Noticy the core to load all viewpoints.
 		Observers.notify("lasuli.core.doListViewpoints", null);
+
+    $('#txtViewpoint').focus(function(){ $(this).select(); });
 
 		//When click enter key also create viewpoint
 		$('#txtViewpoint').keyup(function(event){
@@ -607,16 +609,10 @@ lasuli.ui = {
 
   doShowViewpoints : function(viewpoints){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpoints");
-    //logger.debug(viewpoints);
     $('#viewpoints-ul li').hide().remove();
-    //logger.debug(typeof(viewpoints));
-    //logger.debug(viewpoints.length);
-    if(typeof(viewpoints) == "object" && viewpoints.length > 0)
-      for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++){
-        //logger.debug("adding:" + viewpoint.name);
-        $("#viewpoints-ul").append("<li uri='" + viewpoint.id + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
-                                   + viewpoint.name + "</a></li>");
-      }
+    for(var viewpointID in viewpoints)
+      $("#viewpoints-ul").append("<li uri='" + viewpointID + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
+                                   + viewpoints[viewpointID] + "</a></li>");
   },
 
   doShowUsers : function(users){
@@ -664,30 +660,23 @@ lasuli.ui = {
       }
   },
 
-  doShowTagCloud : function(topics){
+  doShowTagCloud : function(tags){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTagCloud");
-    logger.debug(topics);
+    logger.debug(tags);
     $("#tags ul li").hide().remove();
-    if(!topics) return false;
-
-    var tags = {};
-    for(var i=0, topic; topic = topics[i]; i++)
-      if(!tags[topic.name])
-        tags[topic.name] = (topic.highlight) ? topic.highlight.length : 1;
-      else
-        tags[topic.name] = tags[topic.name] + ((topic.highlight) ? topic.highlight.length : 1);
+    if(!tags) return false;
 
     var max = 0;
     var min = 32768;
     for(var name in tags)
     {
-      if(tags[name] > max) max = tags[name];
-      if(tags[name] < min) min = tags[name];
+      if(tags[name].size > max) max = tags[name].size;
+      if(tags[name].size < min) min = tags[name].size;
     }
     //var_dump("UI.init.js", "max:" + max + ", min:" + min, 4);
     for(var name in tags)
     {
-      var size = Math.round((tags[name] - min) / (max-min) * 4) + 1;
+      var size = Math.round((tags[name].size - min) / (max-min) * 4) + 1;
       //var_dump("UI.init.js", "topics[name].length:" + topics[name].length, 4);
       var content = "<li class='tag" + size + "'><a>" + name + "</a></li>";
       $("#tags ul").append(content);
@@ -754,14 +743,13 @@ lasuli.ui = {
 
   },
 
-  doShowTags : function(tags){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTags");
-    logger.debug(tags);
-    if(tags.length == 0) return false;
+  doShowKeywords : function(keywords){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowKeywords");
     var html = "";
     var viewpointID = null;
-    for(var i=0; topic = tags[i]; i++)
+    for(var topicID in keywords)
     {
+      var topic = keywords[topicID];
       if(!viewpointID) viewpointID = topic.viewpointID;
       var el = 'div#' + topic.viewpointID + ' ul.topics-ul li a[uri="' + topic.topicID + '"]';
       logger.info(el);
@@ -771,7 +759,7 @@ lasuli.ui = {
       //logger.debug(html);
     }
     //logger.info(viewpointID);
-    //logger.debug(html);
+    logger.debug(html);
     if(viewpointID && $('#' + viewpointID).length > 0)
       $('#' + viewpointID).find(".topics-ul").append(html);
   },

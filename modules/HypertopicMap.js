@@ -183,19 +183,19 @@ let HypertopicMap = {
     return RESTDatabase.httpPut(item);
   },
 
-  reservedWords : new Array("highlight","name","resource","thumbnail","topic","upper","user","resource", "item_name", "item_corpus", "highlights", "_id", "_rev"),
+  reservedWords : new Array("highlight","name","resource","thumbnail","topic","topics","upper","user","resource", "item_name", "item_corpus", "highlights", "_id", "_rev"),
 
   listItemDescriptions : function(itemID)
   {
     var logger = Log4Moz.repository.getLogger("HypertopicMap.listItemDescriptions");
     var item = RESTDatabase.httpGet(itemID);
-    logger.debug(item);
+    //logger.debug(item);
     if(!item) return false;
     for(var i=0, word; word = this.reservedWords[i]; i++)
       if(word in item)
         delete item[word];
 
-    logger.debug(item);
+    //logger.debug(item);
     return item;
   },
 

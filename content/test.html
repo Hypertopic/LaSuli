@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>Hypertopic JavaScript Library</title>
+
+		<link type="text/css" href="css/blitzer/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+		<link type="text/css" href="css/lasuli.css" rel="stylesheet" />
+		<link type="text/css" href="css/ui.jqgrid.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="js/jquery-1.4.2.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
+		<!--<script type="text/javascript" src="js/i18n/grid.locale-en.js"></script>
+		<script type="text/javascript" src="js/jquery.jqGrid.min.js"></script>//-->
+
+		<link type="text/css" href="css/jquery.contextMenu.css" rel="stylesheet" />
+		<script type="text/javascript" src="js/jquery.contextMenu.js"></script>
+		<script type="text/javascript" src="js/jquery.tinysort.js"></script>
+		<script type="text/javascript" src="js/jquery.easing.1.3.js"></script>
+
+		<script type="text/javascript" src="js/lasuli.js"></script>
+		<script type="text/javascript" src="js/lasuli.hypertopic.js"></script>
+		<script type="text/javascript" src="js/lasuli.core.js"></script>
+
+  	<script language="javascript">
+  		function reload_sidebar()
+  		{
+  			self.location.reload();
+  		}
+  		function init(){
+        lasuli.hypertopic.currentUrl = 'http://cassandre/text/d0';
+        log(lasuli.hypertopic.itemID);
+        log(lasuli.hypertopic.tags);
+        log(lasuli.hypertopic.viewpoints);
+        /*log(lasuli.hypertopic.itemName);
+        log(lasuli.hypertopic.attributes);
+        log(lasuli.hypertopic.items);
+        lasuli.hypertopic.viewpointID = '5a03d6d794ec4b9215f7cba8600c0739';
+        log(lasuli.hypertopic.keywords);
+        log(lasuli.hypertopic.topics);
+        log(lasuli.hypertopic.fragments);
+        log(lasuli.hypertopic.myCorpusID);
+        log(lasuli.hypertopic.users);
+        log(lasuli.hypertopic.allFragments);*/
+  		}
+  		function log(str){
+  		  (typeof(str) == "string") ? $('#result').append("<p>" + str + "</p>") : $('#result').append("<p>" + JSON.stringify(str) + "</p>");
+  		}
+
+  		$(document).bind('dblclick',reload_sidebar);
+  	</script>
+
+	</head>
+<body>
+<div id="result"></div>
+<input type="button" onclick="init()" value="init">
+</body>
+</html>
