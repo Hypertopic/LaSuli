@@ -202,7 +202,7 @@ lasuli.core = {
     this.users = new Array();
     this.tags = new Array();
     this.topics = new Array();
-
+    this.eTopics = new Array();
     if(!url || url == "about:blank")
     {
       Observers.notify("lasuli.ui.doBlockUI", null);
@@ -568,15 +568,16 @@ lasuli.core = {
 
     var viewpoint = HypertopicMap.getViewpoint(viewpointID);
     logger.debug(viewpoint);
-    var analysisTopics = new Array();
+    this.eTopics = new Array();
     for(var id in viewpoint)
       if(viewpoint[id].name && topicIDs.indexOf(id) < 0)
       {
         var i = this.topics.length + analysisTopics.length;
-        analysisTopics.push({"viewpointID": viewpointID, "topicID": id, "name": viewpoint[id].name, "color": colorUtil.index2rgb(i)});
+        this.eTopics.push({"viewpointID": viewpointID, "topicID": id, "name": viewpoint[id].name, "color": colorUtil.index2rgb(i)});
       }
 
-    topics = topics.concat(analysisTopics);
+    topics = topics.concat(this.eTopics);
+
     Observers.notify("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments} );
     //Enable the mozilla context menu
     Observers.notify('lasuli.contextmenu.doShow', topics);
@@ -617,12 +618,20 @@ lasuli.core = {
             this.topics[i].highlight.splice(j, 1);
             //logger.debug(this.topics[i].highlight);
             j--;
+            if(this.topics[i].highlight.length == 0)
+            {
+              this.eTopics.push(this.topics[i]);
+              this.topics[i].splice(i,1);
+              i--;
+              break;
+            }
           }
       }
       //logger.debug(this.topics);
       //logger.debug(tmp);
       var found = false;
       if(tmp)
+      {
         for(var i=0, topic; topic = this.topics[i];i++)
         {
           if(topic.viewpoint != arg.viewpointID) continue;
@@ -633,17 +642,29 @@ lasuli.core = {
             found = true;
           }
         }
+        for(var i=0, topic; topic = this.eTopics[i];i++)
+        {
+          if(topic.viewpoint != arg.viewpointID) continue;
+
+          if(topic.id == arg.targetTopicID){
+            if(!topic.highlight) this.eTopics[i].highlight = new Array();
+            this.eTopics[i].highlight.push(tmp);
+            this.topics.push(this.eTopics[i]);
+            this.eTopics[i].splice(i,1);
+            i--;
+            found = true;
+          }
+        }
+      }
       logger.debug(found);
       if(!found)
       {
         var topic = HypertopicMap.getTopic(arg.viewpointID, arg.targetTopicID);
-        /*logger.debug(topic);
-        if(!topic.highlight) topic.highlight = new Array();
-        topic.highlight.push(tmp);*/
         this.topics.push(topic);
       }
       logger.debug(this.topics);
       //Update tagcloud
+      //TODO when the topics highlight is null move this topic to eTopics
       Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
       Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
     }
@@ -663,6 +684,7 @@ lasuli.core = {
         for(var j=0, row; row = this.topics[i].highlight[j]; j++)
           if(row.id == fragment.fragmentID){
             this.topics[i].highlight.splice(j, 1);
+            //TODO when the topics highlight is null move this topic to eTopics
             j--;
           }
       Observers.notify("lasuli.ui.doRemoveFragment", fragment.fragmentID );
@@ -670,12 +692,12 @@ lasuli.core = {
     }
   },
 
-  doAddAnalysis: function(viewpointID){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doAddAnalysis");
+  _addAnalysis : function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core._addAnalysis");
     var topicID = HypertopicMap.createTopicIn(viewpointID, new Array());
     if(!topicID)
     {
-      //TODO show message
+      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.topic.create.failed')});
       return false;
     }
     logger.debug(topicID);
@@ -683,14 +705,20 @@ lasuli.core = {
     var result = HypertopicMap.renameTopic(viewpointID, topicID, topicName);
     logger.debug(result);
     var topic = HypertopicMap.getTopic(viewpointID, topicID);
-    //this.topics.push(topic);
-    topic.color = colorUtil.index2rgb(this.topics.length);
+    this.eTopics.push(topic);
+    topic.color = colorUtil.index2rgb(this.topics.length + this.eTopics.length);
     topic.viewpointID = topic.viewpoint;
     topic.topicID = topic.id;
     logger.debug(topic);
 
     Observers.notify("lasuli.ui.doAddAnalysis", topic );
     Observers.notify("lasuli.contextmenu.doAddMenuItem", topic );
+  },
+
+  doAddAnalysis: function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doAddAnalysis");
+    logger.debug(viewpointID);
+    this._addAnalysis(viewpointID);
   },
 
   doRenameAnalysis : function(arg){
@@ -710,6 +738,11 @@ lasuli.core = {
           this.topics[i].name = newName;
         }
       }
+      //Update the cache of non-used-analysis topics
+      for(var i=0, topic; topic = this.eTopics[i]; i++)
+        if(topic.id == topicID && topic.viewpoint == viewpointID)
+          this.eTopics[i].name = newName;
+
       //Repaint the tagcloud
       logger.debug("this.topics");
       logger.debug(this.topics);
@@ -730,14 +763,23 @@ lasuli.core = {
     logger.debug(result);
     if(result)
     {
+      var shouldTagCloud = false;
       for(var i=0, topic; topic = this.topics[i]; i++)
         if(topic.id == topicID && topic.viewpoint == viewpointID)
         {
           this.topics.splice(i, 1);
           i--;
+          shouldTagCloud = true;
+        }
+      for(var i=0, topic; topic = this.eTopics[i]; i++)
+        if(topic.id == topicID && topic.viewpoint == viewpointID)
+        {
+          this.eTopics.splice(i, 1);
+          i--;
         }
       //Repaint the tagcloud
-      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+      if(shouldTagCloud)
+        Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
 
       Observers.notify("lasuli.ui.doDestroyAnalysis", arg );
     }
@@ -748,49 +790,23 @@ lasuli.core = {
     }
   },
 
-  doHighlightMenuClick: function(topic){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doHighlightMenuClick");
-    logger.debug(topic);
-    var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
-    var win = wm.getMostRecentWindow("navigator:browser");
-    var content = win.getBrowser().contentWindow;
-    var selection = content.getSelection();
-    logger.debug("selection:" + selection);
-    var strContent = selection + "";
-    strContent = strContent.trim();
-    if(strContent == ""){
-      alert(_("null.content.selected"));
-      return false;
-    }
-    var range = selection.getRangeAt(0);
-    var startContainer = range.startContainer;
-    var endContainer = range.endContainer;
-    var startOffset = range.startOffset;
-    var endOffset = range.endOffset;
+  doCreateFragment : function(fragment){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
+    logger.debug(fragment);
 
-    var treewalker = lasuli.highlighter.getTreeWalker();
-    var curPos = 0;
-    var startPos,endPos;
-    while(treewalker.nextNode())
-    {
-        var node = treewalker.currentNode;
-        if(node.isSameNode(startContainer))
-        {
-          startPos = curPos + startOffset;
-          //debug("found start pos:" + fragment.startPos);
-        }
-        if(node.isSameNode(endContainer))
-        {
-          endPos = curPos + endOffset;
-          //debug("found end pos:" + fragment.endPos);
-        }
+    if(!this.itemID) this.createItem();
+    fragment.itemID = this.itemID;
 
-        curPos += node.data.length;
-    }
-    if(!startPos || !endPos) return false;
-    logger.debug(new Array(startPos, endPos));
-    logger.debug(strContent);
-    //HypertopicMap.tagFragment(this.itemID, new Array(startPos, endPos), strContent, topic.viewpointID, topic.topicID);
+    if(!fragment.topicID)
+
+    fragment.fragmentID = HypertopicMap.tagFragment(this.itemID, new Array(startPos, endPos), strContent, fragment.viewpointID, fragment.topicID);
+
+    //TODO topicID is null, create topic first
+
+    //TODO add the fragment to cache
+
+    Observers.notify("lasuli.ui.doAddFragments", {"fragments": new Array(fragment)});
+    //TODO update the tag cloud
   }
 }
 

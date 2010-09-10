@@ -803,6 +803,7 @@ lasuli.ui = {
 
   doAddFragments : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doAddFragments");
+    logger.debug(arg);
     var fragments = arg.fragments;
     for(var i=0, fragment; fragment = fragments[i]; i++)
     {
@@ -937,8 +938,55 @@ lasuli.ui = {
 
   doDisplayItemName : function(name){
     $("h3#h3-entity-name").html(name);
-  }
+  },
 
+  doHighlightMenuClick: function(topic){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
+    try{ topic = JSON.parse(topic); }catch(e){}
+    logger.debug(topic);
+    var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
+    var win = wm.getMostRecentWindow("navigator:browser");
+    var content = win.getBrowser().contentWindow;
+    var selection = content.getSelection();
+    logger.debug("selection:" + selection);
+    var strContent = selection + "";
+    strContent = strContent.trim();
+    if(strContent == ""){
+      alert(_("null.content.selected"));
+      return false;
+    }
+    var range = selection.getRangeAt(0);
+    var startContainer = range.startContainer;
+    var endContainer = range.endContainer;
+    var startOffset = range.startOffset;
+    var endOffset = range.endOffset;
+
+    var treewalker = lasuli.highlighter.getTreeWalker();
+    var curPos = 0;
+    var startPos,endPos;
+    while(treewalker.nextNode())
+    {
+        var node = treewalker.currentNode;
+        if(node.isSameNode(startContainer))
+          startPos = curPos + startOffset;
+        if(node.isSameNode(endContainer))
+          endPos = curPos + endOffset;
+
+        curPos += node.data.length;
+    }
+    if(!startPos || !endPos) return false;
+    logger.debug(new Array(startPos, endPos));
+    logger.debug(strContent);
+    var viewpointID;
+    if(topic.viewpointID)
+      viewpointID = topic.viewpointID;
+    else
+      viewpointID = $('div#tabs li.ui-tabs-selected a').attr('href').substr(1);
+
+    var topicID = (topic.topicID) ? topic.topicID : null;
+    var fragment = { "viewpointID": viewpointID, "topicID": topicID, "startPos": startPos, "endPos": endPos, "text": strContent };
+    Observers.notify("lasuli.core.doCreateFragment", fragment);
+  }
 }
 
 
