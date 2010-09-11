@@ -142,7 +142,7 @@ lasuli.hypertopic = {
     try{
       corpora = HypertopicMap.listCorpora(HypertopicMap.user);
     }catch(e){
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('couchdb.inaccessible', [HypertopicMap.baseUrl])});
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('couchdb.inaccessible', [HypertopicMap.baseUrl])});
       logger.fatal("CouchDB is not accessible!");
 		  return false;
 		}
@@ -271,7 +271,7 @@ lasuli.hypertopic = {
     logger.debug(corpusID);
     if(!corpusID)
     {
-		  Observers.notify("lasuli.ui.doShowMessage", {"title": _("Warning"), "content": _('create.corpus.warning', [HypertopicMap.user])});
+		  dispatch("lasuli.ui.doShowMessage", {"title": _("Warning"), "content": _('create.corpus.warning', [HypertopicMap.user])});
 		  return false;
 		}
     this._myCorpusID = corpusID;
@@ -313,7 +313,7 @@ lasuli.hypertopic = {
     for each (var keyword in this.keywords)
       if(keyword.name == name)
       {
-        Observers.notify("lasuli.ui.doShowMessage", {"title": _("Warning"), "content": _('tagItem.already.existed', [name])});
+        dispatch("lasuli.ui.doShowMessage", {"title": _("Warning"), "content": _('tagItem.already.existed', [name])});
         return false;
       }
 
@@ -355,7 +355,7 @@ lasuli.hypertopic = {
         logger.fatal("error when try to create tag");
         logger.fatal(tag);
         logger.fatal(e);
-        Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.createtopic.failed', [name])});
+        dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.createtopic.failed', [name])});
       }
     //Tag the item
     try{
@@ -364,7 +364,7 @@ lasuli.hypertopic = {
       logger.fatal("error when try to tag the item: " + this.itemID);
       logger.fatal(tag);
       logger.fatal(e);
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.failed', [tag.name])});
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.failed', [tag.name])});
     }
     this._keywords[keyword.topicID] = keyword;
     logger.debug(keyword);
@@ -415,7 +415,7 @@ lasuli.hypertopic = {
     var topicID = HypertopicMap.createTopicIn(viewpointID, new Array());
     if(!topicID)
     {
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.topic.create.failed')});
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.topic.create.failed')});
       return false;
     }
     logger.debug(topicID);
@@ -441,14 +441,19 @@ lasuli.hypertopic = {
     if(result)
     {
       delete this._topics[topicID];
-      //Update the tag cloud cache
-      if(this._tags[name])
-        for(var i=0, topic; topic = this._tags[name][i]; i++)
-          if(topic.viewpointID == viewpointID && topic.topicID == topicID)
-          {
-            this._tags[name].splice(i, 1);
-            i--;
-          }
+      return true;
+    }
+    return false;
+  },
+
+  renameAnalysis : function(viewpointID, topicID, name, newName){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.renameAnalysis");
+    logger.debug(newName);
+    var result = HypertopicMap.renameTopic(viewpointID, topicID, newName);
+    logger.debug(result);
+    if(result)
+    {
+      this._topics[topicID].name = newName;
       return true;
     }
     return false;

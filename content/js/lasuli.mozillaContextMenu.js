@@ -21,7 +21,7 @@ lasuli.contextmenu = {
 
     menu.setAttribute('label', topic.name);
     menu.setAttribute('insertafter', "context-sep-selectall");
-    menu.setAttribute('oncommand', "Observers.notify('lasuli.core.doHighlightMenuClick', '" + JSON.stringify({"viewpointID": viewpointID, "topicID": topicID, "name": topicName}) + "' );");
+    menu.setAttribute('oncommand', "dispatch('lasuli.core.doHighlightMenuClick', '" + JSON.stringify({"viewpointID": viewpointID, "topicID": topicID, "name": topicName}) + "' );");
     menu.setAttribute('topicID', topicID);
     menu.setAttribute('viewpointID', viewpointID);
     if(topic.color)

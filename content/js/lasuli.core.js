@@ -78,31 +78,31 @@ lasuli.core = {
     //If opened an empty page, block the lasuli
     if(!url || url == "about:blank")
     {
-      Observers.notify("lasuli.ui.doBlockUI", null);
+      dispatch("lasuli.ui.doBlockUI", null);
       return false;
     }
-    Observers.notify("lasuli.ui.doUnBlockUI", null);
+    dispatch("lasuli.ui.doUnBlockUI", null);
 
-    Observers.notify("lasuli.ui.doCloseViewpointPanel", null);
-    Observers.notify("lasuli.core.doLoadDocument", null);
+    dispatch("lasuli.ui.doCloseViewpointPanel", null);
+    dispatch("lasuli.core.doLoadDocument", null);
   },
 
   doLoadDocument : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
-    Observers.notify("lasuli.ui.doClearDocumentPanel", null);
+    dispatch("lasuli.ui.doClearDocumentPanel", null);
 
-    Observers.notify("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
-    Observers.notify("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
-    Observers.notify("lasuli.ui.doShowUsers", lasuli.hypertopic.users);
-    Observers.notify("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
+    dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
+    dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
+    dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.users);
+    dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
     // Highlight all fragments
-    Observers.notify("lasuli.highlighter.doHighlight", lasuli.hypertopic.allFragments);
+    dispatch("lasuli.highlighter.doHighlight", lasuli.hypertopic.allFragments);
   },
 
   doListViewpoints: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doListViewpoints");
     //Notify lasuli.ui to show the viewpoints
-    Observers.notify("lasuli.ui.doShowViewpoints", lasuli.hypertopic.viewpoints);
+    dispatch("lasuli.ui.doShowViewpoints", lasuli.hypertopic.viewpoints);
   },
 
   doCreateViewpoint : function(viewpointName){
@@ -121,7 +121,7 @@ lasuli.core = {
     HypertopicMap.destroyViewpoint(viewpointID);
     lasuli.hypertopic.viewpoints = null;
     this.doListViewpoints();
-    Observers.notify("lasuli.ui.doCloseViewpointPanel", viewpointID);
+    dispatch("lasuli.ui.doCloseViewpointPanel", viewpointID);
   },
 
 
@@ -130,24 +130,29 @@ lasuli.core = {
     logger.debug(arg);
     try{
       lasuli.hypertopic.itemName = arg.newName;
-      Observers.notify('lasuli.ui.doShowItemName', arg.newName);
+      dispatch('lasuli.ui.doShowItemName', arg.newName);
     }catch(e){
       //TODO Show error message
       logger.fatal('failed to rename item');
-      Observers.notify('lasuli.ui.doShowItemName', arg.name);
+      dispatch('lasuli.ui.doShowItemName', arg.name);
     }
+  },
+
+  doReloadTagCloud : function(){
+    lasuli.hypertopic.tags = null;
+    dispatch('lasuli.ui.doShowTagCloud', lasuli.hypertopic.tags);
   },
 
   doCreateAttribute : function(attribute){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateAttribute");
     lasuli.hypertopic.createAttribute(attribute);
-    Observers.notify("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
+    dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
   },
 
   doDestroyAttribute : function(attribute){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyAttribute");
     lasuli.hypertopic.destroyAttribute(attribute);
-    Observers.notify("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
+    dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
   },
 
   doOpenViewpointByTopicName : function(topicName) {
@@ -160,7 +165,7 @@ lasuli.core = {
     for(var i=0, topic; topic = topics[i]; i++)
       viewpoints.push({"id": topic.viewpointID, "name": lasuli.hypertopic.getViewpointName(topic.viewpointID)});
     logger.debug(viewpoints);
-    Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
+    dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
 
   doOpenViewpointByUser : function(user){
@@ -171,14 +176,14 @@ lasuli.core = {
       viewpoints.push({"id": viewpointID, "name": lasuli.hypertopic.getViewpointName(viewpointID)});
     logger.debug(viewpoints);
     //TODO filter not related viewpoints
-    Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
+    dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
 
   doLoadKeywords : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadKeywords");
     logger.debug(viewpointID);
     lasuli.hypertopic.viewpointID = viewpointID;
-    Observers.notify("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
+    dispatch("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
   },
 
   doCreateKeyword : function(keyword) {
@@ -190,9 +195,7 @@ lasuli.core = {
     if(!result) return false;
 
     logger.debug(result);
-    Observers.notify("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
-    lasuli.hypertopic.tags = null;
-    Observers.notify("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
+    dispatch("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
   },
 
   doRemoveKeyword : function(keyword) {
@@ -201,12 +204,10 @@ lasuli.core = {
     var result = lasuli.hypertopic.destroyKeyword(keyword);
     logger.debug(result);
     if(!result)
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.delete.failed', [tag.name])});
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.delete.failed', [tag.name])});
     else
     {
-      Observers.notify("lasuli.ui.doRemoveKeyword", keyword);
-      lasuli.hypertopic.tags = null;
-      Observers.notify("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
+      dispatch("lasuli.ui.doRemoveKeyword", keyword);
     }
   },
 
@@ -215,29 +216,99 @@ lasuli.core = {
     var result = false;
     if(keyword.newName == keyword.name)
     {
-      Observers.notify("lasuli.ui.doRestoreKeyword",keyword);
+      dispatch("lasuli.ui.doRestoreKeyword",keyword);
       return false;
     }
     var result = lasuli.hypertopic.renameKeyword(keyword);
 
     if(result){
       keyword.name = keyword.newName;
-      Observers.notify("lasuli.ui.doRestoreKeyword",keyword);
-      lasuli.hypertopic.tags = null;
-      Observers.notify("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
+      dispatch("lasuli.ui.doRestoreKeyword",keyword);
     }
     else{
-      Observers.notify("lasuli.ui.doRestoreKeyword",keyword);
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.rename.failed', [keyword.name,keyword.newName])});
+      dispatch("lasuli.ui.doRestoreKeyword",keyword);
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.rename.failed', [keyword.name,keyword.newName])});
     }
+  },
+
+  doCreateAnalysis: function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateAnalysis");
+    logger.debug(viewpointID);
+    var topic = lasuli.hypertopic.createAnalysis(viewpointID);
+    if(topic){
+      dispatch("lasuli.ui.doCreateAnalysis", topic );
+      dispatch("lasuli.contextmenu.doAddMenuItem", topic );
+    }
+  },
+
+  doDestroyAnalysis : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyAnalysis");
+    var viewpointID = arg.viewpointID;
+    var topicID = arg.topicID;
+    var result = lasuli.hypertopic.destroyAnalysis(arg.viewpointID, arg.topicID, arg.name);
+    if(result){
+      dispatch("lasuli.ui.doDestroyAnalysis", arg );
+      dispatch("lasuli.contextmenu.doRemoveMenuItem", topicID );
+    }
+    else
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
+  },
+
+  doRenameAnalysis : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameAnalysis");
+    logger.debug(arg);
+    var result =lasuli.hypertopic.renameAnalysis(arg.viewpointID, arg.topicID, arg.name, arg.newName);
+    if(result){
+      dispatch("lasuli.contextmenu.doUpdateMenuItem", {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "name": arg.newName});
+      arg.name = arg.newName;
+    }
+
+    dispatch("lasuli.ui.doRestoreAnalysis", arg );
   },
 
   doLoadFragments : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadFragments");
     lasuli.hypertopic.viewpointID = viewpointID;
-    Observers.notify("lasuli.ui.doShowFragments", {"topics": lasuli.hypertopic.topics, "fragments": lasuli.hypertopic.fragments} );
+    dispatch("lasuli.ui.doShowFragments", {"topics": lasuli.hypertopic.topics, "fragments": lasuli.hypertopic.fragments} );
     //Enable the mozilla context menu
-    Observers.notify('lasuli.contextmenu.doShow', lasuli.hypertopic.topics);
+    dispatch('lasuli.contextmenu.doShow', lasuli.hypertopic.topics);
+  },
+
+  doCreateFragment : function(fragment){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
+    logger.debug(fragment);
+
+    if(!this.itemID) this.createItem();
+    fragment.itemID = this.itemID;
+
+    if(!fragment.topicID)
+
+    fragment.fragmentID = HypertopicMap.tagFragment(this.itemID, new Array(startPos, endPos), strContent, fragment.viewpointID, fragment.topicID);
+
+    //TODO topicID is null, create topic first
+
+    //TODO add the fragment to cache
+
+    dispatch("lasuli.ui.doAddFragments", {"fragments": new Array(fragment)});
+    //TODO update the tag cloud
+  },
+
+  doUntagFragment : function(fragment){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doUntagFragment");
+    //logger.debug(fragment);
+    var result = HypertopicMap.untagFragment(fragment.itemID, fragment.fragmentID);
+    //logger.debug(result);
+    if(result){
+      for(var i=0, topic; topic = this.topics[i];i++)
+        for(var j=0, row; row = this.topics[i].highlight[j]; j++)
+          if(row.id == fragment.fragmentID){
+            this.topics[i].highlight.splice(j, 1);
+            //TODO when the topics highlight is null move this topic to eTopics
+            j--;
+          }
+      dispatch("lasuli.ui.doRemoveFragment", fragment.fragmentID );
+      dispatch("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+    }
   },
 
   doMoveFragment : function(arg){
@@ -309,131 +380,15 @@ lasuli.core = {
       logger.debug(this.topics);
       //Update tagcloud
       //TODO when the topics highlight is null move this topic to eTopics
-      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
-      Observers.notify("lasuli.ui.doDropFragmentAccepted", arg );
+      dispatch("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
+      dispatch("lasuli.ui.doDropFragmentAccepted", arg );
     }
     else{
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});
-      Observers.notify("lasuli.ui.doDropFragmentDenied", arg );
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});
+      dispatch("lasuli.ui.doDropFragmentDenied", arg );
     }
-  },
-
-  doUntagFragment : function(fragment){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doUntagFragment");
-    //logger.debug(fragment);
-    var result = HypertopicMap.untagFragment(fragment.itemID, fragment.fragmentID);
-    //logger.debug(result);
-    if(result){
-      for(var i=0, topic; topic = this.topics[i];i++)
-        for(var j=0, row; row = this.topics[i].highlight[j]; j++)
-          if(row.id == fragment.fragmentID){
-            this.topics[i].highlight.splice(j, 1);
-            //TODO when the topics highlight is null move this topic to eTopics
-            j--;
-          }
-      Observers.notify("lasuli.ui.doRemoveFragment", fragment.fragmentID );
-      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
-    }
-  },
-
-  _addAnalysis : function(viewpointID){
-    var logger = Log4Moz.repository.getLogger("lasuli.core._addAnalysis");
-    var topicID = HypertopicMap.createTopicIn(viewpointID, new Array());
-    if(!topicID)
-    {
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.topic.create.failed')});
-      return false;
-    }
-    logger.debug(topicID);
-    var topicName = _("no.name");
-    var result = HypertopicMap.renameTopic(viewpointID, topicID, topicName);
-    logger.debug(result);
-    var topic = HypertopicMap.getTopic(viewpointID, topicID);
-    this.eTopics.push(topic);
-    topic.color = colorUtil.index2rgb(this.topics.length + this.eTopics.length);
-    topic.viewpointID = topic.viewpoint;
-    topic.topicID = topic.id;
-    logger.debug(topic);
-
-
-  },
-
-  doAddAnalysis: function(viewpointID){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doAddAnalysis");
-    logger.debug(viewpointID);
-    var topic = lasuli.hypertopic.createAnalysis(viewpointID);
-    if(topic){
-      Observers.notify("lasuli.ui.doAddAnalysis", topic );
-      Observers.notify("lasuli.contextmenu.doAddMenuItem", topic );
-    }
-  },
-
-  doRenameAnalysis : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameAnalysis");
-    var viewpointID = arg.viewpointID;
-    var topicID = arg.topicID;
-    var name = arg.name;
-    var newName = arg.newName;
-    var result = HypertopicMap.renameTopic(viewpointID, topicID, newName);
-    logger.debug(result);
-    if(result){
-      for(var i=0, topic; topic = this.topics[i]; i++)
-      {
-        logger.debug(topic.id + "," + topic.viewpoint + "|" + topicID + "," + viewpointID);
-        if(topic.id == topicID && topic.viewpoint == viewpointID){
-          logger.debug("found:" + i);
-          this.topics[i].name = newName;
-        }
-      }
-      //Update the cache of non-used-analysis topics
-      for(var i=0, topic; topic = this.eTopics[i]; i++)
-        if(topic.id == topicID && topic.viewpoint == viewpointID)
-          this.eTopics[i].name = newName;
-
-      //Repaint the tagcloud
-      logger.debug("this.topics");
-      logger.debug(this.topics);
-      logger.debug(this.tags);
-      Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
-      Observers.notify("lasuli.contextmenu.doUpdateMenuItem", {"viewpointID": viewpointID, "topicID": topicID, "name": newName});
-      delete arg.name;
-    }
-
-    Observers.notify("lasuli.ui.doRestoreAnalysis", arg );
-  },
-
-  doDestroyAnalysis : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyAnalysis");
-    var viewpointID = arg.viewpointID;
-    var topicID = arg.topicID;
-    var result = lasuli.hypertopic.destroyAnalysis(arg.viewpointID, arg.topicID, arg.name);
-    if(result){
-      Observers.notify("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
-      Observers.notify("lasuli.ui.doDestroyAnalysis", arg );
-      Observers.notify("lasuli.contextmenu.doRemoveMenuItem", topicID );
-    }
-    else
-      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
-  },
-
-  doCreateFragment : function(fragment){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
-    logger.debug(fragment);
-
-    if(!this.itemID) this.createItem();
-    fragment.itemID = this.itemID;
-
-    if(!fragment.topicID)
-
-    fragment.fragmentID = HypertopicMap.tagFragment(this.itemID, new Array(startPos, endPos), strContent, fragment.viewpointID, fragment.topicID);
-
-    //TODO topicID is null, create topic first
-
-    //TODO add the fragment to cache
-
-    Observers.notify("lasuli.ui.doAddFragments", {"fragments": new Array(fragment)});
-    //TODO update the tag cloud
   }
+
 }
 
 var lasuliPrefObserver = {

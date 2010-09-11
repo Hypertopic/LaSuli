@@ -28,12 +28,20 @@ lasuli.ui = {
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
         logger.info(viewpointID);
-        Observers.notify("lasuli.ui.doClearViewpointPanel", viewpointID);
-        Observers.notify("lasuli.core.doLoadKeywords", viewpointID);
-        Observers.notify("lasuli.core.doLoadFragments", viewpointID);
+        dispatch("lasuli.ui.doClearViewpointPanel", viewpointID);
+        dispatch("lasuli.core.doLoadKeywords", viewpointID);
+        dispatch("lasuli.core.doLoadFragments", viewpointID);
       }
       else
-        Observers.notify('lasuli.contextmenu.doHide', null);
+        dispatch('lasuli.contextmenu.doHide', null);
+      if($(ui.tab).hasClass("tab-document"))
+      {
+        dispatch("lasuli.core.doReloadTagCloud", null);
+      }
+      if($(ui.tab).hasClass("tab-add"))
+      {
+        dispatch("lasuli.core.doListViewpoints", null);
+      }
     });
 
     $('#tabs span.ui-icon-close').live('click', function() {
@@ -44,7 +52,7 @@ lasuli.ui = {
 
   initDocumentPanel : function(){
     //var browsingUrl = "http://cassandre/text/d0";
-    Observers.notify("lasuli.core.doLoadDocument", null);
+    dispatch("lasuli.core.doLoadDocument", null);
   },
 
   initPlusPanel : function(){
@@ -59,11 +67,11 @@ lasuli.ui = {
 		  if(viewpointName == "")
 		  {
 		    var message = {"title": _("Warning"), "content": _('create.viewpoint.warning')};
-		    Observers.notify("lasuli.ui.doShowMessage", message);
+		    dispatch("lasuli.ui.doShowMessage", message);
 		    return false;
 		  }
 		  logger.debug("Create viewpoint button click.\nViewpoint name:" + viewpointName);
-		  Observers.notify("lasuli.core.doCreateViewpoint", viewpointName);
+		  dispatch("lasuli.core.doCreateViewpoint", viewpointName);
 		});
 
 		var resizeInput = function(){
@@ -72,9 +80,6 @@ lasuli.ui = {
 		//Resize the input box
 		$(window).resize(resizeInput);
 		resizeInput();
-
-		//Noticy the core to load all viewpoints.
-		Observers.notify("lasuli.core.doListViewpoints", null);
 
     $('#txtViewpoint').focus(function(){ $(this).select(); });
 
@@ -100,9 +105,9 @@ lasuli.ui = {
       message.title = _("Warning");
       message.content = _("delete.viewpoint.warning", [viewpointName]);
       message.callback = function() {
-        Observers.notify("lasuli.core.doDestroyViewpoint", viewpointID);
+        dispatch("lasuli.core.doDestroyViewpoint", viewpointID);
       };
-      Observers.notify("lasuli.ui.doShowMessage", message);
+      dispatch("lasuli.ui.doShowMessage", message);
 
     });
     $('#viewpoints-ul li a').live('click', function(){
@@ -111,7 +116,7 @@ lasuli.ui = {
       var viewpointName = $(this).text();
       var viewpoints = new Array({"id": viewpointID, "name": viewpointName});
       logger.debug(viewpoints);
-      Observers.notify("lasuli.ui.doShowViewpointPanels", viewpoints);
+      dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
       return false;
     });
   },
@@ -123,7 +128,7 @@ lasuli.ui = {
       var topicID = $(this).next("a").attr("uri");
       var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
       if(typeof(topicID) == "string" && topicID.length >0)
-        Observers.notify("lasuli.core.doRemoveKeyword", {"topicID":topicID, "viewpointID": viewpointID});
+        dispatch("lasuli.core.doRemoveKeyword", {"topicID":topicID, "viewpointID": viewpointID});
       return false;
     });
 
@@ -156,7 +161,7 @@ lasuli.ui = {
         var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
         var topicName = container.data("topicName");
         var topicNewName = $(this).val();
-        Observers.notify("lasuli.core.doRenameKeyword", {"viewpointID":viewpointID, "topicID":topicID, "name": topicName, "newName": topicNewName});
+        dispatch("lasuli.core.doRenameKeyword", {"viewpointID":viewpointID, "topicID":topicID, "name": topicName, "newName": topicNewName});
         return false;
       });
 
@@ -193,7 +198,7 @@ lasuli.ui = {
       var topicName = $('#topic-name').val();
       var viewpointID = $("#tabs ul li.ui-state-active").find("a").attr("href").substr(1);
       $("#topic-dialog").dialog('close');
-      Observers.notify("lasuli.core.doCreateKeyword", {"viewpointID":viewpointID, "name": topicName});
+      dispatch("lasuli.core.doCreateKeyword", {"viewpointID":viewpointID, "name": topicName});
     };
 
     //Initial topic dialog
@@ -242,7 +247,7 @@ lasuli.ui = {
         var viewpointID = $(this).parent().attr("viewpointID");
         var topicID = $(this).parent().attr("topicID");
         var name = $(this).next().val();
-        Observers.notify("lasuli.core.doDestroyAnalysis", {"viewpointID":viewpointID, "topicID": topicID, "name": name});
+        dispatch("lasuli.core.doDestroyAnalysis", {"viewpointID":viewpointID, "topicID": topicID, "name": name});
         //return false;
       }
     });
@@ -271,13 +276,13 @@ lasuli.ui = {
       var viewpointID = $(this).parent().attr("viewpointID");
       var topicID = $(this).parent().attr("topicID");
       var itemID = $(this).parent().attr("itemID");
-      Observers.notify("lasuli.core.doUntagFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID, "itemID": itemID});
+      dispatch("lasuli.core.doUntagFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID, "itemID": itemID});
     });
 
     //Add analysis topic
     $('.add-analyses-img').live("click", function(){
       var viewpointID = $(this).parents("div.ui-tabs-panel").attr("id");
-      Observers.notify("lasuli.core.doAddAnalysis", viewpointID);
+      dispatch("lasuli.core.doCreateAnalysis", viewpointID);
     });
 
     //Edit analysis topic
@@ -303,12 +308,12 @@ lasuli.ui = {
         {
           //Sleep 500ms for capture the click on the delete icon
           Sync.sleep(500);
-          Observers.notify("lasuli.ui.doRestoreAnalysis", {
+          dispatch("lasuli.ui.doRestoreAnalysis", {
             "viewpointID": viewpointID, "topicID": topicID, "name": originalTopicName,
             "newName": newName, "originalSpan": originalSpan, "originalImage": originalImage});
         }
         else
-          Observers.notify("lasuli.core.doRenameAnalysis", {
+          dispatch("lasuli.core.doRenameAnalysis", {
             "viewpointID": viewpointID, "topicID": topicID, "name": originalTopicName,
             "newName": newName, "originalSpan": originalSpan, "originalImage": originalImage});
       });
@@ -345,7 +350,7 @@ lasuli.ui = {
 
       if (bValid) {
         var attribute = {"name": $('#attribute-name').val(), "value": $('#attribute-value').val()};
-        Observers.notify("lasuli.core.doCreateAttribute", attribute);
+        dispatch("lasuli.core.doCreateAttribute", attribute);
         $('#attribute-dialog').dialog('close');
       }
     };
@@ -427,14 +432,14 @@ lasuli.ui = {
       {
         var data = $("#attribute-grid").jqGrid('getRowData',gr);
         var attribute = {"name": data.name, "value": data.value};
-        Observers.notify("lasuli.core.doDestroyAttribute", attribute);
+        dispatch("lasuli.core.doDestroyAttribute", attribute);
       }
       else
       {
         var message = {};
         message.title = _("Warning");
         message.content = _("no-attribute-selected");
-        Observers.notify("lasuli.ui.doShowMessage", message);
+        dispatch("lasuli.ui.doShowMessage", message);
       }
 		});
 		//Modify selected attribute
@@ -452,7 +457,7 @@ lasuli.ui = {
         var message = {};
         message.title = _("Warning");
         message.content = _("no-attribute-selected");
-        Observers.notify("lasuli.ui.doShowMessage", message);
+        dispatch("lasuli.ui.doShowMessage", message);
       }
 		});*/
   },
@@ -515,11 +520,11 @@ lasuli.ui = {
         var newName = $(this).val();
         logger.debug(name + "," + newName);
         if(name == newName){
-          Observers.notify("lasuli.ui.doShowItemName", name);
+          dispatch("lasuli.ui.doShowItemName", name);
           $('div#tabs-document').data('itemName', null)
         }
         else
-          Observers.notify("lasuli.core.doRenameItem", {"name": name, "newName": newName});
+          dispatch("lasuli.core.doRenameItem", {"name": name, "newName": newName});
         event.stopImmediatePropagation();
         return false;
       });
@@ -645,7 +650,7 @@ lasuli.ui = {
     }
     $("li.actor a").click(function(){
       var user = $(this).attr("uri");
-      Observers.notify("lasuli.core.doOpenViewpointByUser", user);
+      dispatch("lasuli.core.doOpenViewpointByUser", user);
       return false;
     });
   },
@@ -697,7 +702,7 @@ lasuli.ui = {
     $("#tags ul li").tsort({order:"asc"});
     $("#tags ul li a").click(function(){
       var topicName = $(this).text();
-      Observers.notify("lasuli.core.doOpenViewpointByTopicName", topicName);
+      dispatch("lasuli.core.doOpenViewpointByTopicName", topicName);
       return false;
     });
   },
@@ -828,7 +833,7 @@ lasuli.ui = {
         $(el).find("ul").append(li_html);
     }
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
-    Observers.notify("lasuli.ui.doMakeFragmentsDragable", null);
+    dispatch("lasuli.ui.doMakeFragmentsDragable", null);
   },
 
   doShowFragments : function(arg){
@@ -839,8 +844,8 @@ lasuli.ui = {
     {
       lasuli.ui._initFragmentsContainer(topic);
     }
-    Observers.notify("lasuli.ui.doMakeFragmentsDroppable", null);
-    Observers.notify("lasuli.ui.doAddFragments", {"fragments": arg.fragments, "highlight": true} );
+    dispatch("lasuli.ui.doMakeFragmentsDroppable", null);
+    dispatch("lasuli.ui.doAddFragments", {"fragments": arg.fragments, "highlight": true} );
   },
 
 
@@ -877,7 +882,7 @@ lasuli.ui = {
           ui.helper.fadeOut();
           return;
         }
-        Observers.notify("lasuli.core.doMoveFragment", {"fragmentID": fragmentID, "sourceTopicID": sourceTopicID, "targetTopicID": targetTopicID, "helper": ui.helper,
+        dispatch("lasuli.core.doMoveFragment", {"fragmentID": fragmentID, "sourceTopicID": sourceTopicID, "targetTopicID": targetTopicID, "helper": ui.helper,
           "viewpointID": viewpointID, "itemID": itemID} );
       }
     });
@@ -896,7 +901,7 @@ lasuli.ui = {
     $('li.ui-draggable-dragging[fragmentID="' + arg.fragmentID + '"]').hide().remove();
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
     //TODO Update the highlight
-    Observers.notify("lasuli.ui.doMakeFragmentsDragable", null);
+    dispatch("lasuli.ui.doMakeFragmentsDragable", null);
   },
 
   doDropFragmentDenied : function(arg){
@@ -911,7 +916,7 @@ lasuli.ui = {
   },
 
 
-  doAddAnalysis: function(topic){
+  doCreateAnalysis: function(topic){
     lasuli.ui._initFragmentsContainer(topic);
     var el = "div.fragment-header[viewpointID='" + topic.viewpointID + "'][topicID='" + topic.topicID + "']";
     var span = $(el).find("span");
@@ -927,8 +932,7 @@ lasuli.ui = {
     var topicID = arg.topicID;
     var originalImage = arg.originalImage;
     var originalSpan = arg.originalSpan;
-    if(!arg.name)
-      originalSpan.text(arg.newName);
+    originalSpan.text(arg.name);
     var el="div.fragment-header[viewpointID='" + viewpointID + "'][topicID='" + topicID + "']";
     $(el).find('img.fragment-toggle').attr("src", originalImage);
     $(el).find('input').replaceWith(originalSpan);
@@ -989,7 +993,7 @@ lasuli.ui = {
 
     var topicID = (topic.topicID) ? topic.topicID : null;
     var fragment = { "viewpointID": viewpointID, "topicID": topicID, "startPos": startPos, "endPos": endPos, "text": strContent };
-    Observers.notify("lasuli.core.doCreateFragment", fragment);
+    dispatch("lasuli.core.doCreateFragment", fragment);
   }
 }
 
@@ -1008,5 +1012,5 @@ $(window).bind("load", function(){
 
 $(window).bind("unload", function(){
   lasuli.ui.unregister();
-  Observers.notify('lasuli.contextmenu.doHide', null);
+  dispatch('lasuli.contextmenu.doHide', null);
 });

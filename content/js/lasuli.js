@@ -9,13 +9,12 @@ if(typeof(include) == "undefined")
 if(typeof(Exception) == "undefined")
   var Exception = Components.Exception;
 
+
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/StringBundle.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/Observers.js");
-
-var dispatch = Observers.notify;
 
 /**
  * LaSuli namespace.

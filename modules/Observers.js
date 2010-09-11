@@ -35,7 +35,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-let EXPORTED_SYMBOLS = ["Observers"];
+let EXPORTED_SYMBOLS = ["Observers", "dispatch"];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -175,3 +175,4 @@ Subject.prototype = {
   getHelperForLanguage: function() {},
   getInterfaces: function() {}
 };
+var dispatch = function(funcName, obj){ Observers.notify(funcName, obj); };
