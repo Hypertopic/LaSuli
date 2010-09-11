@@ -848,7 +848,6 @@ lasuli.ui = {
     dispatch("lasuli.ui.doCreateFragments", {"fragments": arg.fragments, "highlight": true} );
   },
 
-
   doMakeFragmentsDragable : function(){
     $(".fragment").draggable(
       {

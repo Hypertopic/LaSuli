@@ -191,7 +191,7 @@ lasuli.hypertopic = {
         for(var k in item)
           if("coordinates" in item[k])
           {
-            logger.debug(item[k]);
+            //logger.debug(item[k]);
             coordinates[k]={ "startPos": item[k].coordinates[0][0], "endPos": item[k].coordinates[0][1]};
           }
       }

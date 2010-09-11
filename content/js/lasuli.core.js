@@ -96,6 +96,7 @@ lasuli.core = {
     dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.users);
     dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
     // Highlight all fragments
+    logger.debug(lasuli.hypertopic.allFragments);
     dispatch("lasuli.highlighter.doHighlight", lasuli.hypertopic.allFragments);
   },
 
