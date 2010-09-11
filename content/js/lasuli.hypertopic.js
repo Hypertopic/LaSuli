@@ -434,6 +434,26 @@ lasuli.hypertopic = {
     return topic;
   },
 
+  destroyAnalysis: function(viewpointID, topicID, name){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyAnalysis");
+    var result = HypertopicMap.destroyTopic(viewpointID, topicID);
+    logger.debug(result);
+    if(result)
+    {
+      delete this._topics[topicID];
+      //Update the tag cloud cache
+      if(this._tags[name])
+        for(var i=0, topic; topic = this._tags[name][i]; i++)
+          if(topic.viewpointID == viewpointID && topic.topicID == topicID)
+          {
+            this._tags[name].splice(i, 1);
+            i--;
+          }
+      return true;
+    }
+    return false;
+  },
+
   //Load all data of a specific viewpoint
   getViewpoint : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getViepwoint");

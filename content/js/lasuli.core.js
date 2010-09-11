@@ -406,35 +406,14 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyAnalysis");
     var viewpointID = arg.viewpointID;
     var topicID = arg.topicID;
-    var result = HypertopicMap.destroyTopic(viewpointID, topicID);
-    logger.debug(result);
-    if(result)
-    {
-      var shouldTagCloud = false;
-      for(var i=0, topic; topic = this.topics[i]; i++)
-        if(topic.id == topicID && topic.viewpoint == viewpointID)
-        {
-          this.topics.splice(i, 1);
-          i--;
-          shouldTagCloud = true;
-        }
-      for(var i=0, topic; topic = this.eTopics[i]; i++)
-        if(topic.id == topicID && topic.viewpoint == viewpointID)
-        {
-          this.eTopics.splice(i, 1);
-          i--;
-        }
-      //Repaint the tagcloud
-      if(shouldTagCloud)
-        Observers.notify("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
-
+    var result = lasuli.hypertopic.destroyAnalysis(arg.viewpointID, arg.topicID, arg.name);
+    if(result){
+      Observers.notify("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
       Observers.notify("lasuli.ui.doDestroyAnalysis", arg );
+      Observers.notify("lasuli.contextmenu.doRemoveMenuItem", topicID );
     }
     else
-    {
       Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
-      return false;
-    }
   },
 
   doCreateFragment : function(fragment){

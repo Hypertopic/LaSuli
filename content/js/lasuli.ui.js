@@ -702,6 +702,32 @@ lasuli.ui = {
     });
   },
 
+  doClearDocumentPanel : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doClearDocumentPanel");
+    logger.info("clear the document panel");
+    // Clear the document name
+    $("#h3-entity-name").html(_("no.name"));
+    // Clear the attribute grid
+    try{
+      $("#attribute-grid").jqGrid('clearGridData');
+    }catch(e){
+      logger.fatal(e);
+    }
+    // Clear the tag cloud
+    try{
+      if($("#tags ul li").length > 0) $("#tags ul li").hide().remove();
+    }catch(e){
+      logger.fatal(e);
+    }
+    // Clear the users list
+    try{
+      if($("#actors ul li").length > 0) $("#actors ul li").hide().remove();
+    }catch(e){
+      logger.fatal(e);
+    }
+
+  },
+
   doShowViewpointPanels : function(viewpoints){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpointPanels");
     logger.debug(viewpoints);
@@ -729,31 +755,12 @@ lasuli.ui = {
       });
   },
 
-  doClearDocumentPanel : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doClearDocumentPanel");
-    logger.info("clear the document panel");
-    // Clear the document name
-    $("#h3-entity-name").html(_("no.name"));
-    // Clear the attribute grid
-    try{
-      $("#attribute-grid").jqGrid('clearGridData');
-    }catch(e){
-      logger.fatal(e);
-    }
-    // Clear the tag cloud
-    try{
-      if($("#tags ul li").length > 0) $("#tags ul li").hide().remove();
-    }catch(e){
-      logger.fatal(e);
-    }
-    // Clear the users list
-    try{
-      if($("#actors ul li").length > 0) $("#actors ul li").hide().remove();
-    }catch(e){
-      logger.fatal(e);
-    }
 
+  doClearViewpointPanel : function(viewpointID){
+    $("div#" + viewpointID).find("ul.topics-ul li").hide().remove();
+    $("div#" + viewpointID).find("div.fragments").hide().remove();
   },
+
 
   doShowKeywords : function(keywords){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowKeywords");
@@ -836,10 +843,6 @@ lasuli.ui = {
     Observers.notify("lasuli.ui.doAddFragments", {"fragments": arg.fragments, "highlight": true} );
   },
 
-  doClearViewpointPanel : function(viewpointID){
-    $("div#" + viewpointID).find("ul.topics-ul li").hide().remove();
-    $("div#" + viewpointID).find("div.fragments").hide().remove();
-  },
 
   doMakeFragmentsDragable : function(){
     $(".fragment").draggable(
@@ -906,6 +909,7 @@ lasuli.ui = {
     logger.debug(el);
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
   },
+
 
   doAddAnalysis: function(topic){
     lasuli.ui._initFragmentsContainer(topic);

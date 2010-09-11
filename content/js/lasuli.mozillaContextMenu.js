@@ -67,8 +67,6 @@ lasuli.contextmenu = {
     //Clear the menu items
     this.doHide();
     //logger.debug(topics);
-    if(!topics)
-      topics = new Array();
 
     this.topics = this._appendDefaultTopic(topics);
 
@@ -90,22 +88,20 @@ lasuli.contextmenu = {
   },
 
   doAddMenuItem : function(topic){
-    var topics = this.topics;
-    if(topics && topics.length > 0)
-      topics[topics.length - 1] = topic;
-    else
-      topics = new Array(topic);
-    this.doShow(topics);
+    delete this.topics['new'];
+    this.topics[topic.topicID] = topic;
+    this.doShow(this.topics);
+  },
+
+  doRemoveMenuItem: function(topicID){
+    delete this.topics[topicID];
+    this.doShow(this.topics);
   },
 
   doUpdateMenuItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doUpdateMenuItem");
     //logger.debug(arg);
-    for(var i=0, topic; topic = this.topics[i]; i++)
-    {
-      if(topic.id == arg.topicID || topic.topicID == arg.topicID)
-        this.topics[i].name = arg.name;
-    }
+    this.topics[arg.topicID].name = arg.name;
     this.doShow(this.topics);
   }
 }
