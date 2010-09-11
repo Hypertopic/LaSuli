@@ -277,38 +277,33 @@ lasuli.core = {
   doCreateFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
     logger.debug(fragment);
+    try{
+      var result = lasuli.hypertopic.createFragment(fragment.startPos, fragment.endPos, fragment.text, fragment.viewpointID, fragment.topicID);
+      var topics = {}
+      if(result && result.topic)
+      {
+        topics[result.topic.topicID] = result.topic;
+        fragment.topicID = result.topic.topicID;
+      }
 
-    if(!this.itemID) this.createItem();
-    fragment.itemID = this.itemID;
-
-    if(!fragment.topicID)
-
-    fragment.fragmentID = HypertopicMap.tagFragment(this.itemID, new Array(startPos, endPos), strContent, fragment.viewpointID, fragment.topicID);
-
-    //TODO topicID is null, create topic first
-
-    //TODO add the fragment to cache
-
-    dispatch("lasuli.ui.doAddFragments", {"fragments": new Array(fragment)});
-    //TODO update the tag cloud
+      fragments = {};
+      if(result && result.fragmentID){
+        fragment.fragmentID = result.fragmentID;
+        fragments[result.fragmentID] = fragment;
+        dispatch("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments, "scroll": true});
+      }
+    }catch(e){
+      logger.fatal(e);
+    }
   },
 
-  doUntagFragment : function(fragment){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doUntagFragment");
-    //logger.debug(fragment);
-    var result = HypertopicMap.untagFragment(fragment.itemID, fragment.fragmentID);
-    //logger.debug(result);
-    if(result){
-      for(var i=0, topic; topic = this.topics[i];i++)
-        for(var j=0, row; row = this.topics[i].highlight[j]; j++)
-          if(row.id == fragment.fragmentID){
-            this.topics[i].highlight.splice(j, 1);
-            //TODO when the topics highlight is null move this topic to eTopics
-            j--;
-          }
+  doDestroyFragment : function(fragment){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyFragment");
+    logger.debug(fragment);
+    var result = lasuli.hypertopic.destroyFragment(fragment.itemID, fragment.fragmentID);
+    logger.debug(result);
+    if(result)
       dispatch("lasuli.ui.doRemoveFragment", fragment.fragmentID );
-      dispatch("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
-    }
   },
 
   doMoveFragment : function(arg){

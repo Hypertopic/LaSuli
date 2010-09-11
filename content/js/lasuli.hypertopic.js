@@ -540,6 +540,39 @@ lasuli.hypertopic = {
     return viewpointIDs;
   },
 
+  createFragment: function(startPos, endPos, text, viewpointID, topicID){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createFragment");
+    var topic = null;
+    if(!topicID){
+      topic = this.createAnalysis(viewpointID);
+      if(!topic)
+        throw Exception('cannot.create.analysis');
+      logger.debug('created a new topic');
+      logger.debug(topic);
+      topicID = topic.topicID;
+    }
+    var corpusID = this.corpusID;
+    if(!this.itemID){
+      this.createItem();
+      corpusID = this.myCorpusID;
+    }
+
+    var fragmentID = HypertopicMap.tagFragment(this.itemID, new Array(startPos, endPos), text, viewpointID, topicID);
+    logger.debug("fragmentID:" + fragmentID);
+    this._fragments[fragmentID] = {"startPos": startPos, "endPos": endPos, "text": text,
+                          "corpusID": corpusID, "itemID": this.itemID, "topicID": topicID, "viewpointID": viewpointID};
+    return {"topic": topic, "fragmentID": fragmentID};
+  },
+
+  destroyFragment: function(itemID, fragmentID){
+    var result = HypertopicMap.untagFragment(itemID, fragmentID);
+    if(result){
+      delete this._fragments[fragmentID];
+      return true;
+    }
+    return false;
+  },
+
   moveFragment : function(itemID, fragmentID, viewpointID, targetTopicID){
     var result = HypertopicMap.moveFragment(itemID, fragmentID, viewpointID, targetTopicID);
     if(result){

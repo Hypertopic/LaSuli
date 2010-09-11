@@ -276,7 +276,7 @@ lasuli.ui = {
       var viewpointID = $(this).parent().attr("viewpointID");
       var topicID = $(this).parent().attr("topicID");
       var itemID = $(this).parent().attr("itemID");
-      dispatch("lasuli.core.doUntagFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID, "itemID": itemID});
+      dispatch("lasuli.core.doDestroyFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID, "itemID": itemID});
     });
 
     //Add analysis topic
@@ -815,8 +815,8 @@ lasuli.ui = {
     $('div#' + topic.viewpointID).find(".fragments-container").append(html);
   },
 
-  doAddFragments : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doAddFragments");
+  doCreateFragments : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateFragments");
     logger.debug(arg);
     var fragments = arg.fragments;
     for(var fragmentID in fragments)
@@ -845,7 +845,7 @@ lasuli.ui = {
       lasuli.ui._initFragmentsContainer(topic);
     }
     dispatch("lasuli.ui.doMakeFragmentsDroppable", null);
-    dispatch("lasuli.ui.doAddFragments", {"fragments": arg.fragments, "highlight": true} );
+    dispatch("lasuli.ui.doCreateFragments", {"fragments": arg.fragments, "highlight": true} );
   },
 
 
@@ -918,6 +918,7 @@ lasuli.ui = {
 
   doCreateAnalysis: function(topic){
     lasuli.ui._initFragmentsContainer(topic);
+    dispatch("lasuli.ui.doMakeFragmentsDragable", null);
     var el = "div.fragment-header[viewpointID='" + topic.viewpointID + "'][topicID='" + topic.topicID + "']";
     var span = $(el).find("span");
     span[0].scrollIntoView(true);
