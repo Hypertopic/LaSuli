@@ -313,74 +313,11 @@ lasuli.core = {
 
   doMoveFragment : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doMoveFragment");
-    //logger.debug(arg);
+    logger.debug(arg);
 
-    var result = HypertopicMap.moveFragment(arg.itemID, arg.fragmentID, arg.viewpointID, arg.targetTopicID);
+    var result = lasuli.hypertopic.moveFragment(arg.itemID, arg.fragmentID, arg.viewpointID, arg.targetTopicID);
+    logger.debug(result);
     if(result){
-      //Update cache
-      var tmp = null;
-      //logger.debug(this.topics);
-      for(var i=0, topic; topic = this.topics[i];i++)
-      {
-        if(!topic.highlight) continue;
-        if(topic.viewpoint != arg.viewpointID) continue;
-
-        for(var j=0, row; row = this.topics[i].highlight[j]; j++)
-          if(row.id == arg.fragmentID){
-            tmp = row;
-            //logger.debug("Row num:" + j);
-            //logger.debug(this.topics[i].highlight);
-            this.topics[i].highlight.splice(j, 1);
-            //logger.debug(this.topics[i].highlight);
-            j--;
-            if(this.topics[i].highlight.length == 0)
-            {
-              this.eTopics.push(this.topics[i]);
-              this.topics[i].splice(i,1);
-              i--;
-              break;
-            }
-          }
-      }
-      //logger.debug(this.topics);
-      //logger.debug(tmp);
-      var found = false;
-      if(tmp)
-      {
-        for(var i=0, topic; topic = this.topics[i];i++)
-        {
-          if(topic.viewpoint != arg.viewpointID) continue;
-
-          if(topic.id == arg.targetTopicID){
-            if(!topic.highlight) this.topics[i].highlight = new Array();
-            this.topics[i].highlight.push(tmp);
-            found = true;
-          }
-        }
-        for(var i=0, topic; topic = this.eTopics[i];i++)
-        {
-          if(topic.viewpoint != arg.viewpointID) continue;
-
-          if(topic.id == arg.targetTopicID){
-            if(!topic.highlight) this.eTopics[i].highlight = new Array();
-            this.eTopics[i].highlight.push(tmp);
-            this.topics.push(this.eTopics[i]);
-            this.eTopics[i].splice(i,1);
-            i--;
-            found = true;
-          }
-        }
-      }
-      logger.debug(found);
-      if(!found)
-      {
-        var topic = HypertopicMap.getTopic(arg.viewpointID, arg.targetTopicID);
-        this.topics.push(topic);
-      }
-      logger.debug(this.topics);
-      //Update tagcloud
-      //TODO when the topics highlight is null move this topic to eTopics
-      dispatch("lasuli.ui.doShowTagCloud", this.topics.concat(this.tags));
       dispatch("lasuli.ui.doDropFragmentAccepted", arg );
     }
     else{

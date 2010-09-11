@@ -538,5 +538,14 @@ lasuli.hypertopic = {
     }
     logger.debug(viewpointIDs);
     return viewpointIDs;
+  },
+
+  moveFragment : function(itemID, fragmentID, viewpointID, targetTopicID){
+    var result = HypertopicMap.moveFragment(itemID, fragmentID, viewpointID, targetTopicID);
+    if(result){
+      this._fragments[fragmentID].topicID = targetTopicID;
+      return true;
+    }
+    return false;
   }
 }

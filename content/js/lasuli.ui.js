@@ -822,7 +822,7 @@ lasuli.ui = {
     for(var fragmentID in fragments)
     {
       fragment = fragments[fragmentID];
-      var li_html = '<li class="fragment ui-corner-bottom" itemID="' + fragment.itemID + '" fragmentID="' + fragment.fragmentID + '" viewpointID="' + fragment.viewpointID
+      var li_html = '<li class="fragment ui-corner-bottom" itemID="' + fragment.itemID + '" fragmentID="' + fragmentID + '" viewpointID="' + fragment.viewpointID
              + '" topicID="' + fragment.topicID + '" startPos="' + fragment.startPos + '" >'
              +'<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'
              + fragment.text + '</li>';
