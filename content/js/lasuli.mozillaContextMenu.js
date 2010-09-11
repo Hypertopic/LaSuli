@@ -3,12 +3,12 @@ include("resource://lasuli/modules/log4moz.js");
 
 lasuli.contextmenu = {
   _appendDefaultTopic : function(topics){
-    topics = topics || new Array();
+    topics = topics || {};
 
-    if(topics.length > 0 && topics[topics.length - 1].name == _('new.topic.for.analysis'))
+    if(topics['new'] == _('new.topic.for.analysis'))
       return topics;
     else
-      topics.push({"name": _('new.topic.for.analysis')});
+      topics['new'] = {"name": _('new.topic.for.analysis')};
 
     return topics;
   },
@@ -16,8 +16,8 @@ lasuli.contextmenu = {
   _createItem : function(topic){
     var menu = this.mainWindow.document.createElement('menuitem');
     var topicName = topic.name;
-    var topicID = topic.topicID || topic.id;
-    var viewpointID = topic.viewpointID || topic.viewpoint;
+    var topicID = topic.topicID;
+    var viewpointID = topic.viewpointID;
 
     menu.setAttribute('label', topic.name);
     menu.setAttribute('insertafter', "context-sep-selectall");
@@ -80,11 +80,9 @@ lasuli.contextmenu = {
     var menupopup = this.mainWindow.document.createElement('menupopup');
     menupopup.setAttribute('id', 'lasuliMenuPopup');
     menu.appendChild(menupopup);
-    //logger.debug(this._topics.length);
-    for(var i=0, topic; topic = this.topics[i]; i++)
+    for each(var topic in topics)
     {
-      //logger.debug("topic");
-      //logger.debug(topic);
+      logger.debug(topic);
       var menuitem = this._createItem(topic);
       menupopup.appendChild(menuitem);
     }
