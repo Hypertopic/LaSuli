@@ -223,3 +223,5 @@ div#create-viewpoint input
 .fragment-header span { padding: 3px 10px 3px 10px; margin:10px 0 20px 0}
 
 .fragment-toggle { cursor: pointer; }
+
+.edit-itemname-in-place { margin-bottom: 10px; padding: 5px;}

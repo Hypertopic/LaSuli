@@ -130,10 +130,11 @@ lasuli.core = {
     logger.debug(arg);
     try{
       lasuli.hypertopic.itemName = arg.newName;
-      Observers.notify('lasuli.ui.doDisplayItemName', arg.newName);
+      Observers.notify('lasuli.ui.doShowItemName', arg.newName);
     }catch(e){
       //TODO Show error message
-      Observers.notify('lasuli.ui.doDisplayItemName', arg.name);
+      logger.fatal('failed to rename item');
+      Observers.notify('lasuli.ui.doShowItemName', arg.name);
     }
   },
 

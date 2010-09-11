@@ -503,31 +503,41 @@ lasuli.ui = {
     //Edit in place of a tag
     $("h3#h3-entity-name").live("click", function(event){
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName");
-      var el = $(this).clone();
-      logger.debug(el);
-      logger.debug(el.html());
-      $(this).html("<input type='text' class='edit-in-place' value=''>");
-      $(this).find("input").val(el.html());
-      $(this).find("input").focus().select();
+      var itemName = $(this).html();
+      $('div#tabs-document').data('itemName', itemName);
+      logger.debug(itemName);
+      $(this).replaceWith("<input type='text' class='edit-itemname-in-place' value=''>");
+      $("input.edit-itemname-in-place").val(itemName).focus().select();
 
-      $(this).find("input").blur(function(){
-        var name = el.html();
+      $("input.edit-itemname-in-place").blur(function(){
+        var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName.blur");
+        var name = $('div#tabs-document').data('itemName');
         var newName = $(this).val();
-        Observers.notify("lasuli.core.doRenameItem", {"name": name, "newName": newName});
+        logger.debug(name + "," + newName);
+        if(name == newName){
+          Observers.notify("lasuli.ui.doShowItemName", name);
+          $('div#tabs-document').data('itemName', null)
+        }
+        else
+          Observers.notify("lasuli.core.doRenameItem", {"name": name, "newName": newName});
+        event.stopImmediatePropagation();
         return false;
       });
 
-      $(this).find("input").keyup(function(event){
-        if (event.keyCode == 27)
-          $(this).replaceWith(el.html());
-        if (event.keyCode == 13)
+      $("input.edit-itemname-in-place").keyup(function(event){
+        //var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName.keyup");
+        if (event.keyCode == 27 || event.keyCode == 13)
+        {
+          //logger.debug(event.keyCode);
           $(this).blur();
+        }
+        return false;
       });
-
       event.stopImmediatePropagation();
       return false;
     });
   },
+
 
   //Auto register all observers
   register: function(){
@@ -553,6 +563,16 @@ lasuli.ui = {
 
   doUnBlockUI : function(){
     $('div#overlay-div').addClass('hide');
+  },
+
+  doShowItemName : function(itemName){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowItemName");
+    logger.debug(itemName);
+    if(!itemName) itemName = _("no.name");
+    if($("input.edit-itemname-in-place").length > 0)
+      $("input.edit-itemname-in-place").replaceWith('<h3 id="h3-entity-name"></h3>');
+
+    $("#h3-entity-name").text(itemName);
   },
 
   doCloseViewpointPanel : function(viewpointID){
@@ -628,13 +648,6 @@ lasuli.ui = {
       Observers.notify("lasuli.core.doOpenViewpointByUser", user);
       return false;
     });
-  },
-
-  doShowItemName : function(itemName){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowItemName");
-    logger.debug(itemName);
-    if(!itemName) itemName = _("no.name");
-    $("#h3-entity-name").html(itemName);
   },
 
   doShowAttributes : function(attributes){
@@ -925,10 +938,6 @@ lasuli.ui = {
     var topicID = arg.topicID;
     var el="div.fragments[viewpointID='" + viewpointID + "'][topicID='" + topicID + "']";
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
-  },
-
-  doDisplayItemName : function(name){
-    $("h3#h3-entity-name").html(name);
   },
 
   doHighlightMenuClick: function(topic){
