@@ -410,6 +410,30 @@ lasuli.hypertopic = {
     }
   },
 
+  createAnalysis : function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createAnalysis");
+    var topicID = HypertopicMap.createTopicIn(viewpointID, new Array());
+    if(!topicID)
+    {
+      Observers.notify("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.topic.create.failed')});
+      return false;
+    }
+    logger.debug(topicID);
+    var topicName = _("no.name");
+    var result = HypertopicMap.renameTopic(viewpointID, topicID, topicName);
+    logger.debug(result);
+    var i = 1;
+    for(var name in this.topics)
+      i++;
+    logger.debug(i);
+    var color = colorUtil.index2rgb(i);
+    logger.debug(color);
+    topic = {"viewpointID": viewpointID, "topicID": topicID, "name": topicName, "color": color};
+    this._topics[topicID] = topic;
+    logger.debug(topic);
+    return topic;
+  },
+
   //Load all data of a specific viewpoint
   getViewpoint : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getViepwoint");

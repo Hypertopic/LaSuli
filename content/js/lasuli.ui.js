@@ -775,7 +775,7 @@ lasuli.ui = {
   },
 
   doRestoreKeyword : function(keyword){
-    $('ul.topics-ul').find('input').prev('a').addClass('hide');
+    $('ul.topics-ul img.remove-tag-img').addClass('hide');
     $('ul.topics-ul').find('input').replaceWith("<a uri='" + keyword.topicID + "'>" + keyword.name + "</a>");
   },
 
@@ -794,8 +794,9 @@ lasuli.ui = {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doAddFragments");
     logger.debug(arg);
     var fragments = arg.fragments;
-    for(var i=0, fragment; fragment = fragments[i]; i++)
+    for(var fragmentID in fragments)
     {
+      fragment = fragments[fragmentID];
       var li_html = '<li class="fragment ui-corner-bottom" itemID="' + fragment.itemID + '" fragmentID="' + fragment.fragmentID + '" viewpointID="' + fragment.viewpointID
              + '" topicID="' + fragment.topicID + '" startPos="' + fragment.startPos + '" >'
              +'<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'
@@ -811,9 +812,10 @@ lasuli.ui = {
   },
 
   doShowFragments : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowFragments");
     var topics = arg.topics;
-
-    for(var i=0, topic; topic = topics[i]; i++)
+    logger.debug(topics);
+    for each(var topic in topics)
     {
       lasuli.ui._initFragmentsContainer(topic);
     }

@@ -185,12 +185,12 @@ lasuli.core = {
     logger.debug(keyword);
 
     //Clear the tags cache
-    lasuli.hypertopic.tags = null;
     var result = lasuli.hypertopic.createKeyword(keyword.viewpointID, keyword.name);
     if(!result) return false;
 
     logger.debug(result);
     Observers.notify("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
+    lasuli.hypertopic.tags = null;
     Observers.notify("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
   },
 
@@ -354,14 +354,17 @@ lasuli.core = {
     topic.topicID = topic.id;
     logger.debug(topic);
 
-    Observers.notify("lasuli.ui.doAddAnalysis", topic );
-    Observers.notify("lasuli.contextmenu.doAddMenuItem", topic );
+
   },
 
   doAddAnalysis: function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doAddAnalysis");
     logger.debug(viewpointID);
-    this._addAnalysis(viewpointID);
+    var topic = lasuli.hypertopic.createAnalysis(viewpointID);
+    if(topic){
+      Observers.notify("lasuli.ui.doAddAnalysis", topic );
+      Observers.notify("lasuli.contextmenu.doAddMenuItem", topic );
+    }
   },
 
   doRenameAnalysis : function(arg){
