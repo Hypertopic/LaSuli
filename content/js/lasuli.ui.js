@@ -123,7 +123,7 @@ lasuli.ui = {
       var topicID = $(this).next("a").attr("uri");
       var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
       if(typeof(topicID) == "string" && topicID.length >0)
-        Observers.notify("lasuli.core.doRemoveTag", {"topicID":topicID, "viewpointID": viewpointID});
+        Observers.notify("lasuli.core.doRemoveKeyword", {"topicID":topicID, "viewpointID": viewpointID});
       return false;
     });
 
@@ -156,7 +156,7 @@ lasuli.ui = {
         var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
         var topicName = container.data("topicName");
         var topicNewName = $(this).val();
-        Observers.notify("lasuli.core.doRenameTag", {"viewpointID":viewpointID, "topicID":topicID, "name": topicName, "newName": topicNewName});
+        Observers.notify("lasuli.core.doRenameKeyword", {"viewpointID":viewpointID, "topicID":topicID, "name": topicName, "newName": topicNewName});
         return false;
       });
 
@@ -178,7 +178,6 @@ lasuli.ui = {
     //Open dialog for add topic
     $('.add-topic-img').live("click", function(){
       $("#topic-dialog").dialog('open');
-      //Observers.notify("lasuli.core.doCreateTag", {"viewpointID":"5a03d6d794ec4b9215f7cba8600c0739", "name": "topicName"});
     });
 
     var topicDialogButtons = {};
@@ -194,7 +193,7 @@ lasuli.ui = {
       var topicName = $('#topic-name').val();
       var viewpointID = $("#tabs ul li.ui-state-active").find("a").attr("href").substr(1);
       $("#topic-dialog").dialog('close');
-      Observers.notify("lasuli.core.doCreateTag", {"viewpointID":viewpointID, "name": topicName});
+      Observers.notify("lasuli.core.doCreateKeyword", {"viewpointID":viewpointID, "name": topicName});
     };
 
     //Initial topic dialog
@@ -761,21 +760,23 @@ lasuli.ui = {
     //logger.info(viewpointID);
     logger.debug(html);
     if(viewpointID && $('#' + viewpointID).length > 0)
+    {
+      //$('#' + viewpointID +' .topics-ul li').remove();
       $('#' + viewpointID).find(".topics-ul").append(html);
+    }
   },
 
-  doRemoveTag : function(tag){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveTag");
+  doRemoveKeyword : function(keyword){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveKeyword");
     //logger.debug('div#' + tag.viewpointID + ' ul.topics-ul li a[uri="' + tag.topicID + '"]');
-    var el = 'div#' + tag.viewpointID + ' ul.topics-ul li a[uri="' + tag.topicID + '"]';
+    var el = 'div#' + keyword.viewpointID + ' ul.topics-ul li a[uri="' + keyword.topicID + '"]';
     if($(el).length > 0)
       $(el).parent().remove();
   },
 
-  doRestoreTag : function(tag){
+  doRestoreKeyword : function(keyword){
     $('ul.topics-ul').find('input').prev('a').addClass('hide');
-    $('ul.topics-ul').find('input').replaceWith("<a uri='" + tag.topicID + "'>" + tag.name + "</a>");
-
+    $('ul.topics-ul').find('input').replaceWith("<a uri='" + keyword.topicID + "'>" + keyword.name + "</a>");
   },
 
   _initFragmentsContainer : function(topic){
