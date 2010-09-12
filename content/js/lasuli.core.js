@@ -219,6 +219,8 @@ lasuli.core = {
 
     logger.debug(result);
     dispatch("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
+    //Empty the tagcloud cache
+    lasuli.hypertopic.tags = null;
   },
 
   doRemoveKeyword : function(keyword) {
@@ -231,6 +233,7 @@ lasuli.core = {
     else
     {
       dispatch("lasuli.ui.doRemoveKeyword", keyword);
+      lasuli.hypertopic.tags = null;
     }
   },
 
@@ -246,6 +249,7 @@ lasuli.core = {
 
     if(result){
       keyword.name = keyword.newName;
+      lasuli.hypertopic.tags = null;
       dispatch("lasuli.ui.doRestoreKeyword",keyword);
     }
     else{
@@ -272,6 +276,16 @@ lasuli.core = {
     if(result){
       dispatch("lasuli.ui.doDestroyAnalysis", arg );
       dispatch("lasuli.contextmenu.doRemoveMenuItem", topicID );
+      lasuli.hypertopic.tags = null;
+      for(var fragmentID in lasuli.hypertopic.fragments)
+      {
+        fragment = lasuli.hypertopic.fragments[fragmentID];
+        logger.debug(fragment);
+        logger.debug("topicID:" + topicID + ", fragment.topicID:" + fragment.topicID);
+        if(fragment.topicID == topicID){
+          dispatch("lasuli.highlighter.doRemoveFragment", fragmentID );
+        }
+      }
     }
     else
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
@@ -284,6 +298,7 @@ lasuli.core = {
     if(result){
       dispatch("lasuli.contextmenu.doUpdateMenuItem", {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "name": arg.newName});
       arg.name = arg.newName;
+      lasuli.hypertopic.tags = null;
     }
 
     dispatch("lasuli.ui.doRestoreAnalysis", arg );
@@ -310,11 +325,15 @@ lasuli.core = {
     try{
       var result = lasuli.hypertopic.createFragment(fragment.startPos, fragment.endPos, fragment.text, fragment.viewpointID, fragment.topicID);
       var topics = {}
+      //If we need to create a topic first
       if(result && result.topic)
       {
         topics[result.topic.topicID] = result.topic;
+        //add the new created analysis topic to the context menu
+        dispatch('lasuli.contextmenu.doAddMenuItem', result.topic);
         fragment.topicID = result.topic.topicID;
       }
+
       if(result.itemID)
         fragment.itemID = result.itemID;
       fragments = {};
@@ -323,9 +342,11 @@ lasuli.core = {
         fragments[result.fragmentID] = fragment;
         fragment.color = lasuli.hypertopic.topics[fragment.topicID].color;
         dispatch("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments, "scroll": true});
+        //Highlight this fragment
         this.fragments[lasuli.hypertopic.currentUrl][fragment.fragmentID] = fragment;
         dispatch("lasuli.highlighter.doHighlight", {"fragments": this.fragments[lasuli.hypertopic.currentUrl]});
       }
+      lasuli.hypertopic.tags = null;
     }catch(e){
       logger.fatal(e);
     }
@@ -340,6 +361,7 @@ lasuli.core = {
     {
       dispatch("lasuli.ui.doRemoveFragment", fragment.fragmentID );
       dispatch("lasuli.highlighter.doRemoveFragment", fragment.fragmentID );
+      lasuli.hypertopic.tags = null;
     }
   },
 
@@ -354,6 +376,7 @@ lasuli.core = {
       logger.debug(lasuli.hypertopic.topics[arg.targetTopicID]);
       var color = lasuli.hypertopic.topics[arg.targetTopicID].color;
       dispatch("lasuli.highlighter.doReColorFragment", arg.fragmentID, color );
+      lasuli.hypertopic.tags = null;
     }
     else{
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});

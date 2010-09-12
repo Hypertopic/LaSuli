@@ -29,8 +29,8 @@ lasuli.contextmenu = {
     return menu;
   },
 
-  init : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.init");
+  getContextMenu : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.getContextMenu");
     this.mainWindow = window.QueryInterface(Ci.nsIInterfaceRequestor)
                    .getInterface(Ci.nsIWebNavigation)
                    .QueryInterface(Ci.nsIDocShellTreeItem)
@@ -38,8 +38,9 @@ lasuli.contextmenu = {
                    .QueryInterface(Ci.nsIInterfaceRequestor)
                    .getInterface(Ci.nsIDOMWindow);
     logger.debug('init');
-    this.cacm = this.mainWindow.document.getElementById("contentAreaContextMenu");
+    return this.mainWindow.document.getElementById("contentAreaContextMenu");
   },
+
   //Auto register all observers
   register: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.register");
@@ -54,11 +55,12 @@ lasuli.contextmenu = {
   },
   doHide: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doHide");
-    //logger.debug("disable");
-    for (var i = 0, node; node = this.cacm.childNodes[i]; i++){
+    logger.debug("disable");
+    var cm = this.getContextMenu();
+    for (var i = 0, node; node = cm.childNodes[i]; i++){
       //logger.debug(node.getAttribute("id"));
       if(node.getAttribute("id") == 'lasuliContextMenu')
-        this.cacm.removeChild(node);
+        cm.removeChild(node);
     }
   },
 
@@ -70,6 +72,7 @@ lasuli.contextmenu = {
 
     this.topics = this._appendDefaultTopic(topics);
 
+    var cm = this.getContextMenu();
     //logger.debug("show menu");
     var menu = this.mainWindow.document.createElement('menu');
     menu.setAttribute('id', 'lasuliContextMenu');
@@ -84,10 +87,15 @@ lasuli.contextmenu = {
       var menuitem = this._createItem(topic);
       menupopup.appendChild(menuitem);
     }
-    this.cacm.appendChild(menu);
+    logger.debug("appendChild");
+
+    cm.appendChild(menu);
+    logger.debug("this.cacm.appendChild");
   },
 
   doAddMenuItem : function(topic){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doAddMenuItem");
+    logger.debug(topic);
     delete this.topics['new'];
     this.topics[topic.topicID] = topic;
     this.doShow(this.topics);
@@ -107,7 +115,6 @@ lasuli.contextmenu = {
 }
 
 window.addEventListener("load", function() {
-  lasuli.contextmenu.init();
   lasuli.contextmenu.register();
 }, false);
 

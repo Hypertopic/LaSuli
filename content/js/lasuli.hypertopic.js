@@ -229,7 +229,9 @@ lasuli.hypertopic = {
     for(var k in tags){
       t = JSON.parse(k);
       topic = HypertopicMap.getTopic(t.viewpointID, t.topicID);
-      if(!topic) continue;
+      if(!topic || !topic.name) continue;
+      logger.debug(topic);
+
       if(topic.name == "") topic.name = _("no.name");
       if(!this._tags[topic.name])
       {
