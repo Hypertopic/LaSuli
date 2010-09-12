@@ -175,4 +175,4 @@ Subject.prototype = {
   getHelperForLanguage: function() {},
   getInterfaces: function() {}
 };
-var dispatch = function(funcName, obj){ Observers.notify(funcName, obj); };
+var dispatch = function(funcName, obj, str){ Observers.notify(funcName, obj, str); };

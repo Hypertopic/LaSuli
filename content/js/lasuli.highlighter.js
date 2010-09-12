@@ -1,5 +1,6 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/log4moz.js");
+include("resource://lasuli/modules/Sync.js");
 
 Array.prototype.unique = function( b ) {
  var a = [], i, l = this.length;
@@ -10,26 +11,9 @@ Array.prototype.unique = function( b ) {
 };
 
 lasuli.highlighter = {
-
-  fragments: null,
-
-  getColorOverlay: function(fragments)
-  {
-    fragments = [{startPos:100, endPos: 200, bgColor:"#FF0000"},
-    {startPos:150, endPos: 250, bgColor:"#0000FF"},
-    {startPos:350, endPos: 400, bgColor:"#80FF00"},
-    {startPos:380, endPos: 460, bgColor:"#FF80FF"},
-    {startPos:400, endPos: 450, bgColor:"#FFFF00"},
-    {startPos:500, endPos: 1000, bgColor:"#BEBEBE"}];
-
-    return fragments;
-  },
-
   // Get TreeWalker Object
-  getTreeWalker : function()
+  getTreeWalker : function(m_document)
   {
-    var m_document = this.getContentDocument();
-
     try{
       var treewalker = m_document.createTreeWalker(m_document.body,
       NodeFilter.SHOW_TEXT,
@@ -54,6 +38,19 @@ lasuli.highlighter = {
     }
   },
 
+  clearDocument : function(m_document){
+    var nodes = m_document.querySelectorAll("span." + lasuli._class);
+    for(var i = 0, node; node = nodes[i]; i++)
+    {
+      var p_node = node.parentNode;
+      if(p_node)
+      {
+        var m_textNode = m_document.createTextNode(node.textContent);
+        p_node.replaceChild(m_textNode, node);
+      }
+    }
+  },
+
   getContentDocument : function(){
     var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                    .getService(Components.interfaces.nsIWindowMediator);
@@ -61,10 +58,24 @@ lasuli.highlighter = {
     return win.getBrowser().contentDocument;
   },
 
-  doHighlight: function(fragments)
+  doHighlight: function(arg)
   {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlight");
-    fragments = (fragments) ? fragments : this.fragments;
+    var fragments = arg.fragments;
+    this.fragments = fragments;
+    var m_document;
+    if(!arg.domWindow){
+      m_document = this.getContentDocument();
+      if(m_document.readyState != 'complete'){
+        return false;
+      }
+    }
+    else
+      m_document = arg.domWindow.document;
+
+    logger.debug(m_document.location.href);
+    this.clearDocument(m_document);
+
     logger.debug(fragments);
 
     var coordinates = [];
@@ -81,10 +92,15 @@ lasuli.highlighter = {
 
     if(coordinates.length == 0) return;
 
-    var m_document = this.getContentDocument();
+    var treewalker;
 
-    var treewalker = this.getTreeWalker();
-    if(!treewalker) return;
+    treewalker = this.getTreeWalker(m_document);
+
+    if(!treewalker)
+    {
+      logger.fatal("cannot get treewalker");
+      return;
+    }
 
     var startPos = 0, endPos;
     var nodeList = [];
@@ -133,8 +149,11 @@ lasuli.highlighter = {
           fragment = fragments[fragmentID];
           if(xPos[i] >= fragment.startPos && xPos[i] < fragment.endPos)
           {
-            bgColor = (fragment.color) ? fragment.color : "Yellow" ;
-            cssClasses +=  " " + fragmentID;
+            if(!fragment.color)
+              bgColor = "Yellow";
+            else
+              bgColor = (bgColor) ? colorUtil.colorCalc(bgColor, fragment.color) : fragment.color;
+            cssClasses +=  " _" + fragmentID;
           }
         }
         logger.debug(cssClasses);
@@ -177,16 +196,75 @@ lasuli.highlighter = {
     {
       var m_gBrowser = tabbrowser.getBrowserAtIndex(index);
       var m_document = m_gBrowser.contentDocument;
-      var nodes = m_document.querySelectorAll("span." + lasuli._class);
-      for(var i = 0, node; node = nodes[i]; i++)
-      {
-        var p_node = node.parentNode;
-        if(p_node)
-        {
-          var m_textNode = m_document.createTextNode(node.textContent);
-          p_node.replaceChild(m_textNode, node);
-        }
+      this.clearDocument(m_document);
+    }
+  },
+
+  doScrollTo: function(fragmentID){
+    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doScrollTo");
+    //logger.debug(fragmentID);
+    var m_document = this.getContentDocument();
+    //logger.debug(m_document.location.href);
+    var nodes = m_document.querySelectorAll("span._" + fragmentID);
+    //logger.debug(nodes.length);
+    if(nodes.length == 0)
+      return;
+    nodes[0].scrollIntoView(true);
+  },
+
+  doRemoveFragment : function(fragmentID){
+    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doRemoveFragment");
+    var m_document = this.getContentDocument();
+    var nodes = m_document.querySelectorAll("span._" + fragmentID);
+    logger.debug(nodes.length);
+    if(nodes.length == 0)
+      return;
+
+    for(var i=0, node; node = nodes[i]; i++){
+      var classes = node.getAttribute("class");
+      var bgColor = null;
+      //logger.debug(classes);
+      classes = classes.split(" ");
+      for(var j=0, className; className = classes[j]; j++){
+        var fragID = className.substr(1);
+        if(fragID in this.fragments && fragID != fragmentID)
+          bgColor = (bgColor) ? colorUtil.colorCalc(bgColor, this.fragments[fragID].color) : this.fragments[fragID].color;
       }
+      //logger.debug(bgColor);
+      if(bgColor)
+        node.setAttribute("style", "background-color: "+ bgColor);
+      else
+        node.removeAttribute("style");
+    }
+  },
+
+  doReColorFragment: function(fragmentID, color){
+    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doReColorFragment");
+    var m_document = this.getContentDocument();
+    var nodes = m_document.querySelectorAll("span._" + fragmentID);
+    logger.debug(nodes.length);
+    logger.debug(fragmentID);
+    logger.debug(color);
+    if(nodes.length == 0)
+      return;
+    this.fragments[fragmentID].color = color;
+
+    for(var i=0, node; node = nodes[i]; i++){
+      var classes = node.getAttribute("class");
+      var bgColor = null;
+      logger.debug(classes);
+      classes = classes.split(" ");
+      for(var j=0, className; className = classes[j]; j++){
+        var fragID = className.substr(1);
+        if(fragID in this.fragments)
+          bgColor = (bgColor) ? colorUtil.colorCalc(bgColor, this.fragments[fragID].color) : this.fragments[fragID].color;
+      }
+
+      logger.debug(bgColor);
+      if(bgColor)
+        node.setAttribute("style", "background-color: "+ bgColor);
+      else
+        node.removeAttribute("style");
     }
   },
 

@@ -5,6 +5,7 @@ include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/HypertopicMap.js");
 
 lasuli.core = {
+  fragments : {},
 
   //Open lasuli sidebar
   openSideBar : function(){
@@ -38,17 +39,14 @@ lasuli.core = {
     //logger.warn("start to register");
     for(var func in this)
       if(func.substr(0, 2) == "do")
-      {
-        //logger.warn(func);
         Observers.add("lasuli.core." + func, lasuli.core[func], lasuli.core);
-      }
+
   },
   unregister: function(){
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.remove("lasuli.core." + func, lasuli.core[func], lasuli.core);
   },
-
 
   doPrefChange : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doPrefChange");
@@ -87,6 +85,29 @@ lasuli.core = {
     dispatch("lasuli.core.doLoadDocument", null);
   },
 
+  //Triggered when the document is loaded
+  doStateChange : function(domWindow){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doStateChange");
+    var url = domWindow.document.location.href;
+    //TODO hash part
+    if(!url || url == "about:blank") return false;
+    logger.debug(domWindow.document.location.href);
+    if(!this.domWindows) this.domWindows = {};
+    this.domWindows[url] = domWindow;
+    var nodes = domWindow.document.querySelectorAll("span." + lasuli._class);
+    logger.debug(nodes.length);
+    if(nodes.length > 0) return false;
+    if(this.fragments[url]){
+      var fragments = this.fragments[url];
+      logger.debug(fragments);
+      dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
+    }
+  },
+
+  doClearFragmentsCache : function(){
+    this.fragments = {};
+  },
+
   doLoadDocument : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
     dispatch("lasuli.ui.doClearDocumentPanel", null);
@@ -97,7 +118,8 @@ lasuli.core = {
     dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
     // Highlight all fragments
     logger.debug(lasuli.hypertopic.allFragments);
-    dispatch("lasuli.highlighter.doHighlight", lasuli.hypertopic.allFragments);
+    this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.allFragments;
+    dispatch("lasuli.highlighter.doHighlight", {"fragments": lasuli.hypertopic.allFragments});
   },
 
   doListViewpoints: function(){
@@ -271,6 +293,13 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadFragments");
     lasuli.hypertopic.viewpointID = viewpointID;
     dispatch("lasuli.ui.doShowFragments", {"topics": lasuli.hypertopic.topics, "fragments": lasuli.hypertopic.fragments} );
+    var fragments = lasuli.hypertopic.fragments;
+    for(var fragmentID in fragments){
+      fragments[fragmentID].color = lasuli.hypertopic.topics[fragments[fragmentID].topicID].color;
+    }
+    this.fragments[lasuli.hypertopic.currentUrl] = fragments;
+    logger.debug(fragments);
+    dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
     //Enable the mozilla context menu
     dispatch('lasuli.contextmenu.doShow', lasuli.hypertopic.topics);
   },
@@ -286,12 +315,16 @@ lasuli.core = {
         topics[result.topic.topicID] = result.topic;
         fragment.topicID = result.topic.topicID;
       }
-
+      if(result.itemID)
+        fragment.itemID = result.itemID;
       fragments = {};
       if(result && result.fragmentID){
         fragment.fragmentID = result.fragmentID;
         fragments[result.fragmentID] = fragment;
+        fragment.color = lasuli.hypertopic.topics[fragment.topicID].color;
         dispatch("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments, "scroll": true});
+        this.fragments[lasuli.hypertopic.currentUrl][fragment.fragmentID] = fragment;
+        dispatch("lasuli.highlighter.doHighlight", {"fragments": this.fragments[lasuli.hypertopic.currentUrl]});
       }
     }catch(e){
       logger.fatal(e);
@@ -304,7 +337,10 @@ lasuli.core = {
     var result = lasuli.hypertopic.destroyFragment(fragment.itemID, fragment.fragmentID);
     logger.debug(result);
     if(result)
+    {
       dispatch("lasuli.ui.doRemoveFragment", fragment.fragmentID );
+      dispatch("lasuli.highlighter.doRemoveFragment", fragment.fragmentID );
+    }
   },
 
   doMoveFragment : function(arg){
@@ -315,6 +351,9 @@ lasuli.core = {
     logger.debug(result);
     if(result){
       dispatch("lasuli.ui.doDropFragmentAccepted", arg );
+      logger.debug(lasuli.hypertopic.topics[arg.targetTopicID]);
+      var color = lasuli.hypertopic.topics[arg.targetTopicID].color;
+      dispatch("lasuli.highlighter.doReColorFragment", arg.fragmentID, color );
     }
     else{
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});

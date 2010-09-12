@@ -561,7 +561,7 @@ lasuli.hypertopic = {
     logger.debug("fragmentID:" + fragmentID);
     this._fragments[fragmentID] = {"startPos": startPos, "endPos": endPos, "text": text,
                           "corpusID": corpusID, "itemID": this.itemID, "topicID": topicID, "viewpointID": viewpointID};
-    return {"topic": topic, "fragmentID": fragmentID};
+    return {"topic": topic, "fragmentID": fragmentID, "itemID": this.itemID};
   },
 
   destroyFragment: function(itemID, fragmentID){

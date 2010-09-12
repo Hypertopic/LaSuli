@@ -8,6 +8,7 @@
 <script src="chrome://lasuli/content/js/lasuli.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.hypertopic.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.core.js" type="application/x-javascript" />
+<script src="chrome://lasuli/content/js/lasuli.highlighter.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.mozillaContextMenu.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.tabWatcher.js" type="application/x-javascript" />
   <menupopup id="viewSidebarMenu">

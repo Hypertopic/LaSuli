@@ -20,16 +20,16 @@ lasuli.tabWatcher =
     var logger = Log4Moz.repository.getLogger("lasuli.tabWatcher.onStateChange");
     // If you use myListener for more than one tab/window, use
     // aWebProgress.DOMWindow to obtain the tab/window which triggers the state change
+    var doc = aWebProgress.DOMWindow.document;
+    var docHref = doc.location.href;
     if(aFlag & STATE_START)
     {
       logger.debug("The load event is initiated");
     }
     if(aFlag & STATE_STOP)
     {
-      var doc = aWebProgress.DOMWindow.document;
-      var docHref = doc.location.href;
       logger.debug(docHref + " is loaded!");
-      Observers.notify("lasuli.core.doStateChange", doc);
+      Observers.notify("lasuli.core.doStateChange", aWebProgress.DOMWindow);
     }
     return 0;
   },

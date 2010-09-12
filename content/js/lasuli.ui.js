@@ -36,11 +36,12 @@ lasuli.ui = {
         dispatch('lasuli.contextmenu.doHide', null);
       if($(ui.tab).hasClass("tab-document"))
       {
-        dispatch("lasuli.core.doReloadTagCloud", null);
+        dispatch("lasuli.core.doLoadDocument", null);
       }
       if($(ui.tab).hasClass("tab-add"))
       {
         dispatch("lasuli.core.doListViewpoints", null);
+        dispatch('lasuli.highlighter.doClear', null);
       }
     });
 
@@ -263,11 +264,9 @@ lasuli.ui = {
     });
 
     $(".fragment").live("click", function(){
-      //TODO
-      /*var itemUri = $(this).attr('uri');
-      var nodes = findNodeByItem(itemUri);
-      if(nodes)
-        nodes[0].scrollIntoView(true);*/
+      var fragmentID = $(this).attr("fragmentID");
+      dispatch("lasuli.highlighter.doScrollTo", fragmentID);
+      return false;
     });
 
     //Delete fragment
@@ -832,6 +831,7 @@ lasuli.ui = {
       if($(el).length > 0)
         $(el).find("ul").append(li_html);
     }
+
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
     dispatch("lasuli.ui.doMakeFragmentsDragable", null);
   },
@@ -949,6 +949,7 @@ lasuli.ui = {
   },
 
   doHighlightMenuClick: function(topic){
+
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
     try{ topic = JSON.parse(topic); }catch(e){}
     logger.debug(topic);
@@ -969,7 +970,35 @@ lasuli.ui = {
     var startOffset = range.startOffset;
     var endOffset = range.endOffset;
 
-    var treewalker = lasuli.highlighter.getTreeWalker();
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+    var win = wm.getMostRecentWindow("navigator:browser");
+    var contentDocument = win.getBrowser().contentDocument;
+    var treewalker;
+    try{
+      treewalker = contentDocument.createTreeWalker(contentDocument.body,
+      NodeFilter.SHOW_TEXT,
+      { acceptNode: function(node)
+        {
+          // only get text content
+          if(node.nodeType != 3 || node.data.length == 0)
+            return NodeFilter.FILTER_REJECT;
+
+          // Filter the <script> content
+          var m_parent = node.parentNode;
+          if(m_parent && m_parent.tagName == "SCRIPT")
+            return NodeFilter.FILTER_REJECT;
+
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      },
+      false);
+    }catch(e){
+      logger.fatal(e);
+      //TODO error message?
+      return false;
+    }
+
     var curPos = 0;
     var startPos,endPos;
     while(treewalker.nextNode())
@@ -1012,5 +1041,7 @@ $(window).bind("load", function(){
 
 $(window).bind("unload", function(){
   lasuli.ui.unregister();
+  dispatch('lasuli.core.doClearFragmentsCache', null);
   dispatch('lasuli.contextmenu.doHide', null);
+  dispatch('lasuli.highlighter.doClear', null);
 });
