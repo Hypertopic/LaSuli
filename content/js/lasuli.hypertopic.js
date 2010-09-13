@@ -180,7 +180,16 @@ lasuli.hypertopic = {
 
   get allFragments(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.allFragments");
+    var tags = this.tags;
+    //Get all useful topics
+    var topics = {};
+    for each(var tag in tags){
+      for(var i=0, topic; topic = tag.topics[i]; i++)
+        topics[topic.viewpointID + "_id_" + topic.topicID] = {};
+    }
+    logger.debug(topics);
     var coordinates = {};
+    var tmps = new Array();
     for(var corpusID in this.items)
     {
       var itemIDs = this.items[corpusID];
@@ -189,13 +198,21 @@ lasuli.hypertopic = {
         var item = HypertopicMap.getItem(corpusID, itemID);
         // go through the highlights
         for(var k in item)
-          if("coordinates" in item[k])
-          {
-            //logger.debug(item[k]);
-            coordinates[k]={ "startPos": item[k].coordinates[0][0], "endPos": item[k].coordinates[0][1]};
+          if("coordinates" in item[k]){
+            logger.debug(tmps);
+            var topic = {"viewpointID": item[k].topic[0].viewpoint, "topicID": item[k].topic[0].id};
+            logger.debug(topic);
+            logger.debug(typeof(topics[topic.viewpointID + "_id_" + topic.topicID]));
+            //Only unique coordinates should be returned.
+            if(tmps.indexOf(item[k].coordinates[0]) < 0 && topics[topic.viewpointID + "_id_" + topic.topicID])
+            {
+              tmps.push(item[k].coordinates[0]);
+              coordinates[k]={ "startPos": item[k].coordinates[0][0], "endPos": item[k].coordinates[0][1]};
+            }
           }
       }
     }
+    logger.debug(coordinates);
     return coordinates;
   },
 
@@ -443,6 +460,9 @@ lasuli.hypertopic = {
     if(result)
     {
       delete this._topics[topicID];
+      for(var fragmentID in this._fragments)
+        if(this._fragments[fragmentID].topicID == topicID && this._fragments[fragmentID].viewpointID == viewpointID)
+          delete this._fragments[fragmentID];
       return true;
     }
     return false;
