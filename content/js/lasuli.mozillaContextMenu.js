@@ -16,11 +16,10 @@ lasuli.contextmenu = {
   _appendDefaultTopic : function(topics){
     topics = topics || {};
 
-    if(topics['new'] && (topics['new'] == _('new.topic.for.analysis')))
-      return topics;
-    else
-      topics['new'] = {"name": _('new.topic.for.analysis')};
+    if(topics['new'])
+      delete topics['new'];
 
+    topics['new'] = {"name": _('new.topic.for.analysis')};
     return topics;
   },
 
@@ -109,15 +108,15 @@ lasuli.contextmenu = {
     var menupopup = this.mainWindow.document.getElementById('lasuliMenuPopup');
     logger.debug(typeof(menupopup));
     logger.debug(menupopup.childNodes.length);
-    menupopup.removeChild(menupopup.childNodes[menupopup.childNodes.length -1]);
+    var lastNode = menupopup.childNodes[menupopup.childNodes.length -1];
     var menuitem = this._createItem(topic);
-    menupopup.appendChild(menuitem);
+    menupopup.insertBefore(menuitem,lastNode);
     this.topics[topic.topicID] = topic;
 
-    topic = {"name": _('new.topic.for.analysis')};
+    /*topic = {"name": _('new.topic.for.analysis')};
     var menuitem = this._createItem(topic);
     menupopup.appendChild(menuitem);
-    this.topics['new'] = topic;
+    this.topics['new'] = topic;*/
   },
 
   doRemoveMenuItem: function(topicID){

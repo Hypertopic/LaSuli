@@ -216,7 +216,7 @@ lasuli.highlighter = {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doRemoveFragment");
     var m_document = this.getContentDocument();
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
-    //logger.debug(nodes.length);
+    logger.debug(nodes.length);
     if(nodes.length == 0)
       return;
 

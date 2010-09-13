@@ -53,7 +53,7 @@ lasuli.ui = {
 
   initDocumentPanel : function(){
     //var browsingUrl = "http://cassandre/text/d0";
-    dispatch("lasuli.core.doLoadDocument", null);
+    dispatch("lasuli.core.doLocationChange", null);
   },
 
   initPlusPanel : function(){
@@ -1030,6 +1030,7 @@ lasuli.ui = {
 $(window).bind("load", function(){
   lasuli.jqGirdLoader();
   lasuli.ui.register();
+  lasuli.ui.doBlockUI();
   lasuli.ui.initTabs();
   lasuli.ui.initViewpointPanel();
   lasuli.ui.initPlusPanel();

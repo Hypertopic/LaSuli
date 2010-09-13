@@ -453,6 +453,7 @@ lasuli.hypertopic = {
     return topic;
   },
 
+  //Return the fragment IDs which should be removed.
   destroyAnalysis: function(viewpointID, topicID, name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyAnalysis");
     var result = HypertopicMap.destroyTopic(viewpointID, topicID);
@@ -460,10 +461,14 @@ lasuli.hypertopic = {
     if(result)
     {
       delete this._topics[topicID];
+      var fragmentIDs = new Array();
       for(var fragmentID in this._fragments)
         if(this._fragments[fragmentID].topicID == topicID && this._fragments[fragmentID].viewpointID == viewpointID)
+        {
+          fragmentIDs.push(fragmentID);
           delete this._fragments[fragmentID];
-      return true;
+        }
+      return fragmentIDs;
     }
     return false;
   },
@@ -492,7 +497,7 @@ lasuli.hypertopic = {
     for each (var rows in this.items){
       items = items.concat(rows);
     }
-
+    logger.debug(this._keywords);
     for(var corpusID in this.items)
       for(var i=0, itemID; itemID = this.items[corpusID][i]; i++)
       {
@@ -501,12 +506,12 @@ lasuli.hypertopic = {
         //logger.debug(item);
         if(item.topic && item.topic.length > 0)
           for(var j=0, topic; topic = item.topic[j]; j++)
-          {
-            if(topic.viewpoint == this.viewpointID);
+            if(topic.viewpoint == this.viewpointID)
               this._keywords[topic.id] = topic;
-          }
       }
 
+    logger.debug("this._keywords");
+    logger.debug(this._keywords);
     var viewpoint = HypertopicMap.getViewpoint(this.viewpointID);
     var colorIndex = 0;
     for(var id in viewpoint)

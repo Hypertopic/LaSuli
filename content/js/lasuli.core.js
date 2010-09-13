@@ -63,23 +63,42 @@ lasuli.core = {
   // When tabWatcher find a new location is input, trigger this function
   doLocationChange: function(url){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLocationChange");
+    if(!url){
+      var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                   .getInterface(Components.interfaces.nsIWebNavigation)
+                   .QueryInterface(Components.interfaces.nsIDocShellTreeItem)
+                   .rootTreeItem
+                   .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                   .getInterface(Components.interfaces.nsIDOMWindow);
+      url = mainWindow.content.location.href;
+      url = (url.indexOf('#') > 0) ? url.substr(0, url.indexOf('#')) : url;
+      lasuli.hypertopic.currentUrl = "about:blank";
+    }
     //Check the sidebar status
     logger.debug(url);
+    if(url && url != "about:blank")
+      dispatch("lasuli.ui.doUnBlockUI", null);
+    else{
+      dispatch("lasuli.ui.doClearDocumentPanel", null);
+      dispatch("lasuli.ui.doBlockUI", null);
+    }
+
     //If the url is unchanged, do nothing. (e.g. switch between two tabs on the same url)
-    if(url == lasuli.hypertopic.currentUrl) return false;
-      lasuli.hypertopic.currentUrl = url;
+    if(url == lasuli.hypertopic.currentUrl)
+      return false;
+
+    lasuli.hypertopic.currentUrl = url;
     //If the sidebar is not opened yet, do nothing.
-    if(!lasuli.core.isSidebarOpen()) return false;
+    if(!lasuli.core.isSidebarOpen())
+      return false;
+
+    if(!url || url == "about:blank")
+      return false;
 
     logger.debug("doCloseViewpointPanel and doLoadDocument on url:" + lasuli.hypertopic.currentUrl);
 
     //If opened an empty page, block the lasuli
-    if(!url || url == "about:blank")
-    {
-      dispatch("lasuli.ui.doBlockUI", null);
-      return false;
-    }
-    dispatch("lasuli.ui.doUnBlockUI", null);
+
 
     dispatch("lasuli.ui.doCloseViewpointPanel", null);
     dispatch("lasuli.core.doLoadDocument", null);
@@ -92,6 +111,8 @@ lasuli.core = {
     //TODO hash part
     if(!url || url == "about:blank") return false;
     logger.debug(domWindow.document.location.href);
+    url = (url.indexOf('#') > 0) ? url.substr(0, url.indexOf('#')) : url;
+
     if(!this.domWindows) this.domWindows = {};
     this.domWindows[url] = domWindow;
     var nodes = domWindow.document.querySelectorAll("span." + lasuli._class);
@@ -206,6 +227,7 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadKeywords");
     logger.debug(viewpointID);
     lasuli.hypertopic.viewpointID = viewpointID;
+    logger.debug(lasuli.hypertopic.keywords);
     dispatch("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
   },
 
@@ -277,15 +299,8 @@ lasuli.core = {
       dispatch("lasuli.ui.doDestroyAnalysis", arg );
       dispatch("lasuli.contextmenu.doRemoveMenuItem", topicID );
       lasuli.hypertopic.tags = null;
-      for(var fragmentID in lasuli.hypertopic.fragments)
-      {
-        fragment = lasuli.hypertopic.fragments[fragmentID];
-        logger.debug(fragment);
-        logger.debug("topicID:" + topicID + ", fragment.topicID:" + fragment.topicID);
-        if(fragment.topicID == topicID){
+      for(var i=0, fragmentID; fragmentID = result[i]; i++)
           dispatch("lasuli.highlighter.doRemoveFragment", fragmentID );
-        }
-      }
     }
     else
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.delete.failed', [arg.name])});
