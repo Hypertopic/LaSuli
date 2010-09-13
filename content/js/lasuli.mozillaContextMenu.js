@@ -2,10 +2,21 @@ include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/log4moz.js");
 
 lasuli.contextmenu = {
+  init : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.init");
+    this.mainWindow = window.QueryInterface(Ci.nsIInterfaceRequestor)
+                   .getInterface(Ci.nsIWebNavigation)
+                   .QueryInterface(Ci.nsIDocShellTreeItem)
+                   .rootTreeItem
+                   .QueryInterface(Ci.nsIInterfaceRequestor)
+                   .getInterface(Ci.nsIDOMWindow);
+    logger.debug('init');
+  },
+
   _appendDefaultTopic : function(topics){
     topics = topics || {};
 
-    if(topics['new'] == _('new.topic.for.analysis'))
+    if(topics['new'] && (topics['new'] == _('new.topic.for.analysis')))
       return topics;
     else
       topics['new'] = {"name": _('new.topic.for.analysis')};
@@ -18,7 +29,7 @@ lasuli.contextmenu = {
     var topicName = topic.name;
     var topicID = topic.topicID;
     var viewpointID = topic.viewpointID;
-
+    menu.setAttribute('id', 'lasuli_menuitem_' + topic.topicID);
     menu.setAttribute('label', topic.name);
     menu.setAttribute('insertafter', "context-sep-selectall");
     menu.setAttribute('oncommand', "dispatch('lasuli.ui.doHighlightMenuClick', '" + JSON.stringify({"viewpointID": viewpointID, "topicID": topicID, "name": topicName}) + "' );");
@@ -31,13 +42,7 @@ lasuli.contextmenu = {
 
   getContextMenu : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.getContextMenu");
-    this.mainWindow = window.QueryInterface(Ci.nsIInterfaceRequestor)
-                   .getInterface(Ci.nsIWebNavigation)
-                   .QueryInterface(Ci.nsIDocShellTreeItem)
-                   .rootTreeItem
-                   .QueryInterface(Ci.nsIInterfaceRequestor)
-                   .getInterface(Ci.nsIDOMWindow);
-    logger.debug('init');
+    if(!this.mainWindow) this.init();
     return this.mainWindow.document.getElementById("contentAreaContextMenu");
   },
 
@@ -68,11 +73,15 @@ lasuli.contextmenu = {
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doShow");
     //Clear the menu items
     this.doHide();
-    //logger.debug(topics);
 
     this.topics = this._appendDefaultTopic(topics);
-
-    var cm = this.getContextMenu();
+    logger.debug(this.topics);
+    var cm;
+    try{
+      cm = this.getContextMenu();
+    }catch(e){
+      logger.fatal(e);
+    }
     //logger.debug("show menu");
     var menu = this.mainWindow.document.createElement('menu');
     menu.setAttribute('id', 'lasuliContextMenu');
@@ -81,7 +90,7 @@ lasuli.contextmenu = {
     var menupopup = this.mainWindow.document.createElement('menupopup');
     menupopup.setAttribute('id', 'lasuliMenuPopup');
     menu.appendChild(menupopup);
-    for each(var topic in topics)
+    for each(var topic in this.topics)
     {
       logger.debug(topic);
       var menuitem = this._createItem(topic);
@@ -96,25 +105,41 @@ lasuli.contextmenu = {
   doAddMenuItem : function(topic){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doAddMenuItem");
     logger.debug(topic);
-    delete this.topics['new'];
+    logger.debug(typeof(this.mainWindow));
+    var menupopup = this.mainWindow.document.getElementById('lasuliMenuPopup');
+    logger.debug(typeof(menupopup));
+    logger.debug(menupopup.childNodes.length);
+    menupopup.removeChild(menupopup.childNodes[menupopup.childNodes.length -1]);
+    var menuitem = this._createItem(topic);
+    menupopup.appendChild(menuitem);
     this.topics[topic.topicID] = topic;
-    this.doShow(this.topics);
+
+    topic = {"name": _('new.topic.for.analysis')};
+    var menuitem = this._createItem(topic);
+    menupopup.appendChild(menuitem);
+    this.topics['new'] = topic;
   },
 
   doRemoveMenuItem: function(topicID){
+    var menupopup = this.mainWindow.document.getElementById('lasuliMenuPopup');
+    var menuitem =  this.mainWindow.document.getElementById('lasuli_menuitem_' + topicID);
+    menupopup.removeChild(menuitem);
+
     delete this.topics[topicID];
-    this.doShow(this.topics);
   },
 
   doUpdateMenuItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doUpdateMenuItem");
+    logger.debug(arg);
+    var menuitem =  this.mainWindow.document.getElementById('lasuli_menuitem_' + arg.topicID);
+    menuitem.setAttribute('label', arg.name);
     //logger.debug(arg);
     this.topics[arg.topicID].name = arg.name;
-    this.doShow(this.topics);
   }
 }
 
 window.addEventListener("load", function() {
+  lasuli.contextmenu.init();
   lasuli.contextmenu.register();
 }, false);
 

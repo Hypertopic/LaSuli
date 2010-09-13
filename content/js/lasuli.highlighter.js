@@ -73,10 +73,10 @@ lasuli.highlighter = {
     else
       m_document = arg.domWindow.document;
 
-    logger.debug(m_document.location.href);
+    //logger.debug(m_document.location.href);
     this.clearDocument(m_document);
 
-    logger.debug(fragments);
+    //logger.debug(fragments);
 
     var coordinates = [];
     for each(var fragment in fragments)
@@ -156,7 +156,7 @@ lasuli.highlighter = {
             cssClasses +=  " _" + fragmentID;
           }
         }
-        logger.debug(cssClasses);
+        //logger.debug(cssClasses);
         var subText = m_text.substring(absStartPos, absEndPos);
         //if(bgColor)
         //  var_dump("[highlighter.js] doHighlight::subText", bgColor + " [" + xPos[i] + "," + xPos[i+1] + ") " + subText, 4);
@@ -216,7 +216,7 @@ lasuli.highlighter = {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doRemoveFragment");
     var m_document = this.getContentDocument();
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
-    logger.debug(nodes.length);
+    //logger.debug(nodes.length);
     if(nodes.length == 0)
       return;
 
@@ -242,9 +242,9 @@ lasuli.highlighter = {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doReColorFragment");
     var m_document = this.getContentDocument();
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
-    logger.debug(nodes.length);
-    logger.debug(fragmentID);
-    logger.debug(color);
+    //logger.debug(nodes.length);
+    //logger.debug(fragmentID);
+    //logger.debug(color);
     if(nodes.length == 0)
       return;
     this.fragments[fragmentID].color = color;
@@ -252,7 +252,7 @@ lasuli.highlighter = {
     for(var i=0, node; node = nodes[i]; i++){
       var classes = node.getAttribute("class");
       var bgColor = null;
-      logger.debug(classes);
+      //logger.debug(classes);
       classes = classes.split(" ");
       for(var j=0, className; className = classes[j]; j++){
         var fragID = className.substr(1);
@@ -260,7 +260,7 @@ lasuli.highlighter = {
           bgColor = (bgColor) ? colorUtil.colorCalc(bgColor, this.fragments[fragID].color) : this.fragments[fragID].color;
       }
 
-      logger.debug(bgColor);
+      //logger.debug(bgColor);
       if(bgColor)
         node.setAttribute("style", "background-color: "+ bgColor);
       else

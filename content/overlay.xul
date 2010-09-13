@@ -20,6 +20,7 @@
          key="L"
          modifiers="shift control" />
   </keyset>
+  <popup id="contentAreaContextMenu"></popup>
 
   <broadcasterset id="mainBroadcasterSet">
     <broadcaster id="viewLaSuliSidebar"
