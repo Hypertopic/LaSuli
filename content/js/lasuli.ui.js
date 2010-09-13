@@ -43,12 +43,17 @@ lasuli.ui = {
         dispatch("lasuli.core.doListViewpoints", null);
         dispatch('lasuli.highlighter.doClear', null);
       }
+      $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 32);
     });
 
     $('#tabs span.ui-icon-close').live('click', function() {
       var index = $('li',$tabs).index($(this).parent());
       $tabs.tabs('remove', index);
     });
+
+    $(window).bind('resize', function() {
+        $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 32);
+    }).trigger('resize');
   },
 
   initDocumentPanel : function(){
@@ -530,7 +535,12 @@ lasuli.ui = {
 
       $("input.edit-itemname-in-place").keyup(function(event){
         //var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName.keyup");
-        if (event.keyCode == 27 || event.keyCode == 13)
+        if (event.keyCode == 27)
+        {
+          dispatch("lasuli.ui.doShowItemName", $('div#tabs-document').data('itemName'));
+          $('div#tabs-document').data('itemName', null)
+        }
+        if(event.keyCode == 13)
         {
           //logger.debug(event.keyCode);
           $(this).blur();

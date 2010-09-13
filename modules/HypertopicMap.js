@@ -74,7 +74,7 @@ let HypertopicMap = {
   listCorpora : function(user) {
     let logger = Log4Moz.repository.getLogger("HypertopicMap.listCorpora");
     var obj = RESTDatabase.httpGet("user/" + user);
-    if(!obj || !obj[user]) return false;
+    if(!obj || !obj[user] || !obj[user].corpus) return false;
     logger.debug(obj);
     return obj[user].corpus;
   },
@@ -177,6 +177,7 @@ let HypertopicMap = {
   },
 
   renameItem : function(itemID, item_name){
+    if(!itemID) return false;
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
     item.item_name = item_name;
@@ -188,6 +189,7 @@ let HypertopicMap = {
   listItemDescriptions : function(itemID)
   {
     var logger = Log4Moz.repository.getLogger("HypertopicMap.listItemDescriptions");
+    if(!itemID) return false;
     var item = RESTDatabase.httpGet(itemID);
     //logger.debug(item);
     if(!item) return false;
@@ -201,6 +203,7 @@ let HypertopicMap = {
 
   describeItem : function(itemID, attribute, value)
   {
+    if(!itemID) return false;
     var item = RESTDatabase.httpGet(itemID);
     if(!item) return false;
     if(!item[attribute])

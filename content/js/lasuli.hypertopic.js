@@ -1,4 +1,5 @@
 lasuli.hypertopic = {
+  _myCorpusID : null,
 
   get currentUrl(){
     return this._currentUrl;
@@ -136,8 +137,9 @@ lasuli.hypertopic = {
   },
 
   get myCorpusID(){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getCorpusID");
-    if(this._myCorpusID) return this._myCorpusID;
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.myCorpusID");
+    logger.debug((this._myCorpusID != null));
+    if(this._myCorpusID != null)  return this._myCorpusID;
     var corpora;
     try{
       corpora = HypertopicMap.listCorpora(HypertopicMap.user);
@@ -176,6 +178,10 @@ lasuli.hypertopic = {
     }
     logger.debug(this._users);
     return this._users;
+  },
+
+  set users(val){
+    this._users = val;
   },
 
   get allFragments(){
@@ -219,6 +225,7 @@ lasuli.hypertopic = {
   get tags(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.tags");
     if(this._tags) return this._tags;
+    logger.debug(this.items);
     this._tags = {};
     var tags = {};
     for(var corpusID in this.items)
@@ -243,6 +250,7 @@ lasuli.hypertopic = {
             }
       }
     }
+    logger.debug(tags);
     for(var k in tags){
       t = JSON.parse(k);
       topic = HypertopicMap.getTopic(t.viewpointID, t.topicID);
@@ -305,6 +313,7 @@ lasuli.hypertopic = {
     logger.debug(itemID);
     if(!itemID) return false;
     var result = HypertopicMap.describeItem(itemID, "resource", this.currentUrl);
+    this._items[this.myCorpusID] = new Array(itemID);
     if(result) this.itemID = itemID;
   },
 
