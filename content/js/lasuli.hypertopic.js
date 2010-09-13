@@ -16,6 +16,8 @@ lasuli.hypertopic = {
     this._items = null;
     this._users = null;
     this._tags = null;
+    this._fragments = null;
+
     if(url == "about:blank") return false;
   },
 
