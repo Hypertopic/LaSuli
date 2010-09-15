@@ -132,9 +132,10 @@ lasuli.ui = {
     // Delete a tag by click the trash icon
     $('.remove-tag-img').live('click', function(){
       var topicID = $(this).next("a").attr("uri");
+      var name = $(this).next("a").html();
       var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
       if(typeof(topicID) == "string" && topicID.length >0)
-        dispatch("lasuli.core.doDestroyKeyword", {"topicID":topicID, "viewpointID": viewpointID});
+        dispatch("lasuli.core.doDestroyKeyword", {"topicID":topicID, "viewpointID": viewpointID, "name": name});
       return false;
     });
 

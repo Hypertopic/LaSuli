@@ -17,7 +17,8 @@ lasuli.hypertopic = {
     this._users = null;
     this._tags = null;
     this._fragments = null;
-
+    this._keywords = null;
+    this._viewpointID = null;
     if(url == "about:blank") return false;
   },
 
@@ -352,11 +353,14 @@ lasuli.hypertopic = {
     this._keywords[keyword.topicID] = keyword;
     logger.debug(keyword);
     logger.debug(this.keywords);
+    if(this._topics[keyword.topicID])
+      delete this._topics[keyword.topicID];
     return keyword;
   },
 
   destroyKeyword : function(keyword){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyKeyword");
+    logger.debug(keyword);
     var result = false;
     try{
       result = HypertopicMap.untagItem(this.itemID, keyword.viewpointID, keyword.topicID);
@@ -370,7 +374,19 @@ lasuli.hypertopic = {
     else
     {
       delete this._keywords[keyword.topicID];
-      return true;
+      var i = 1;
+      for(var name in this.topics){
+        logger.debug(name);
+        i++;
+      }
+      logger.debug(i);
+      var color = colorUtil.index2rgb(i);
+      logger.debug(color);
+      var topic = {"viewpointID": keyword.viewpointID, "topicID": keyword.topicID, "name": keyword.name, "color": color};
+
+      this._topics[keyword.topicID] = topic;
+      logger.debug(topic);
+      return topic;
     }
   },
 
