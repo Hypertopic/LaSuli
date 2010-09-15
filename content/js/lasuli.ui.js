@@ -835,6 +835,7 @@ lasuli.ui = {
           case "viewpoint":
             delete items.tag;
             delete items.destroy;
+            items.edit.label = _('topictree.viewpoint.rename');
             return items;
           case "analysis":
             delete items.tag;
@@ -1077,6 +1078,7 @@ lasuli.ui = {
     var strContent = selection + "";
     strContent = strContent.trim();
     if(strContent == ""){
+      //TODO replace with message in lasuli
       alert(_("null.content.selected"));
       return false;
     }
@@ -1091,6 +1093,7 @@ lasuli.ui = {
     var win = wm.getMostRecentWindow("navigator:browser");
     var contentDocument = win.getBrowser().contentDocument;
     var treewalker;
+    logger.debug('start to get treewalker');
     try{
       treewalker = contentDocument.createTreeWalker(contentDocument.body,
       NodeFilter.SHOW_TEXT,
@@ -1114,17 +1117,30 @@ lasuli.ui = {
       //TODO error message?
       return false;
     }
-
+    logger.debug('start to get position');
     var curPos = 0;
     var startPos,endPos;
+    //logger.debug(startContainer.data);
+    //logger.debug(typeof(endContainer));
+    //logger.debug(endContainer.tagName);
+    //logger.debug(endContainer.textContent);
+    //logger.debug(startContainer.isSameNode(endContainer));
     while(treewalker.nextNode())
     {
         var node = treewalker.currentNode;
-        if(node.isSameNode(startContainer))
-          startPos = curPos + startOffset;
-        if(node.isSameNode(endContainer))
-          endPos = curPos + endOffset;
+        //logger.debug(node.textContent);
 
+        if(node.isSameNode(startContainer)){
+          startPos = curPos + startOffset;
+          //logger.debug("start:" + startPos);
+          endPos = startPos + strContent.length;
+
+          break;
+        }
+        /*if(node.isSameNode(endContainer)){
+          endPos = curPos + endOffset;
+          logger.debug("end:" + startPos);
+        }*/
         curPos += node.data.length;
     }
     if(!startPos || !endPos) return false;
