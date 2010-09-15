@@ -8,7 +8,7 @@ Copyright (C) 2010 Chao ZHOU, Aurelien Benel.
 
 LEGAL ISSUES
 This library is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free 
+the terms of the GNU Lesser General Public License as published by the Free
 Software Foundation, either version 3 of the license, or (at your option) any
 later version.
 This library is distributed in the hope that it will be useful, but WITHOUT ANY
@@ -30,11 +30,11 @@ include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
 
 /*
-* Recursively merge properties of two objects 
+* Recursively merge properties of two objects
 */
 function MergeRecursive(obj1, obj2) {
   for (var p in obj2)
-    try 
+    try
     {
       // Property in destination object set; update its value.
       if ( obj2[p].constructor==Object )
@@ -42,7 +42,7 @@ function MergeRecursive(obj1, obj2) {
       else
         obj1[p] = obj2[p];
     }
-    catch(e) 
+    catch(e)
     {
       obj1[p] = obj2[p]; // Property in destination object not set; create it and set its value.
     }
@@ -83,7 +83,7 @@ var RESTDatabase = {
   cache : null,
   baseUrl : null,
   xhr : null,
-  
+
   init : function(baseUrl)
   {
     let logger = Log4Moz.repository.getLogger("RESTDatabase");
@@ -99,9 +99,9 @@ var RESTDatabase = {
     this.baseUrl = baseUrl;
     this.xhr = new XMLHttpRequest();
     this.xhr.overrideMimeType('application/json');
-    //setTimeout(CouchDBListen, 2000);
+    setTimeout(CouchDBListen, 2000);
   },
-  
+
   /**
    * @param object null if method is GET or DELETE
    * @return response body
@@ -114,10 +114,10 @@ var RESTDatabase = {
     //logger.debug(httpUrl);
     //httpUrl = (httpUrl.indexOf('?') > 0) ? httpUrl + "&_t=" + (new Date()).getTime() : httpUrl + "?_t=" + (new Date()).getTime();
     //logger.debug(httpUrl);
-    
+
     httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object") ? JSON.stringify(httpBody) : httpBody);
     let result = null;
-  
+
     try{
       this.xhr.open(httpAction, httpUrl, false);
       if(httpBody && httpBody != '')
@@ -127,7 +127,7 @@ var RESTDatabase = {
         httpBody = JSON.stringify(httpBody);
 
       this.xhr.send(httpBody);
-      
+
       if((this.xhr.status + "").substr(0,1) != '2')
       {
         logger.info(this.xhr.status);
@@ -142,8 +142,8 @@ var RESTDatabase = {
       throw Exception('Error! ' + httpAction + ' ' + httpUrl);
     }
   },
-  
-  
+
+
   /**
    * @param object The object to create on the server.
    *               It is updated with an _id (and a _rev if the server features
@@ -163,7 +163,7 @@ var RESTDatabase = {
       logger.error(e);
       throw e;
     }
-    
+
     object._id = body.id;
     if (body.rev)
       object._rev = body.rev;
@@ -172,7 +172,7 @@ var RESTDatabase = {
 
   /**
    * Notice: In-memory parser not suited to long payload.
-   * @param query the path to get the view from the baseURL 
+   * @param query the path to get the view from the baseURL
    * @return if the queried object was like
    * {rows:[ {key:[key0, key1], value:{attribute0:value0}},
    * {key:[key0, key1], value:{attribute0:value1}}]}
@@ -183,12 +183,12 @@ var RESTDatabase = {
   httpGet : function(query) {
     let logger = Log4Moz.repository.getLogger("RESTDatabase.get");
     query = (query) ? query : '';
-    if(this.cache[query] && false)
+    if(this.cache[query])
     {
-      logger.info("load from cache");
+      logger.debug("load from cache");
       return this.cache[query];
     }
-    logger.info("load from server" + this.baseUrl + query);
+    logger.debug("load from server" + this.baseUrl + query);
     let body;
     try{
       body = this._send("GET", this.baseUrl + query, null);
@@ -200,9 +200,9 @@ var RESTDatabase = {
       logger.error(e);
       throw e;
     }
-    
+
     //TODO, need to rewrite this part of algorithm
-    if(body.rows && body.rows.length > 0)  
+    if(body.rows && body.rows.length > 0)
     {
       let rows = {};
       //Combine the array according to the index key.
@@ -231,7 +231,7 @@ var RESTDatabase = {
       }
       //log(rows);
       let result = {};
-          
+
       for(let _key in rows)
       {
         let keys = JSON.parse(_key);
@@ -323,7 +323,7 @@ var RESTDatabase = {
     }
     return true;
   },
-  
+
   /**
    * Clear the cache
    */
@@ -333,7 +333,7 @@ var RESTDatabase = {
     logger.info("purge the cache");
     this.cache = {};
   },
-  
+
   get lastSeq()
   {
     if(!this.last_seq)
@@ -343,7 +343,7 @@ var RESTDatabase = {
     }
     return this.last_seq;
   },
-  
+
   set lastSeq(lastSeq)
   {
     this.last_seq = lastSeq;

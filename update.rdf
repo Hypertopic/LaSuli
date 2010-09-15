@@ -5,17 +5,17 @@
   <RDF:Seq RDF:about="rdf:#$qpiS92">
     <RDF:li RDF:resource="rdf:#$rpiS92"/>
   </RDF:Seq>
-  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
-                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAEPyPQ4A0zjHO9K1kV6zMdBHOD9qrXqJu2ZlrYJ8vdRYmwHG4pq5FhxxnZKnp6axvfMQt5IQ+gU4KcYTpVdwZKST9klFmf8SKvffjTgriyXM+i4udlmwrtPokM9BQYN07mas6xKhiR4q9VdiJEcNV5U9jPEWkBc7G7kUTkrY6hlD">
-    <em:updates RDF:resource="rdf:#$qpiS92"/>
-  </RDF:Description>
   <RDF:Description RDF:about="rdf:#$upiS92"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                    em:minVersion="3.6.*"
                    em:maxVersion="3.6.*"
                    em:updateLink="http://lasuli.git.sourceforge.net/git/gitweb.cgi?p=lasuli/lasuli_2;a=blob_plain;f=lasuli.xpi;hb=HEAD"
                    em:updateInfoURL="http://lasuli.git.sourceforge.net/git/gitweb.cgi?p=lasuli/lasuli_2;a=blob_plain;f=info.xml;hb=HEAD"
-                   em:updateHash="sha256:0b39b8efbaa4aa73866edf46184738078a780101185af2c75457ed6db3a48ebd" />
+                   em:updateHash="sha256:31fa6728f1009b2c0586647ad2906632764643c72929dfbb37413a17f3840da6" />
+  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
+                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAFvHYSLU7Oo6jzUC/0kjQElcyVH+7OY9zFfDN6cCQrHpewJFvSp2WjR9LjTHFOUD6Jb4kDM0HHVT9TrwOfvGP6yATLaeo97Yj3unAKyddgiZdzwWXN+9gMzXtZck/oSaCZXgeFRb2S4KPd/ShiDLM3MfFc+975W+VW6QfJhy+IMr">
+    <em:updates RDF:resource="rdf:#$qpiS92"/>
+  </RDF:Description>
   <RDF:Description RDF:about="rdf:#$rpiS92"
                    em:version="0.8.0.1">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
