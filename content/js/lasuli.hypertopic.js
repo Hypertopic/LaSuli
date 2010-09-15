@@ -423,8 +423,10 @@ lasuli.hypertopic = {
     var result = HypertopicMap.renameTopic(viewpointID, topicID, topicName);
     logger.debug(result);
     var i = 1;
-    for(var name in this.topics)
+    for(var name in this.topics){
+      logger.debug(name);
       i++;
+    }
     logger.debug(i);
     var color = colorUtil.index2rgb(i);
     logger.debug(color);
@@ -625,7 +627,7 @@ lasuli.hypertopic = {
       var obj = {};
       obj.data = topic.name || "";
       var topicType = this.getTopicType(this.viewpointID, topic.id);
-      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "name": obj.data, "rel": topicType};
+      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "name": obj.data + "", "rel": topicType};
       obj.children = this.getNarrowers(viewpoint, topic.id);
       topics.push(obj);
     }
@@ -649,20 +651,27 @@ lasuli.hypertopic = {
     var viewpoint = HypertopicMap.getViewpoint(this.viewpointID);
     logger.debug(viewpoint);
     if(!viewpoint) return topics;
+    logger.debug('put viewpoint as the root topic');
+    topics.data = new Array();
     var root = {};
     root.data = viewpoint.name;
-    root.attr = {"viewpointID": this.viewpointID, "name": root.data, "rel": "viewpoint"};
+    root.attr = {"viewpointID": this.viewpointID, "name": root.data + "", "rel": "viewpoint"};
     root.children = new Array();
     root.state = 'open';
 
-    if(!viewpoint.upper) return topics;
-    topics.data = new Array();
+    if(!viewpoint.upper) {
+      logger.debug('has no topic');
+      topics.data.push(root);
+      logger.debug(topics);
+      return topics;
+    }
+
     for(var i=0, topic; topic = viewpoint.upper[i]; i++)
     {
       var obj = {};
       obj.data = topic.name || "";
       var topicType = this.getTopicType(this.viewpointID, topic.id);
-      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "name": obj.data, "rel": topicType};
+      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "name": obj.data + "", "rel": topicType};
       obj.children = this.getNarrowers(viewpoint, topic.id);
       root.children.push(obj);
     }

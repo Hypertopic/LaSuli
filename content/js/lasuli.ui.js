@@ -803,7 +803,7 @@ lasuli.ui = {
         var viewpointID = node.attr("viewpointID");
         var topicID = node.attr("topicID") || '';
         var topicType = node.attr("rel");
-        var name = node.attr("name") || '';
+        var name = node.attr("name");
         var arg = {"viewpointID": viewpointID, "topicID": topicID, "topicType": topicType, "name": name, "sourceObj": node};
         var items = {};
         items.ccp = false;
@@ -882,6 +882,15 @@ lasuli.ui = {
   doRenameViewpoint : function(viewpointID, name){
     $('div#tabs li a[href="#' + viewpointID + '"]').html(name);
   },
+
+  doRenameTopicTreeItem : function(arg){
+    var node = arg.sourceObj;
+    if(arg.name)
+    {
+      node.attr("name", arg.name);
+    }
+  },
+
   doUpdateTopicTreeMenuItem : function(arg){
     var node = arg.sourceObj;
     if(arg.rel)
