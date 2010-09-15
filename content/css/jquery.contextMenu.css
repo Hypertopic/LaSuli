@@ -46,7 +46,7 @@
 .contextMenu LI.separator {
 	border-top: solid 1px #CCC;
 }
-.contextMenu LI.insert A { background-image: url(../images/plus.png); }
-.contextMenu LI.tagcloudSwitcher A { background-image: url(../images/tag.png); }
-.contextMenu LI.tagcloudSortAlphabetically A { background-image: url(../images/alphabetical.png); }
-.contextMenu LI.tagcloudSortByStrength A { background-image: url(../images/numberical.png); }
+.contextMenu LI.insert A { background-image: url(icons/plus.png); }
+.contextMenu LI.tagcloudSwitcher A { background-image: url(icons/tag.png); }
+.contextMenu LI.tagcloudSortAlphabetically A { background-image: url(icons/alphabetical.png); }
+.contextMenu LI.tagcloudSortByStrength A { background-image: url(icons/numberical.png); }

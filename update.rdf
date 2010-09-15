@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:NC="http://home.netscape.com/NC-rdf#"
+         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Seq RDF:about="rdf:#$qpiS92">
+    <RDF:li RDF:resource="rdf:#$rpiS92"/>
+  </RDF:Seq>
+  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
+                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAEPyPQ4A0zjHO9K1kV6zMdBHOD9qrXqJu2ZlrYJ8vdRYmwHG4pq5FhxxnZKnp6axvfMQt5IQ+gU4KcYTpVdwZKST9klFmf8SKvffjTgriyXM+i4udlmwrtPokM9BQYN07mas6xKhiR4q9VdiJEcNV5U9jPEWkBc7G7kUTkrY6hlD">
+    <em:updates RDF:resource="rdf:#$qpiS92"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="rdf:#$upiS92"
+                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                   em:minVersion="3.6.*"
+                   em:maxVersion="3.6.*"
+                   em:updateLink="http://lasuli.git.sourceforge.net/git/gitweb.cgi?p=lasuli/lasuli_2;a=blob_plain;f=lasuli.xpi;hb=HEAD"
+                   em:updateInfoURL="http://lasuli.git.sourceforge.net/git/gitweb.cgi?p=lasuli/lasuli_2;a=blob_plain;f=info.xml;hb=HEAD"
+                   em:updateHash="sha256:0b39b8efbaa4aa73866edf46184738078a780101185af2c75457ed6db3a48ebd" />
+  <RDF:Description RDF:about="rdf:#$rpiS92"
+                   em:version="0.8.0.1">
+    <em:targetApplication RDF:resource="rdf:#$upiS92"/>
+  </RDF:Description>
+</RDF:RDF>

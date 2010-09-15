@@ -340,7 +340,7 @@ lasuli.ui = {
       autoOpen: false,
       modal: true,
       width: 170,
-      title: _("add-attribute-dialog-title"),
+      title: _("add.attribute.dialog.title"),
       buttons: attributesDialogButtons,
       open: function(){
         $('#attribute-name').val('').focus().select();
@@ -418,7 +418,7 @@ lasuli.ui = {
       {
         var message = {};
         message.title = _("Warning");
-        message.content = _("no-attribute-selected");
+        message.content = _("no.attribute.selected");
         dispatch("lasuli.ui.doShowMessage", message);
       }
 		});
@@ -436,7 +436,7 @@ lasuli.ui = {
       {
         var message = {};
         message.title = _("Warning");
-        message.content = _("no-attribute-selected");
+        message.content = _("no.attribute.selected");
         dispatch("lasuli.ui.doShowMessage", message);
       }
 		});*/
