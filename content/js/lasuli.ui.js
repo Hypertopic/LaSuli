@@ -31,7 +31,6 @@ lasuli.ui = {
         dispatch("lasuli.ui.doClearViewpointPanel", viewpointID);
         dispatch("lasuli.core.doLoadKeywords", viewpointID);
         dispatch("lasuli.core.doLoadFragments", viewpointID);
-        dispatch("lasuli.core.doLoadTopicTree", viewpointID);
       }
       else
         dispatch('lasuli.contextmenu.doHide', null);
@@ -135,7 +134,7 @@ lasuli.ui = {
       var topicID = $(this).next("a").attr("uri");
       var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
       if(typeof(topicID) == "string" && topicID.length >0)
-        dispatch("lasuli.core.doRemoveKeyword", {"topicID":topicID, "viewpointID": viewpointID});
+        dispatch("lasuli.core.doDestroyKeyword", {"topicID":topicID, "viewpointID": viewpointID});
       return false;
     });
 
@@ -199,47 +198,13 @@ lasuli.ui = {
       autoOpen: false,
       modal: true,
       width: 170,
-      title: _("topictree.dialog.title")
-    });
-
-    var topicDialogButtons = {};
-    topicDialogButtons[_('Cancel')] = function() { $(this).dialog('close');  };
-  	topicDialogButtons[_('Okay')] = function() {
-  	  $('#topic-name').removeClass('ui-state-error');
-      if ( $('#topic-name').val().length == 0)
-      {
-        $('#topic-name').addClass('ui-state-error');
-        return false;
-      }
-
-      var topicName = $('#topic-name').val();
-      var viewpointID = $("#tabs ul li.ui-state-active").find("a").attr("href").substr(1);
-      $("#topic-dialog").dialog('close');
-      dispatch("lasuli.core.doCreateKeyword", {"viewpointID":viewpointID, "name": topicName});
-    };
-
-    //Initial topic dialog
-    $("#topic-dialog").dialog({
-      bgiframe: true,
-      autoOpen: false,
-      modal: true,
-      width: 170,
-      title: _("add-topic-dialog-title"),
-      buttons: topicDialogButtons,
-      open: function(){
-        $('#topic-name').val('').focus().select();
+      title: _("topictree.dialog.title"),
+      close: function(){
+        $("#tree").jstree('destroy');
       },
-      close: function() {
-        $('#topic-name').removeClass('ui-state-error');
-      }
-    });
-
-    $('#topic-name').keyup(function(event){
-      if (event.keyCode == 13)
-      {
-        var buttons = $('#topic-dialog').dialog('option','buttons');
-        if(typeof(buttons[_('Okay')]) == "function")
-          buttons[_('Okay')].call();
+      open: function(){
+        var viewpointID = $('div#tabs li.ui-tabs-selected a').attr('href').substr(1);
+        dispatch("lasuli.core.doLoadTopicTree", viewpointID);
       }
     });
 
@@ -835,9 +800,10 @@ lasuli.ui = {
     var jstree_contextmenu = {
       "items": function(node){
         var viewpointID = node.attr("viewpointID");
-        var topicID = node.attr("topicID");
+        var topicID = node.attr("topicID") || '';
         var topicType = node.attr("rel");
-        var arg = {"viewpointID": viewpointID, "topicID": topicID, "topicType": topicType, "sourceObj": node};
+        var name = node.attr("name") || '';
+        var arg = {"viewpointID": viewpointID, "topicID": topicID, "topicType": topicType, "name": name, "sourceObj": node};
         var items = {};
         items.ccp = false;
         items.create = false;
@@ -856,7 +822,7 @@ lasuli.ui = {
         };
         items.edit = {
           "label"             : _("topictree.rename"),
-          "action"            : function (obj) { dispatch("lasuli.core.doRenameTopicTreeItem", arg); },
+          "action"            : function (obj) { this.rename(obj); },
           "icon"              : "css/blitzer/images/menu_edit.png"
         };
         items.destroy = {
@@ -886,16 +852,44 @@ lasuli.ui = {
       "types" : jstree_types,
       "contextmenu": jstree_contextmenu,
       "plugins" : [ "themes", "json_data", "ui", "crrm", "contextmenu", "types" ]
+    }).bind("rename.jstree", function (e, data) {
+      var logger = Log4Moz.repository.getLogger("lasuli.ui.rename");
+      var sourceObj   = data.rslt.obj;
+      var viewpointID = sourceObj.attr('viewpointID');
+      logger.debug(viewpointID);
+      var topicID     = sourceObj.attr('topicID') || '';
+      logger.debug(topicID);
+      var topicType   = sourceObj.attr('rel');
+      var name        = data.rslt.old_name;
+      var newName     = data.rslt.new_name;
+      logger.debug(newName);
+      var arg = {"viewpointID": viewpointID, "topicID": topicID, "topicType": topicType, "name": name, "newName": newName, "sourceObj": sourceObj};
+
+      dispatch("lasuli.core.doRenameTopicTreeItem", arg);
     });
   },
 
-  doCreateTopicTreeItem: function(arg){
+  doCreateTopicTreeItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateTopicTreeItem");
     $("#tree").jstree("create", arg.sourceObj, "inside", {"data": _("no.name"), "attr": {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "rel": "topic"}}, null, true);
   },
+  doDestroyTopicTreeItem : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doDestroyTopicTreeItem");
+    $("#tree").jstree("remove", arg.sourceObj);
+  },
 
-  doRemoveKeyword : function(keyword){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveKeyword");
+  doRenameViewpoint : function(viewpointID, name){
+    $('div#tabs li a[href="#' + viewpointID + '"]').html(name);
+  },
+  doUpdateTopicTreeMenuItem : function(arg){
+    var node = arg.sourceObj;
+    if(arg.rel)
+    {
+      node.attr("rel", arg.rel);
+    }
+  },
+  doDestroyKeyword : function(keyword){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doDestroyKeyword");
     //logger.debug('div#' + tag.viewpointID + ' ul.topics-ul li a[uri="' + tag.topicID + '"]');
     var el = 'div#' + keyword.viewpointID + ' ul.topics-ul li a[uri="' + keyword.topicID + '"]';
     if($(el).length > 0)
@@ -1026,6 +1020,14 @@ lasuli.ui = {
     var span = $(el).find("span");
     span[0].scrollIntoView(true);
     span.fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+  },
+
+  doRenameAnalysis : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRenameAnalysis");
+    logger.debug(arg);
+    var el="div.fragment-header[viewpointID='" + arg.viewpointID + "'][topicID='" + arg.topicID + "']";
+    var span = $(el).find("span");
+    span.html(arg.name);
   },
 
   doRestoreAnalysis : function(arg){

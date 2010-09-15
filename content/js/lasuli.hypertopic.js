@@ -333,63 +333,16 @@ lasuli.hypertopic = {
     logger.debug(result);
   },
 
-  createKeyword : function(viewpointID, name){
+  createKeyword : function(viewpointID, topicID, name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createKeyword");
     if(!this.itemID) this.createItem();
     logger.debug("this.itemID:" + this.itemID);
     logger.debug("this.keywords");
     logger.debug(this.keywords);
-    //If the keyword is already used
-    for each (var keyword in this.keywords)
-      if(keyword.name == name)
-      {
-        dispatch("lasuli.ui.doShowMessage", {"title": _("Warning"), "content": _('tagItem.already.existed', [name])});
-        return false;
-      }
-
-    var keyword = null;
-    //Try to find the topic has the same name and reuse it
-    for(var topic in this.topics)
-      if(topic.name == name){
-        //Try to find out whether this topic has highlights
-        logger.debug(topic);
-        var found = false;
-        for(var fragment in this.fragments)
-          if(fragment.topicID == topic.topicID)
-          {
-            found = true;
-            break;
-          }
-        if(!found)
-        {
-          delete this._topics[topic.topicID];
-          delete topic.color;
-          keyword = topic;
-          break;
-        }
-      }
-
-    //We have to create a new topic
-    if(!keyword)
-      try{
-        keyword = {};
-        keyword.topicID = HypertopicMap.createTopicIn(viewpointID, new Array());
-        if(!keyword.topicID)
-          throw Exception("can not create topic");
-        HypertopicMap.renameTopic(viewpointID, keyword.topicID, name);
-        keyword.name = name;
-        keyword.viewpointID = viewpointID;
-      }
-      catch(e)
-      {
-        logger.fatal("error when try to create tag");
-        logger.fatal(tag);
-        logger.fatal(e);
-        dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.createtopic.failed', [name])});
-      }
+    var keyword = {"viewpointID":viewpointID, "topicID":topicID , "name": name};
     //Tag the item
     try{
-      result = HypertopicMap.tagItem(this.itemID, keyword.viewpointID, keyword.topicID);
+      result = HypertopicMap.tagItem(this.itemID, viewpointID, topicID);
     }catch(e){
       logger.fatal("error when try to tag the item: " + this.itemID);
       logger.fatal(tag);
@@ -440,16 +393,17 @@ lasuli.hypertopic = {
     }
   },
 
-  createAnalysis : function(viewpointID){
+  createAnalysis : function(viewpointID, topicID, topicName){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createAnalysis");
-    var topicID = HypertopicMap.createTopicIn(viewpointID, new Array());
+    var topicIDs = (topicID) ? new Array(topicID) : new Array();
+    topicName = (topicName) ? topicName : _("no.name");
+    var topicID = HypertopicMap.createTopicIn(viewpointID, topicIDs);
     if(!topicID)
     {
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.topic.create.failed')});
       return false;
     }
     logger.debug(topicID);
-    var topicName = _("no.name");
     var result = HypertopicMap.renameTopic(viewpointID, topicID, topicName);
     logger.debug(result);
     var i = 1;
@@ -551,6 +505,11 @@ lasuli.hypertopic = {
     }
   },
 
+  renameViewpoint : function(viewpointID,name){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.renameViewpoint");
+    return HypertopicMap.renameViewpoint(viewpointID, name);
+  },
+
   createTopicIn : function(viewpointID, topicID, name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createTopicIn");
     var topicIDs = (topicID) ? new Array(topicID) : new Array();
@@ -650,7 +609,7 @@ lasuli.hypertopic = {
       var obj = {};
       obj.data = topic.name || "";
       var topicType = this.getTopicType(this.viewpointID, topic.id);
-      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "rel": topicType};
+      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "name": obj.data, "rel": topicType};
       obj.children = this.getNarrowers(viewpoint, topic.id);
       topics.push(obj);
     }
@@ -676,7 +635,7 @@ lasuli.hypertopic = {
     if(!viewpoint) return topics;
     var root = {};
     root.data = viewpoint.name;
-    root.attr = {"viewpointID": this.viewpointID, "rel": "viewpoint"};
+    root.attr = {"viewpointID": this.viewpointID, "name": root.data, "rel": "viewpoint"};
     root.children = new Array();
     root.state = 'open';
 
@@ -687,7 +646,7 @@ lasuli.hypertopic = {
       var obj = {};
       obj.data = topic.name || "";
       var topicType = this.getTopicType(this.viewpointID, topic.id);
-      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "rel": topicType};
+      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "name": obj.data, "rel": topicType};
       obj.children = this.getNarrowers(viewpoint, topic.id);
       root.children.push(obj);
     }
