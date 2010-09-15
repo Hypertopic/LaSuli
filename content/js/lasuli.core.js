@@ -131,6 +131,7 @@ lasuli.core = {
 
   doLoadDocument : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
+    if(!lasuli.core.isSidebarOpen()) return false;
     dispatch("lasuli.ui.doClearDocumentPanel", null);
 
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
@@ -216,6 +217,41 @@ lasuli.core = {
     logger.debug(viewpoints);
     //TODO filter not related viewpoints
     dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
+  },
+
+  doLoadTopicTree : function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadTopicTree");
+    logger.debug(viewpointID);
+    lasuli.hypertopic.viewpointID = viewpointID;
+    var tree = lasuli.hypertopic.topicTree;
+    logger.debug(tree);
+    dispatch("lasuli.ui.doShowTopicTree", tree);
+  },
+
+  doCreateTopicTreeItem: function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateTopicTreeItem");
+    logger.debug(arg);
+
+    var topicID = lasuli.hypertopic.createTopicIn(arg.viewpointID, arg.topicID, _("no.name"));
+    logger.debug(topicID);
+    if(topicID)
+      dispatch("lasuli.ui.doCreateTopicTreeItem", {"viewpointID": arg.viewpointID, "topicID": topicID, "sourceObj":arg.sourceObj});
+    else
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.create.topic.failed')});
+  },
+  doDeleteTopicTreeItem: function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doDeleteTopicTreeItem");
+    logger.debug(arg);
+
+    if(arg.topicType && arg.topicType == "viewpoint")
+    {
+    }
+    var topicID = lasuli.hypertopic.createTopicIn(arg.viewpointID, arg.topicID, _("no.name"));
+    logger.debug(topicID);
+    if(topicID)
+      dispatch("lasuli.ui.doAddTopicTreeItem", {"viewpointID": arg.viewpointID, "topicID": topicID, "sourceObj":arg.sourceObj});
+    else
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.create.topic.failed')});
   },
 
   doLoadKeywords : function(viewpointID){

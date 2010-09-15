@@ -1,40 +1,107 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>Hypertopic JavaScript Library</title>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Hypertopic JavaScript Library</title>
 
-		<link type="text/css" href="css/blitzer/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
-		<link type="text/css" href="css/lasuli.css" rel="stylesheet" />
-		<link type="text/css" href="css/ui.jqgrid.css" rel="stylesheet" />
+    <link type="text/css" href="css/blitzer/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+    <link type="text/css" href="css/lasuli.css" rel="stylesheet" />
+    <link type="text/css" href="css/ui.jqgrid.css" rel="stylesheet" />
 
-		<script type="text/javascript" src="js/jquery-1.4.2.js"></script>
-		<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
-		<!--<script type="text/javascript" src="js/i18n/grid.locale-en.js"></script>
-		<script type="text/javascript" src="js/jquery.jqGrid.min.js"></script>//-->
+    <script type="text/javascript" src="js/jquery-1.4.2.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
+    <!--<script type="text/javascript" src="js/i18n/grid.locale-en.js"></script>
+    <script type="text/javascript" src="js/jquery.jqGrid.min.js"></script>//-->
 
-		<link type="text/css" href="css/jquery.contextMenu.css" rel="stylesheet" />
-		<script type="text/javascript" src="js/jquery.contextMenu.js"></script>
-		<script type="text/javascript" src="js/jquery.tinysort.js"></script>
-		<script type="text/javascript" src="js/jquery.easing.1.3.js"></script>
+    <link type="text/css" href="css/jquery.contextMenu.css" rel="stylesheet" />
+    <script type="text/javascript" src="js/jquery.contextMenu.js"></script>
+    <script type="text/javascript" src="js/jquery.tinysort.js"></script>
+    <script type="text/javascript" src="js/jquery.easing.1.3.js"></script>
 
-		<script type="text/javascript" src="js/lasuli.js"></script>
-		<script type="text/javascript" src="js/lasuli.hypertopic.js"></script>
-		<script type="text/javascript" src="js/lasuli.core.js"></script>
+    <script type="text/javascript" src="js/lasuli.js"></script>
+    <script type="text/javascript" src="js/lasuli.core.js"></script>
+    <script type="text/javascript" src="js/lasuli.hypertopic.js"></script>
+    <script type="text/javascript" src="js/jquery.jstree.js"></script>
 
-  	<script language="javascript">
-  		function reload_sidebar()
-  		{
-  			self.location.reload();
-  		}
-  		function init(){
-        lasuli.hypertopic.currentUrl = 'http://cassandre/text/d0';
-        log(lasuli.hypertopic.itemID);
+    <script language="javascript">
+      function reload_sidebar()
+      {
+        self.location.reload();
+      }
+      function init(){
+        lasuli.hypertopic.currentUrl = 'http://127.0.0.1/argos/txt/rfc1035.txt';
+        lasuli.hypertopic.viewpointID = '5a03d6d794ec4b9215f7cba8600c11f7';
+        //Set the themes path
+        var topics = lasuli.hypertopic.topicTree;
+        var jstree_types = {
+            "valid_children" : [ "viewpoint" ],
+            "types" : {
+              "viewpoint": {
+                "icon" : {  "image" : "css/blitzer/images/viewpoint.png"},
+                "hover_node" : false,
+                "select_node": false
+              },
+              "keyword": {
+                "icon" : {  "image" : "css/blitzer/images/topic_forbidden.png" },
+                "hover_node" : false,
+                "select_node": false
+              },
+              "analysis": {
+                "icon" : {  "image" : "css/blitzer/images/topic_forbidden.png" },
+                "hover_node" : false,
+                "select_node": false
+              },
+              "topic": {
+                "icon" : { "image" : "css/blitzer/images/topic_add.png" }
+              }
+            }
+        };
+        var jstree_contextmenu = {
+            "items": {
+              "tag": {
+                "label"             : _("topictree.tag"),
+                "action"            : function (obj) {  },
+                "separator_after"   : true,
+                "icon"              : "css/blitzer/images/menu_tag.png"
+              },
+              "add": {
+                "label"             : _("topictree.add"),
+                "action"            : function (obj) {
+
+                },
+                "icon"              : "css/blitzer/images/menu_add.png"
+              },
+              "edit": {
+                "label"             : _("topictree.rename"),
+                "action"            : function (obj) {  },
+                "icon"              : "css/blitzer/images/menu_edit.png"
+              },
+              "delete": {
+                "label"             : _("topictree.delete"),
+                "action"            : function (obj) {  },
+                "icon"              : "css/blitzer/images/menu_delete.png"
+              },
+              "ccp": false,
+              "create": false,
+              "rename": false,
+              "remove": false
+            }
+        };
+        log(topics);
+        $.jstree._themes = 'chrome://lasuli/content/css/jsTree/themes/';
+        $("#topicTree").jstree({
+          "json_data" : topics,
+          "types" : jstree_types,
+          "contextmenu": jstree_contextmenu,
+          "plugins" : [ "themes", "json_data", "ui", "crrm", "contextmenu", "types" ]
+        });
+        //lasuli.hypertopic.currentUrl = 'http://cassandre/text/d0';
+        //log(lasuli.hypertopic.itemID);
         //log(lasuli.hypertopic.tags);
         //log(lasuli.hypertopic.viewpoints);
-        lasuli.hypertopic.viewpointID = '5a03d6d794ec4b9215f7cba8600c0739';
-        log(lasuli.hypertopic.keywords);
-        log(lasuli.hypertopic.createKeyword('5a03d6d794ec4b9215f7cba8600c0739', 'MyKeyword'));
+        //log(lasuli.hypertopic.topicTree);
+        //log(lasuli.hypertopic.keywords);
+        //log(lasuli.hypertopic.createKeyword('5a03d6d794ec4b9215f7cba8600c0739', 'MyKeyword'));
         /*log(lasuli.hypertopic.itemName);
         log(lasuli.hypertopic.attributes);
         log(lasuli.hypertopic.items);
@@ -45,17 +112,18 @@
         log(lasuli.hypertopic.myCorpusID);
         log(lasuli.hypertopic.users);
         log(lasuli.hypertopic.allFragments);*/
-  		}
-  		function log(str){
-  		  (typeof(str) == "string") ? $('#result').append("<p>" + str + "</p>") : $('#result').append("<p>" + JSON.stringify(str) + "</p>");
-  		}
+      }
+      function log(str){
+        (typeof(str) == "string") ? $('#result').append("<p>" + str + "</p>") : $('#result').append("<p>" + JSON.stringify(str) + "</p>");
+      }
+      $(document).bind('dblclick',reload_sidebar);
+      $(function(){ init(); });
+    </script>
 
-  		$(document).bind('dblclick',reload_sidebar);
-  	</script>
-
-	</head>
+  </head>
 <body>
 <div id="result"></div>
 <input type="button" onclick="init()" value="init">
+<div id="topicTree"></div>
 </body>
 </html>

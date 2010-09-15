@@ -31,6 +31,7 @@ lasuli.ui = {
         dispatch("lasuli.ui.doClearViewpointPanel", viewpointID);
         dispatch("lasuli.core.doLoadKeywords", viewpointID);
         dispatch("lasuli.core.doLoadFragments", viewpointID);
+        dispatch("lasuli.core.doLoadTopicTree", viewpointID);
       }
       else
         dispatch('lasuli.contextmenu.doHide', null);
@@ -188,7 +189,17 @@ lasuli.ui = {
 
     //Open dialog for add topic
     $('.add-topic-img').live("click", function(){
-      $("#topic-dialog").dialog('open');
+      //$("#topic-dialog").dialog('open');
+      $("#topic-tree-dialog").dialog('open');
+    });
+
+    //Initial topic tree dialog
+    $("#topic-tree-dialog").dialog({
+      bgiframe: true,
+      autoOpen: false,
+      modal: true,
+      width: 170,
+      title: _("topictree.dialog.title")
     });
 
     var topicDialogButtons = {};
@@ -798,6 +809,89 @@ lasuli.ui = {
       //$('#' + viewpointID +' .topics-ul li').remove();
       $('#' + viewpointID).find(".topics-ul").append(html);
     }
+  },
+
+  doShowTopicTree : function(topics){
+    var jstree_types = {
+      "valid_children" : [ "viewpoint" ],
+      "types" : {
+        "viewpoint": {
+          "icon" : {  "image" : "css/blitzer/images/viewpoint.png"},
+          "select_node" : false
+        },
+        "keyword": {
+          "icon" : {  "image" : "css/blitzer/images/topic_forbidden.png" },
+          "select_node": false
+        },
+        "analysis": {
+          "icon" : {  "image" : "css/blitzer/images/topic_forbidden.png" },
+          "select_node": false
+        },
+        "topic": {
+          "icon" : { "image" : "css/blitzer/images/topic_add.png" }
+        }
+      }
+    };
+    var jstree_contextmenu = {
+      "items": function(node){
+        var viewpointID = node.attr("viewpointID");
+        var topicID = node.attr("topicID");
+        var topicType = node.attr("rel");
+        var arg = {"viewpointID": viewpointID, "topicID": topicID, "topicType": topicType, "sourceObj": node};
+        var items = {};
+        items.ccp = false;
+        items.create = false;
+        items.rename = false;
+        items.remove = false;
+        items.tag = {
+          "label"             : _("topictree.tag"),
+          "action"            : function (obj) { dispatch("lasuli.core.doTagTopicTreeItem", arg); },
+          "separator_after"   : true,
+          "icon"              : "css/blitzer/images/menu_tag.png"
+        };
+        items.add = {
+          "label"             : _("topictree.create"),
+          "action"            : function (obj) { dispatch("lasuli.core.doCreateTopicTreeItem", arg); },
+          "icon"              : "css/blitzer/images/menu_add.png"
+        };
+        items.edit = {
+          "label"             : _("topictree.rename"),
+          "action"            : function (obj) { dispatch("lasuli.core.doRenameTopicTreeItem", arg); },
+          "icon"              : "css/blitzer/images/menu_edit.png"
+        };
+        items.destroy = {
+          "label"             : _("topictree.destroy"),
+          "action"            : function (obj) { dispatch("lasuli.core.doDestroyTopicTreeItem", arg); },
+          "icon"              : "css/blitzer/images/menu_delete.png"
+        };
+        switch(topicType) {
+          case "viewpoint":
+            delete items.tag;
+            delete items.destroy;
+            return items;
+          case "analysis":
+            delete items.tag;
+            return items;
+          case "keyword":
+            delete items.tag;
+            return items;
+          case "topic":
+            return items;
+        }
+      }
+    };
+    $.jstree._themes = 'chrome://lasuli/content/css/jsTree/themes/';
+    $("#tree").jstree({
+      "json_data" : topics,
+      "types" : jstree_types,
+      "contextmenu": jstree_contextmenu,
+      "plugins" : [ "themes", "json_data", "ui", "crrm", "contextmenu", "types" ]
+    });
+  },
+
+  doCreateTopicTreeItem: function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateTopicTreeItem");
+    $("#tree").jstree("create", arg.sourceObj, "inside", {"data": _("no.name"), "attr": {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "rel": "topic"}}, null, true);
   },
 
   doRemoveKeyword : function(keyword){

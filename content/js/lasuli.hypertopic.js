@@ -551,6 +551,26 @@ lasuli.hypertopic = {
     }
   },
 
+  createTopicIn : function(viewpointID, topicID, name){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createTopicIn");
+    var topicIDs = (topicID) ? new Array(topicID) : new Array();
+    var topicID = HypertopicMap.createTopicIn(viewpointID, topicIDs);
+    if(!topicID) return false;
+    if(name)
+      var result = HypertopicMap.renameTopic(viewpointID, topicID, name);
+    return topicID;
+  },
+
+  destroyTopic : function(viewpointID, topicID){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyTopic");
+    var result = HypertopicMap.destroyTopic(viewpointID, topicID);
+    logger.debug(result);
+    if(result)
+      return true;
+    else
+      return false;
+  },
+
   getViewpointName : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getViewpointName");
     if(this._viewpoints && this._viewpoints[viewpointID]) return this._viewpoints[viewpointID];
@@ -577,6 +597,7 @@ lasuli.hypertopic = {
     logger.debug(viewpointIDs);
     return viewpointIDs;
   },
+
 
   createFragment: function(startPos, endPos, text, viewpointID, topicID){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createFragment");
@@ -618,5 +639,60 @@ lasuli.hypertopic = {
       return true;
     }
     return false;
+  },
+
+  getNarrowers : function(viewpoint, topicID){
+    var topics = new Array();
+    if(!viewpoint[topicID] || !viewpoint[topicID].narrower)
+      return topics;
+    for(var i=0, topic; topic = viewpoint[topicID].narrower[i]; i++)
+    {
+      var obj = {};
+      obj.data = topic.name || "";
+      var topicType = this.getTopicType(this.viewpointID, topic.id);
+      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "rel": topicType};
+      obj.children = this.getNarrowers(viewpoint, topic.id);
+      topics.push(obj);
+    }
+    return topics;
+  },
+
+  getTopicType : function(viewpointID, topicID){
+    if(this.keywords[topicID]) return 'keyword';
+
+    for each(var fragment in this.fragments)
+      if(fragment.viewpointID == viewpointID && fragment.topicID == topicID)
+        return 'analysis';
+
+    return 'topic';
+  },
+
+  get topicTree(){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getTopicTree");
+    logger.debug(this.viewpointID);
+    var topics = {};
+    var viewpoint = HypertopicMap.getViewpoint(this.viewpointID);
+    logger.debug(viewpoint);
+    if(!viewpoint) return topics;
+    var root = {};
+    root.data = viewpoint.name;
+    root.attr = {"viewpointID": this.viewpointID, "rel": "viewpoint"};
+    root.children = new Array();
+    root.state = 'open';
+
+    if(!viewpoint.upper) return topics;
+    topics.data = new Array();
+    for(var i=0, topic; topic = viewpoint.upper[i]; i++)
+    {
+      var obj = {};
+      obj.data = topic.name || "";
+      var topicType = this.getTopicType(this.viewpointID, topic.id);
+      obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.id, "rel": topicType};
+      obj.children = this.getNarrowers(viewpoint, topic.id);
+      root.children.push(obj);
+    }
+
+    topics.data.push(root);
+    return topics;
   }
 }
