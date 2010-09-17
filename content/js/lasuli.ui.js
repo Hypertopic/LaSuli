@@ -1177,5 +1177,4 @@ $(window).bind("unload", function(){
   dispatch('lasuli.core.doClearFragmentsCache', null);
   dispatch('lasuli.contextmenu.doHide', null);
   dispatch('lasuli.highlighter.doClear', null);
-  //dispatch('lasuli.changeWatcher.doShutdown', null);
 });

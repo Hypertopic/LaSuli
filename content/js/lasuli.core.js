@@ -10,14 +10,15 @@ lasuli.core = {
   //Open lasuli sidebar
   openSideBar : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.openSideBar");
-		if(!lasuli.core.isSidebarOpen()){
-		  dispatch('lasuli.changeWatcher.doStart', null);
+		if(!lasuli.core.lasuliOpened){
+		  //dispatch('lasuli.changeWatcher.doStart', null);
    		toggleSidebar('viewLaSuliSidebar', true);
+   		logger.debug('open sidebar by click menu');
   	}
 	},
 
   //Get sidebar status
-	isSidebarOpen : function(){
+	get lasuliOpened(){
 		return (document.getElementById("viewLaSuliSidebar").getAttribute("checked") == "true");
 	},
 
@@ -55,7 +56,7 @@ lasuli.core = {
     logger.level = Log4Moz.Level["Debug"];
     //reInitial HypertopicMap
     lasuli.core.loadSetting();
-    if(lasuli.core.isSidebarOpen())
+    if(lasuli.core.lasuliOpened)
     {
       logger.debug("sidebar reload");
       document.getElementById("sidebar").contentWindow.location.reload();
@@ -91,7 +92,7 @@ lasuli.core = {
 
     lasuli.hypertopic.currentUrl = url;
     //If the sidebar is not opened yet, do nothing.
-    if(!lasuli.core.isSidebarOpen())
+    if(!lasuli.core.lasuliOpened)
       return false;
 
     if(!url || url == "about:blank")
@@ -133,7 +134,7 @@ lasuli.core = {
 
   doLoadDocument : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
-    if(!lasuli.core.isSidebarOpen()) return false;
+    if(!lasuli.core.lasuliOpened) return false;
     dispatch("lasuli.ui.doClearDocumentPanel", null);
 
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);

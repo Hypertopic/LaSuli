@@ -58,12 +58,12 @@ var lasuli = {
     var capp = new Log4Moz.ConsoleAppender(formatter);
     capp.level = Log4Moz.Level["All"];
     root.addAppender(capp);
-    /*
+
     var logFile = lasuli.getLocalDirectory();
     logFile.append("log.txt");
-    var appender = new lasuli.Log4Moz.RotatingFileAppender(logFile, formatter);
-    appender.level = lasuli.Log4Moz.Level["Debug"];
-    root.addAppender(appender);*/
+    var appender = new Log4Moz.RotatingFileAppender(logFile, formatter);
+    appender.level = Log4Moz.Level["Debug"];
+    root.addAppender(appender);
   },
 
   jqGirdLoader : function()
