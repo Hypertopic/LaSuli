@@ -9,7 +9,9 @@ lasuli.core = {
 
   //Open lasuli sidebar
   openSideBar : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.openSideBar");
 		if(!lasuli.core.isSidebarOpen()){
+		  dispatch('lasuli.changeWatcher.doStart', null);
    		toggleSidebar('viewLaSuliSidebar', true);
   	}
 	},

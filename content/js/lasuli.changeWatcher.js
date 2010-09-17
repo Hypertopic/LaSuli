@@ -1,6 +1,7 @@
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Observers.js");
+include("resource://lasuli/modules/Sync.js");
 include("resource://lasuli/modules/RESTDatabase.js");
 
 var changeWatcherThread = function(baseUrl, lastSeq) {
@@ -33,8 +34,10 @@ changeWatcherThread.prototype = {
       while(1)
       {
         var str = this.scriptableInputStream.read(this.aInputStream.available());
-        if(str.length == 0)
+        if(str.length == 0){
+          this.mainThread.dispatch(new changeWatcher(this.baseUrl, -1), Ci.nsIThread.DISPATCH_NORMAL);
           break;
+        }
         logger.debug(str);
         //Change happens
         if(str.indexOf("}") > 0)
@@ -59,6 +62,8 @@ changeWatcherThread.prototype = {
           }
         }
       }
+      if(this.scriptableInputStream) this.scriptableInputStream.close();
+      if(this.aInputStream) this.aInputStream.close();
     } catch(err) {
       logger.fatal('exit run');
       logger.fatal(err);
@@ -90,8 +95,13 @@ changeWatcher.prototype = {
   run: function() {
     var logger = Log4Moz.repository.getLogger("changeWatcher.run");
     try {
-      if(this.lastSeq)
-        RESTDatabase.lastSeq = this.lastSeq;
+      /*if(this.lastSeq)
+        if(this.lastSeq == -1)
+          dispatch("lasuli.changeWatcher.doSpawn", this.baseUrl);
+        else{
+          RESTDatabase.lastSeq = this.lastSeq;
+          RESTDatabase.purge();
+        }*/
       logger.debug(this.lastSeq);
     } catch(err) {
       logger.fatal(err);
@@ -122,6 +132,17 @@ lasuli.changeWatcher = {
     if(this.fetcher)
       this.fetcher.shutdown();
     this.fetcher = null;
+  },
+
+  doSpawn : function(baseUrl){
+    var logger = Log4Moz.repository.getLogger("lasuli.changeWatcher.doSpawn");
+    logger.debug(baseUrl);
+    this.fetcher = null;
+    //Clear the cache to make sure data is clean
+    RESTDatabase.purge();
+    //Sleep 3 second and retry
+    Sync.sleep(3000);
+    this.doStart();
   },
 
   register: function(){
