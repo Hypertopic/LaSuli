@@ -49,14 +49,14 @@ var lasuli = {
     // Loggers are hierarchical, lowering this log level will affect all output
     var root = Log4Moz.repository.rootLogger;
     if(root.appenders.length > 0) return;
-    root.level = Log4Moz.Level["Info"];
+    root.level = Log4Moz.Level["All"];
 
     /*var dapp = new lasuli.Log4Moz.DumpAppender(formatter);
     dapp.level = lasuli.Log4Moz.Level["Debug"];
     root.addAppender(dapp);*/
 
     var capp = new Log4Moz.ConsoleAppender(formatter);
-    capp.level = Log4Moz.Level["Info"];
+    capp.level = Log4Moz.Level["All"];
     root.addAppender(capp);
     /*
     var logFile = lasuli.getLocalDirectory();

@@ -99,7 +99,7 @@ var RESTDatabase = {
     this.baseUrl = baseUrl;
     this.xhr = new XMLHttpRequest();
     this.xhr.overrideMimeType('application/json');
-    setTimeout(CouchDBListen, 2000);
+    //setTimeout(CouchDBListen, 2000);
   },
 
   /**
