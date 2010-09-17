@@ -1,7 +1,7 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/log4moz.js");
-
+include("resource://lasuli/modules/RESTDatabase.js");
 include("resource://lasuli/modules/HypertopicMap.js");
 
 lasuli.core = {
@@ -530,8 +530,16 @@ lasuli.core = {
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});
       dispatch("lasuli.ui.doDropFragmentDenied", arg );
     }
-  }
+  },
 
+  chromeCreated : function(domWindow, url){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.chromeCreated");
+    if(domWindow.name && domWindow.name == 'sidebar')
+      if(lasuli.core.isSidebarOpen())
+        RESTDatabase.listen = true;
+      else
+        RESTDatabase.listen = false;
+  }
 }
 
 var lasuliPrefObserver = {
@@ -564,6 +572,7 @@ window.addEventListener("load", function() {
 
   lasuliPrefObserver.register();
   lasuli.core.register();
+  Observers.add("chrome-document-global-created", lasuli.core.chromeCreated, lasuli.core);
 
   lasuli.core.loadSetting();
 }, false);
@@ -571,4 +580,5 @@ window.addEventListener("load", function() {
 window.addEventListener("unload", function() {
   lasuliPrefObserver.unregister();
   lasuli.core.unregister();
+  Observers.remove("chrome-document-global-created", lasuli.core.chromeCreated, lasuli.core);
 }, false);
