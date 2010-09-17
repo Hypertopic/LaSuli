@@ -1,6 +1,7 @@
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/Services.js");
-include("resource://lasuli/modules/Sync.js");
+include("resource://lasuli/modules/Observers.js");
+include("resource://lasuli/modules/RESTDatabase.js");
 
 var changeWatcherThread = function(baseUrl, lastSeq) {
   this.baseUrl = baseUrl;
@@ -8,9 +9,11 @@ var changeWatcherThread = function(baseUrl, lastSeq) {
   this.channel = null;
   this.aInputStream = null;
   this.scriptableInputStream = null;
+  this.mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
 };
 
 changeWatcherThread.prototype = {
+
   run: function() {
     var logger = Log4Moz.repository.getLogger("changeWatcherThread.run");
     try {
@@ -47,7 +50,7 @@ changeWatcherThread.prototype = {
             {
               logger.debug(result.seq);
               this.lastSeq = result.seq;
-              main.dispatch(new changeWatcher(this.baseUrl, this.lastSeq), Ci.nsIThread.DISPATCH_NORMAL);
+              this.mainThread.dispatch(new changeWatcher(this.baseUrl, this.lastSeq), Ci.nsIThread.DISPATCH_NORMAL);
             }
           }catch(err)
           {
@@ -85,11 +88,13 @@ var changeWatcher = function(baseUrl, lastSeq) {
 
 changeWatcher.prototype = {
   run: function() {
+    var logger = Log4Moz.repository.getLogger("changeWatcher.run");
     try {
-      // This is where we react to the completion of the working thread.
-      alert('baseUrl ' + this.baseUrl + ' finished with lastSeq: ' + this.lastSeq);
+      if(this.lastSeq)
+        RESTDatabase.lastSeq = this.lastSeq;
+      logger.debug(this.lastSeq);
     } catch(err) {
-      Components.utils.reportError(err);
+      logger.fatal(err);
     }
   },
 
@@ -102,15 +107,40 @@ changeWatcher.prototype = {
   }
 };
 
-var main = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
-var background;
-var lastSeq = 1;
-function init(){
-  background = Components.classes["@mozilla.org/thread-manager;1"].getService().newThread(0);
-  background.dispatch(new changeWatcherThread('http://127.0.0.1/argos/', lastSeq), Components.interfaces.nsIThread.DISPATCH_NORMAL);
+
+lasuli.changeWatcher = {
+  fetcher : null,
+
+  doStart: function(){
+    if(!this.fetcher){
+      this.fetcher = Cc["@mozilla.org/thread-manager;1"].getService().newThread(0);
+      this.fetcher.dispatch(new changeWatcherThread(RESTDatabase.baseUrl, RESTDatabase.lastSeq), Ci.nsIThread.DISPATCH_NORMAL);
+    }
+  },
+
+  doShutdown: function(){
+    if(this.fetcher)
+      this.fetcher.shutdown();
+    this.fetcher = null;
+  },
+
+  register: function(){
+    for(var func in this)
+      if(func.substr(0, 2) == "do")
+        Observers.add("lasuli.changeWatcher." + func, lasuli.changeWatcher[func], lasuli.changeWatcher);
+  },
+
+  unregister: function(){
+    for(var func in this)
+      if(func.substr(0, 2) == "do")
+        Observers.remove("lasuli.changeWatcher." + func, lasuli.changeWatcher[func], lasuli.changeWatcher);
+  }
 }
 
-function stopme(){
-  background.shutdown();
-  lastSeq++;
-}
+window.addEventListener("load", function() {
+  lasuli.changeWatcher.register();
+}, false);
+
+window.addEventListener("unload", function() {
+  lasuli.changeWatcher.unregister();
+}, false)

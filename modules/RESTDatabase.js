@@ -50,38 +50,12 @@ function MergeRecursive(obj1, obj2) {
 }
 
 /**
- * Set a timer, simulating the API for the window.setTimeout call.
- * This only simulates the API for the version of the call that accepts
- * a function as its first argument and no additional parameters,
- * and it doesn't return the timeout ID.
- *
- * @param func {Function}
- *        the function to call after the delay
- * @param delay {Number}
- *        the number of milliseconds to wait
- */
-function setTimeout(func, delay) {
-  // Copy from Sync.js
-  let timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-  let callback = {
-    notify: function notify() {
-      // This line actually just keeps a reference to timer (prevent GC)
-      timer = null;
-
-      // Call the function so that "this" is global
-      func();
-    }
-  }
-  timer.initWithCallback(callback, delay, Ci.nsITimer.TYPE_ONE_SHOT);
-}
-
-/**
  * @param baseURL The database URL.
  *                example: http://127.0.0.1:5984/test/
  */
 var RESTDatabase = {
   cache : null,
-  baseUrl : null,
+  _baseUrl : null,
   xhr : null,
 
   init : function(baseUrl)
@@ -96,10 +70,9 @@ var RESTDatabase = {
     }
     baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
     logger.info("BaseUrl is:" + baseUrl);
-    this.baseUrl = baseUrl;
+    this._baseUrl = baseUrl;
     this.xhr = new XMLHttpRequest();
     this.xhr.overrideMimeType('application/json');
-    //setTimeout(CouchDBListen, 2000);
   },
 
   /**
@@ -110,7 +83,7 @@ var RESTDatabase = {
   {
     let logger = Log4Moz.repository.getLogger("RESTDatabase._send");
     httpAction = (httpAction) ? httpAction : "GET";
-    httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
+    httpUrl = (httpUrl) ? httpUrl : this._baseUrl;
     //logger.debug(httpUrl);
     //httpUrl = (httpUrl.indexOf('?') > 0) ? httpUrl + "&_t=" + (new Date()).getTime() : httpUrl + "?_t=" + (new Date()).getTime();
     //logger.debug(httpUrl);
@@ -153,7 +126,7 @@ var RESTDatabase = {
     let logger = Log4Moz.repository.getLogger("RESTDatabase.post");
     let body;
     try{
-      body = this._send("POST", this.baseUrl, object);
+      body = this._send("POST", this._baseUrl, object);
       if(!body || !body.ok)
         throw Exception(JSON.stringify(body));
     }
@@ -188,10 +161,10 @@ var RESTDatabase = {
       logger.debug("load from cache");
       return this.cache[query];
     }
-    logger.debug("load from server" + this.baseUrl + query);
+    logger.debug("load from server" + this._baseUrl + query);
     let body;
     try{
-      body = this._send("GET", this.baseUrl + query, null);
+      body = this._send("GET", this._baseUrl + query, null);
       if(!body)
         throw Exception(JSON.stringify(body));
     }catch(e)
@@ -283,7 +256,7 @@ var RESTDatabase = {
    */
   httpPut : function(object) {
     let logger = Log4Moz.repository.getLogger("RESTDatabase.put");
-    let url = this.baseUrl + object._id;
+    let url = this._baseUrl + object._id;
     let body;
     try{
       body = this._send("PUT", url, object);
@@ -307,7 +280,7 @@ var RESTDatabase = {
    */
   httpDelete : function(object) {
     let logger = Log4Moz.repository.getLogger("RESTDatabase.delete");
-    let url = this.baseUrl + object._id;
+    let url = this._baseUrl + object._id;
     if(object._rev)
       url += "?rev=" + object._rev;
     let body;
@@ -347,42 +320,13 @@ var RESTDatabase = {
   set lastSeq(lastSeq)
   {
     this.last_seq = lastSeq;
-  }
-}
+  },
 
-function CouchDBListen()
-{
-  let logger = Log4Moz.repository.getLogger("CouchDBListen");
-  var changeUrl = RESTDatabase.baseUrl + "_changes?since=" + RESTDatabase.lastSeq;
-  //TODO implement this function in ChromeWorker for Firefox 4
-  //URL: feed=continuous&heartbeat=5000&
-  //logger.info("listen on " + changeUrl);
-  var channel = Services.io.newChannel(changeUrl, null, null);
-  var aInputStream = channel.open();
-  var scriptableInputStream = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
-  scriptableInputStream.init(aInputStream);
-  while(1)
-  {
-    var str = scriptableInputStream.read(aInputStream.available());
-    if(str.length == 0)
-      break;
-    //Change happens
-    if(str.indexOf("}") > 0)
-    {
-      try
-      {
-        var result = JSON.parse(str.trim());
-        if(result.last_seq > RESTDatabase.lastSeq)
-        {
-          RESTDatabase.lastSeq = result.last_seq;
-          RESTDatabase.purge();
-          logger.warn("Changes happen:" + str.trim());
-        }
-      }catch(e)
-      {}
-    }
+  get baseUrl(){
+    return this._baseUrl;
+  },
+
+  set baseUrl(url){
+    this._baseUrl = url;
   }
-  aInputStream.close();
-  scriptableInputStream.close();
-  setTimeout(CouchDBListen, 5000);
 }
