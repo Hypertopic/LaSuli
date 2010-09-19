@@ -18,7 +18,7 @@ body
 	height:100%;
 	top:0;
 	left:0;
-	z-index:998;
+	z-index:999998;
 	position:absolute;
 }
 
@@ -229,4 +229,9 @@ div#create-viewpoint input
 div.ui-tabs-panel {
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.tt-tag, .tt-create, .tt-modify, .tt-delete{
+  padding-top:5px;
+  padding-bottom: 5px;
 }
