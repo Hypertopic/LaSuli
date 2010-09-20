@@ -1,0 +1,9 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en-US" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<h2>LaSuli Sidebar</h2>
+<ul>
+  <li>Added a toolbar for topics browsing.</li>
+  <li>Updated French localization.</li>
+  <li>Removed obsolete images and JavaScript libraries.</li>
+</ul>
+</html>

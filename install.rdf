@@ -14,9 +14,9 @@
                    em:iconURL="chrome://lasuli/skin/logo32.png"
                    em:id="lasuli@hypertopic.org"
                    em:name="LaSuli Sidebar"
-                   em:updateURL="http://lasuli.couchone.com/source/files/update.rdf"
+                   em:updateURL="http://lasuli.couchone.com/download/updates/update.rdf"
                    em:optionsURL="chrome://lasuli/content/setting.xul"
-                   em:version="0.8.0.2"
+                   em:version="0.8.0.3"
                    em:updateKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCsQ2jxFSc3B+s7KW3QGRB/f432KQy1aCdpK8K+EMvdaKdA92qsGt6k8m8/MRD85tMfv+TPkyHuOJ2jWowVY2sNE7VIL9TScNtgPVUfKP2/MA1BFb8imAXSuk++H1Kn8QaQBIUNmNhLykPkdmtFWU4XXap0OAhJoU0p5B1tztjgUQIDAQAB">
     <em:targetApplication RDF:resource="rdf:#$ll2uD1"/>
   </RDF:Description>
