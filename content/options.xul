@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<dialog id="lasuli-options-dialog"
+      persist="screenX screenY width height"
+      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      autosize="true"
+      resizable="no"
+      title="Options"
+      buttons="accept"
+      onload="lasuli.options.init();"
+      ondialogaccept="return lasuli.options.okay();">
+  <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.js"/>
+  <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.options.js"/>
+  <hbox flex="1">
+    <listbox id="options-list" flex="1">
+      <listhead>
+        <listheader id="list-default" label=" "/>
+        <listheader id="list-user" label="User"/>
+        <listheader id="list-server" label="Hypertopic Server"/>
+      </listhead>
+      <listcols>
+        <listcol/>
+        <listcol/>
+        <listcol flex="1"/>
+      </listcols>
+    </listbox>
+    <vbox>
+      <button id="button-modify" label="Modify" oncommand="alert('You pressed me!');"/>
+      <button id="button-add" label="Add" oncommand="alert('You pressed me!');"/>
+      <button id="button-delete" label="Delete" oncommand="alert('You pressed me!');"/>
+      <button id="button-default" label="Set as Default" oncommand="alert('You pressed me!');"/>
+    </vbox>
+  </hbox>
+</dialog>
