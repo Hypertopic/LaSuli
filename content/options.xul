@@ -4,7 +4,8 @@
       persist="screenX screenY width height"
       xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
       autosize="true"
-      resizable="no"
+      resizable="yes"
+      minwidth="500"
       title="Options"
       buttons="accept"
       onload="lasuli.options.init();"
@@ -12,7 +13,7 @@
   <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.js"/>
   <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.options.js"/>
   <hbox flex="1">
-    <listbox id="options-list" flex="1">
+    <listbox id="options-list" onclick='lasuli.options.doSetButtonStatus();' seltype='single' rows="10" flex="1">
       <listhead>
         <listheader id="list-default" label=" "/>
         <listheader id="list-user" label="User"/>
@@ -25,10 +26,10 @@
       </listcols>
     </listbox>
     <vbox>
-      <button id="button-modify" label="Modify" oncommand="alert('You pressed me!');"/>
-      <button id="button-add" label="Add" oncommand="alert('You pressed me!');"/>
-      <button id="button-delete" label="Delete" oncommand="alert('You pressed me!');"/>
-      <button id="button-default" label="Set as Default" oncommand="alert('You pressed me!');"/>
+      <button id="button-modify" label="Modify" disabled="true" oncommand="lasuli.options.doModify();"/>
+      <button id="button-add" label="Add" oncommand="lasuli.options.doCreate();"/>
+      <button id="button-delete" label="Delete" disabled="true" oncommand="lasuli.options.doDelete();"/>
+      <button id="button-default" label="Set as Default" disabled="true" oncommand="lasuli.options.doSetDefault();"/>
     </vbox>
   </hbox>
 </dialog>

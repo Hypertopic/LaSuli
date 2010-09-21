@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<dialog id="lasuli-setting-dialog"
+<dialog id="lasuli-options-dialog"
       persist="screenX screenY width height"
       xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
       autosize="true"
@@ -10,24 +10,25 @@
       onload="onLoad();"
       ondialogaccept="return onOK();">
 
-  <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.setting.js"/>
+  <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.js"/>
+  <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.dialog.js"/>
   <vbox flex="1">
     <groupbox>
-      <caption label="Service Hypertopic" />
+      <caption id="options.dialog.header" label="Service Hypertopic" />
       <hbox>
-        <label id="urllabel" value="URL:"/>
+        <label id="options.dialog.url" value="URL:"/>
         <textbox id="txtBaseUrl" flex="1"/>
       </hbox>
       <hbox>
-        <label id="labelUser" value="Utilisateur :"/>
+        <label id="options.dialog.user" value="Utilisateur :"/>
         <textbox id="txtUser" flex="1"/>
-        <label id="labelPassword" value="Mot de passe :"/>
+        <label id="options.dialog.pass" value="Mot de passe :"/>
         <textbox id="txtPass" type="password" flex="1"/>
       </hbox>
     </groupbox>
     <hbox align="right">
-      <button dlgtype="accept" label="Ok" id="myAccept"/>
-      <button dlgtype="cancel" label="Annuler" id="myCancel"/>
+      <button dlgtype="accept" label="Ok" id="options.dialog.accept"/>
+      <button dlgtype="cancel" label="Annuler" id="options.dialog.cancel"/>
     </hbox>
   </vbox>
 </dialog>
