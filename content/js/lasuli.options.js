@@ -1,4 +1,5 @@
 include("resource://lasuli/modules/Preferences.js");
+include("resource://lasuli/modules/XMLHttpRequest.js");
 
 lasuli.options = {
   servers : new Array(),
@@ -69,7 +70,38 @@ lasuli.options = {
 
   okay : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.options.okay");
-    //TODO check every server url and test it if it's accessible.
+    var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                        .getService(Ci.nsIPromptService);
+    var found = false;
+    for(var i=0, server; server = this.servers[i]; i++)
+      if(server.default === true)
+        found = true;
+
+    if(!found)
+    {
+      prompts.alert(window, _('Error'), _('options.error.nodefaultserver'));
+      return false;
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.overrideMimeType('application/json');
+    for(var i=0, server; server = this.servers[i]; i++)
+      try{
+        xhr.open('GET', server.url, false);
+        xhr.send('');
+
+        if((xhr.status + "").substr(0,1) != '2')
+        {
+          logger.fatal(xhr.status);
+          throw Exception('error');
+        }
+      }
+      catch(e)
+      {
+        logger.fatal("Ajax Error, xhr.status: " + xhr.status + " " + xhr.statusText + ". \nRequest:\n" + server.url);
+        prompts.alert(window, _('Error'), _('options.error.servernotaccessible', [ server.url ]));
+        return false;
+      }
+
     Preferences.set("extensions.lasuli.setting",JSON.stringify(this.servers));
     return true;
   },
