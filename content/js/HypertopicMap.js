@@ -9,10 +9,29 @@ include("resource://lasuli/modules/XMLHttpRequest.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
 
-function HtMap(baseUrl, user, pass)
-{
-  let logger = Log4Moz.repository.getLogger("HtMap");
-  let regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+/*
+* Recursively merge properties of two objects
+*/
+function MergeRecursive(obj1, obj2) {
+  for (var p in obj2)
+    try
+    {
+      // Property in destination object set; update its value.
+      if ( obj2[p].constructor==Object )
+        obj1[p] = MergeRecursive(obj1[p], obj2[p]);
+      else
+        obj1[p] = obj2[p];
+    }
+    catch(e)
+    {
+      obj1[p] = obj2[p]; // Property in destination object not set; create it and set its value.
+    }
+  return obj1;
+}
+
+function HtMap(baseUrl, user, pass) {
+  var logger = Log4Moz.repository.getLogger("HtMap");
+  var regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 
   //Check the baseUrl is a correct URL
   if(!baseUrl || baseUrl === "" || !regexp.test(baseUrl))
@@ -41,8 +60,8 @@ function HtMap(baseUrl, user, pass)
  * @param object null if method is GET or DELETE
  * @return response body
  */
-HtMap.prototype.send = function(httpAction, httpUrl, httpBody){
-  let logger = Log4Moz.repository.getLogger("HtMap.send");
+HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
+  var logger = Log4Moz.repository.getLogger("HtMap.send");
   //Default HTTP action is "GET"
   httpAction = (httpAction) ? httpAction : "GET";
   //Default HTTP URL is the baseUrl
@@ -51,7 +70,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody){
   //httpUrl = (httpUrl.indexOf('?') > 0) ? httpUrl + "&_t=" + (new Date()).getTime() : httpUrl + "?_t=" + (new Date()).getTime();
 
   httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object") ? JSON.stringify(httpBody) : httpBody);
-  let result = null;
+  var result = null;
 
   try{
     this.xhr.open(httpAction, httpUrl, false);
@@ -85,8 +104,8 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody){
  *               It is updated with an _id (and a _rev if the server features conflict management).
  */
 HtMap.prototype.httpPost = function(object) {
-  let logger = Log4Moz.repository.getLogger("HtMap.httpPost");
-  let body;
+  var logger = Log4Moz.repository.getLogger("HtMap.httpPost");
+  var body;
   try{
     body = this.send("POST", null, object);
     if(!body || !body.ok)
@@ -114,12 +133,12 @@ HtMap.prototype.httpPost = function(object) {
  * otherwise the original object is returned.
  */
 HtMap.prototype.httpGet = function(query) {
-  let logger = Log4Moz.repository.getLogger("HtMap.httpGet");
+  var logger = Log4Moz.repository.getLogger("HtMap.httpGet");
   //Try to load the data from cache first
   if(this.cache[query] && this.cache.enable)
     return this.cache[query];
   logger.debug("load from server" + this.baseUrl + query);
-  let body;
+  var body;
   try{
     body = this.send("GET", this.baseUrl + query, null);
     if(!body)
@@ -134,22 +153,22 @@ HtMap.prototype.httpGet = function(query) {
   //TODO, need to rewrite this part of algorithm
   if(body.rows && body.rows.length > 0)
   {
-    let rows = {};
+    var rows = {};
     //Combine the array according to the index key.
-    for(let i=0, row; row = body.rows[i]; i++)
+    for(var i=0, row; row = body.rows[i]; i++)
     {
-      let _key = JSON.stringify(row.key);
+      var _key = JSON.stringify(row.key);
       if(!rows[_key])
         rows[_key] = new Array();
       rows[_key].push(row.value);
     }
     //Combine the value according to the value name.
-    for(let _key in rows)
+    for(var _key in rows)
     {
-      let obj = {};
-      for(let i=0, val; val = rows[_key][i] ; i++)
+      var obj = {};
+      for(var i=0, val; val = rows[_key][i] ; i++)
       {
-        for(let n in val)
+        for(var n in val)
         {
           if(!obj[n])
             obj[n] = new Array();
@@ -158,14 +177,14 @@ HtMap.prototype.httpGet = function(query) {
       }
       rows[_key] = obj;
     }
-    let result = {};
+    var result = {};
 
-    for(let _key in rows)
+    for(var _key in rows)
     {
-      let keys = JSON.parse(_key);
-      let obj = null,tmp,key;
+      var keys = JSON.parse(_key);
+      var obj = null,tmp,key;
       if(typeof(keys) == "object")
-        for(let i=keys.length-1; i >= 0; i--)
+        for(var i=keys.length-1; i >= 0; i--)
         {
           key = keys[i];
           if(obj == null)
@@ -199,10 +218,10 @@ HtMap.prototype.httpGet = function(query) {
  * if the server features conflict management, the object is updated with _rev
  */
 HtMap.prototype.httpPut = function(object) {
-  let logger = Log4Moz.repository.getLogger("HtMap.httpPut");
-  let url = this.baseUrl + object._id;
+  var logger = Log4Moz.repository.getLogger("HtMap.httpPut");
+  var url = this.baseUrl + object._id;
   try{
-    let body = this.send("PUT", url, object);
+    var body = this.send("PUT", url, object);
     if(!body)
       throw Error(JSON.stringify(object));
   }catch(e)
@@ -220,13 +239,13 @@ HtMap.prototype.httpPut = function(object) {
  * (_id is mandatory, the server may need _rev for conflict management)
  */
 HtMap.prototype.httpDelete = function(object) {
-  let logger = Log4Moz.repository.getLogger("HtMap.httpDelete");
-  let url = this.baseUrl + object._id;
+  var logger = Log4Moz.repository.getLogger("HtMap.httpDelete");
+  var url = this.baseUrl + object._id;
   if(object._rev)
     url += "?rev=" + object._rev;
 
   try{
-    let body = this.send("DELETE", url, null);
+    var body = this.send("DELETE", url, null);
     if(!body)
       throw Exception(JSON.stringify(object));
   }catch(e)
@@ -238,19 +257,82 @@ HtMap.prototype.httpDelete = function(object) {
   return true;
 }
 
-HtMap.prototype.getUser = function(userID){
-  return new HtMapUser(userID);
+HtMap.prototype.getUser = function(userID) {
+  return new HtMapUser(userID, this);
 }
 
-function HtMapUser(id){
+HtMap.prototype.getViewpoint = function(viewpointID) {
+  return new HtMapViewpoint(viewpointID);
+}
+
+HtMap.prototype.getCorpus = function(corpusID) {
+  return new HtMapCorpus(corpusID);
+}
+
+
+function HtMapUser(id, htMap) {
   this.id = id;
+  this.htMap = htMap;
 }
 
-HtMapUser.prototype.getID = function(){
+HtMapUser.prototype.getID = function() {
   return this.id;
 }
 
-HtMapUser.prototype.getView = function(){
-  var ret = HtMap.httpGet("user/" + this.getID());
-  return ret[this.getID()];
+HtMapUser.prototype.getView = function() {
+  var ret = this.htMap.httpGet("user/" + this.getID());
+  return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
 }
+
+HtMapUser.prototype.listCorpora = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return view.corpus;
+}
+
+/**
+ * @return a list of IDs and names pairs... fast!
+ */
+HtMapUser.prototype.listViewpoints = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return view.viewpoint;
+}
+
+HtMapUser.prototype.createCorpus = function(name) {
+  var corpus = {};
+  corpus.corpus_name = name;
+  corpus.users = new Array(this.getID());
+  var ret = this.htMap.httpPost(corpus);
+  if(!ret) return false;
+  return this.htMap.getCorpus(ret._id);
+}
+
+HtMapUser.prototype.createViewpoint = function(name) {
+  var viewpoint = {};
+  viewpoint.viewpoint_name = name;
+  viewpoint.users = new Array(this.getID());
+  var ret = this.htMap.httpPost(viewpoint);
+  if(!ret) return false;
+  return this.htMap.getViewpoint(ret._id);
+}
+
+function HtMapCorpus(id) {
+  this.id = id;
+}
+
+HtMapCorpus.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapCorpus.prototype.getView = function() {
+  var ret = HtMap.httpGet("corpus/" + this.getID());
+  return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
+}
+
+HtMapCorpus.prototype.listUsers = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.user) ? view.user : {};
+}
+
