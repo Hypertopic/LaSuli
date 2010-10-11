@@ -28,7 +28,15 @@ function MergeRecursive(obj1, obj2) {
     }
   return obj1;
 }
+function getUUID() {
+  var uuidGenerator =
+    Components.classes["@mozilla.org/uuid-generator;1"]
+            .getService(Components.interfaces.nsIUUIDGenerator);
+  var uuid = uuidGenerator.generateUUID();
+  var uuidString = uuid.toString();
 
+  return uuidString.replace('{', '').replace('}', '').replace(/-/gi, '');
+}
 function HtMap(baseUrl, user, pass) {
   var logger = Log4Moz.repository.getLogger("HtMap");
   var regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
@@ -262,13 +270,17 @@ HtMap.prototype.getUser = function(userID) {
 }
 
 HtMap.prototype.getViewpoint = function(viewpointID) {
-  return new HtMapViewpoint(viewpointID);
+  return new HtMapViewpoint(viewpointID, this);
 }
 
 HtMap.prototype.getCorpus = function(corpusID) {
-  return new HtMapCorpus(corpusID);
+  return new HtMapCorpus(corpusID, this);
 }
 
+HtMap.prototype.isReserved = function(key) {
+	var reserved = {"highlight": null, "name": null, "resource": null, "thumbnail": null, "topic": null, "upper": null, "user": null };
+	return (key in reserved);
+}
 
 function HtMapUser(id, htMap) {
   this.id = id;
@@ -317,8 +329,9 @@ HtMapUser.prototype.createViewpoint = function(name) {
   return this.htMap.getViewpoint(ret._id);
 }
 
-function HtMapCorpus(id) {
+function HtMapCorpus(id, htMap) {
   this.id = id;
+  this.htMap = htMap;
 }
 
 HtMapCorpus.prototype.getID = function() {
@@ -326,7 +339,7 @@ HtMapCorpus.prototype.getID = function() {
 }
 
 HtMapCorpus.prototype.getView = function() {
-  var ret = HtMap.httpGet("corpus/" + this.getID());
+  var ret = this.htMap.httpGet("corpus/" + this.getID());
   return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
 }
 
@@ -334,5 +347,151 @@ HtMapCorpus.prototype.listUsers = function() {
   var view = this.getView();
   if(!view) return false;
   return (view.user) ? view.user : {};
+}
+
+/**
+ * @return whole items contained in the corpus
+ */
+HtMapCorpus.prototype.getItems = function() {
+  var view = this.getView();
+  if(!view) return false;
+  var result = new Array();
+  for(var key in view)
+    if(!this.htMap.isReserved(key))
+      result.push(this.getItem(key));
+  return result;
+}
+
+HtMapCorpus.prototype.rename = function(name) {
+  var ret = this.htMap.httpGet(this.getID());
+  if(!ret) return false;
+  ret.corpus_name = name;
+  return this.htMap.httpPut(ret);
+}
+
+/**
+ * Destroy the nodes of the corpus and of all its documents.
+ */
+HtMapCorpus.prototype.destroy = function() {
+	var ret = this.htMap.httpDelete(this.getID());
+	if(!ret) return false;
+
+	var items = this.getItems();
+	if(!items) return true;
+	for (var i=0, item; item = items[i]; i++) {
+		item.destroy();
+	}
+	return true;
+}
+
+
+HtMapCorpus.prototype.createItem = function(name) {
+  var item = {
+    "item_name": name,
+    "item_corpus", this.getID()
+  };
+
+  var ret = this.htMap.httpPost(item);
+  if(!ret) return false;
+  return this.getItem(ret._id);
+}
+
+HtMapCorpus.prototype.getItem = function(itemID) {
+  return new HtMapItem(itemID, this);
+}
+
+function HtMapItem(itemID, Corpus) {
+  this.Corpus = Corpus;
+  this.id = itemID;
+}
+
+HtMapItem.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapItem.prototype.getView = function() {
+  var view = this.Corpus.getView();
+  if(!view) return false;
+  return view[this.getID()];
+}
+
+HtMapItem.prototype.getCorpusID = function() {
+  return this.Corpus.getID();
+}
+
+HtMapItem.prototype.getAttributes = function() {
+  var view = this.getView();
+  if(!view) return false;
+  var result = new Array();
+  for(var key in view)
+    if(!this.Corpus.htMap.isReserved(key))
+      result.push({"name": key, "value": view[key]});
+  return result;
+}
+
+HtMapItem.prototype.getTopics = function() {
+  var view = this.getView();
+  if(!view) return false;
+  var result = new Array();
+  for(var topic, i=0; topic = view.topic[i]; i++)
+    result.push(this.Corpus.htMap.getTopic(topic));
+  return result;
+}
+
+HtMapItem.prototype.rename = function(name) {
+  var item = Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  item.item_name = name;
+  return Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.describe = function(attribute, value) {
+  var item = Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  item[attribute] = value;
+  return Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.undescribe = function(attribute, value) {
+  var item = Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(item[attribute] && item[attribute] == value)
+    delete item[attribute];
+  return Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.tag = function(topic) {
+  var item = Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item.topics) item.topics = {};
+  item.topics[topic.getID()] = {"viewpoint": topic.getViewpointID() };
+  return Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.untag = function(topic) {
+  var item = Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item.topics) return true;
+  if(item.topics && item.topics[topic.getID()])
+    delete item.topics[topic.getID()];
+  return Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
+  var item = Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item.highlights) item.highlights = {};
+
+  var id = getUUID();
+  item.highlights[id] = {
+    "coordinates" : coordinates,
+    "text": text,
+    "viewpoint": topic.getViewpointID(),
+    "topic": topic.getID()
+  };
+
+  var ret = Corpus.htMap.httpPut(item);
+  if(!ret) return false;
+  return this.getHighlight(id);
 }
 
