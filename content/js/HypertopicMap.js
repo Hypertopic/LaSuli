@@ -312,11 +312,15 @@ HtMapUser.prototype.listViewpoints = function() {
 }
 
 HtMapUser.prototype.createCorpus = function(name) {
+  var logger = Log4Moz.repository.getLogger("HtMapUser.createCorpus");
   var corpus = {};
   corpus.corpus_name = name;
   corpus.users = new Array(this.getID());
+  logger.debug(corpus);
   var ret = this.htMap.httpPost(corpus);
+  logger.debug(ret);
   if(!ret) return false;
+  logger.debug(this.htMap.getCorpus(ret._id));
   return this.htMap.getCorpus(ret._id);
 }
 
@@ -388,7 +392,7 @@ HtMapCorpus.prototype.destroy = function() {
 HtMapCorpus.prototype.createItem = function(name) {
   var item = {
     "item_name": name,
-    "item_corpus", this.getID()
+    "item_corpus": this.getID()
   };
 
   var ret = this.htMap.httpPost(item);
@@ -495,3 +499,343 @@ HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
   return this.getHighlight(id);
 }
 
+HtMapItem.prototype.getHighlights = function() {
+	var result = new Array();
+	var view = this.getView();
+	for(var key in view)
+		if(!this.Corpus.htMap.isReserved(key))
+			result.add(this.getHighlight(key));
+
+	return result;
+}
+
+HtMapItem.prototype.getHighlight = function(highlightID) {
+  return new HtMapHighlight(highlightID, this);
+}
+
+function HtMapHighlight(highlightID, item) {
+  this.id = highlightID;
+  this.Item = item;
+}
+
+HtMapHighlight.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapHighlight.prototype.getView = function() {
+  var view = this.Item.getView();
+  if(!view) return false;
+  return (view[this.getID()]) ? view[this.getID()] : false;
+}
+
+HtMapHighlight.prototype.getItemID = function() {
+  return this.Item.getID();
+}
+
+HtMapHighlight.prototype.getCorpusID = function() {
+  return this.Item.Corpus.getID();
+}
+
+HtMapHighlight.prototype.getTopic = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.topic) ? view.topic : false;
+}
+
+HtMapHighlight.prototype.getText = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.text) ? view.text : false;
+}
+
+HtMapHighlight.prototype.getCoordinates = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.coordinates) ? view.coordinates : false;
+}
+
+HtMapHighlight.prototype.destroy = function() {
+  var item = this.Item.Corpus.htMap.httpGet(this.getItemID());
+  if(!item) return false;
+  if(!item.highlights && !item.highlights[this.getID()]) return true;
+  delete item.highlights[this.getID()];
+  return this.Item.Corpus.htMap.httpPut(item);
+}
+
+function HtMapViewpoint(viewpointID, htMap) {
+  this.id = viewpointID;
+  this.htMap = htMap;
+}
+
+HtMapViewpoint.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapViewpoint.prototype.getView = function() {
+  var viewpoint = this.htMap.httpGet("viewpoint/" + this.getID());
+  if(!viewpoint) return false;
+  return viewpoint[this.getID()];
+}
+
+HtMapViewpoint.prototype.register = function(user) {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.users) viewpoint.users = new Array();
+  viewpoint.users.push(this.getID());
+  this.htMap.httpPut(viewpoint);
+}
+
+HtMapViewpoint.prototype.unregister = function(user) {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.users) return true;
+  for(var i=0, el; el = viewpoint.users[i]; i++)
+    if(el == user.getID())
+    {
+      viewpoint.users.splice(i, 1);
+      i--;
+    }
+
+	this.htMap.httpPut(viewpoint);
+}
+
+HtMapViewpoint.prototype.getName = function() {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  return viewpoint.viewpoint_name;
+}
+
+HtMapViewpoint.prototype.getUpperTopics = function() {
+  var result = new Array();
+  var view = this.getView();
+  if(!view) return false;
+  if(!view.upper) return result;
+  for(var i=0, topicID; topicID = view.upper[i]; i++)
+    result.push(this.htMap.getTopic(topicID));
+  return result;
+}
+
+HtMapViewpoint.prototype.getTopics = function() {
+  var result = new Array();
+  var view = this.getView();
+  if(!view) return false;
+  for(var key in view)
+    if(!this.htMap.isReserved(key))
+      result.push(this.htMap.getTopic(topicID));
+  return result;
+}
+
+HtMapViewpoint.prototype.getItems = function() {
+  var result = new Array();
+  var topics = this.getTopics();
+  for(var i=0, topic; topic = topics[i]; i++)
+  {
+    var items = topic.getItems();
+    for(var j=0, item; item = items[j]; j++)
+      result.push(item);
+  }
+  return result;
+}
+
+HtMapViewpoint.prototype.getHighlights = function() {
+  var result = new Array();
+  var topics = this.getTopics();
+  for(var i=0, topic; topic = topics[i]; i++)
+  {
+    var highlights = topic.getHighlights();
+    for(var j=0, highlight; highlight = highlights[j]; j++)
+      result.push(highlight);
+  }
+  return result;
+}
+
+HtMapViewpoint.prototype.listUsers = function() {
+  var view = this.getView();
+  if(!view) return false;
+
+  return (view.user) ? view.user : (new Array());
+}
+
+HtMapViewpoint.prototype.rename = function(name) {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  viewpoint.viewpoint_name = name;
+
+	return this.htMap.httpPut(viewpoint);
+}
+
+HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
+  var topicID = getUUID();
+
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+
+  var broader = new Array();
+  for(var i=0, topic; topic = broaderTopics[i]; i++)
+    if(typeof(topic) == "string")
+      broader.push(topic);
+    else
+      broader.push(topic.getID());
+
+  if(!viewpoint.topics)
+    viewpoint.topics = {};
+
+  viewpoint.topics[topicID] = {
+    "broader": broader
+  };
+
+	var ret = this.htMap.httpPut(viewpoint);
+	if(!ret) return false;
+	return this.getTopic(topicID);
+}
+
+HtMapViewpoint.prototype.getTopic = function(topic) {
+  if(typeof(topic) == "string")
+    return new HtMapTopic(topic, this);
+  else
+    return new HtMapTopic(topic.id, this);
+}
+
+function HtMapTopic(topicID, viewpoint) {
+  this.id = topicID;
+  this.Viewpoint = viewpoint;
+}
+
+HtMapTopic.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapTopic.prototype.getViewpointID = function() {
+  return this.Viewpoint.getId();
+}
+
+HtMapTopic.prototype.getView = function() {
+  var viewpoint = this.Viewpoint.getView();
+  if(!viewpoint) return false;
+  return viewpoint[this.getID()];
+}
+
+HtMapTopic.prototype.getName = function() {
+  var topic = this.htMap.httpGet(this.getID());
+  if(!topic) return false;
+  return topic.name;
+}
+
+HtMapTopic.prototype.getNarrower = function() {
+  var result = new Array();
+  var view = this.getView();
+  if(!view) return false;
+  var narrower = view.narrower;
+  foreach(var topic in narrower)
+    result.push(this.Viewpoint.getTopic(topic));
+  return result;
+}
+
+HtMapTopic.prototype.getBroader = function() {
+  var result = new Array();
+  var view = this.getView();
+  if(!view) return false;
+  var broader = view.broader;
+  foreach(var topic in broader)
+    result.push(this.Viewpoint.getTopic(topic));
+  return result;
+}
+
+/**
+ * Recursive. Could be optimized with a cache.
+ * Precondition: narrower topics graph must be acyclic.
+ */
+HtMapTopic.prototype.getItems = function() {
+	var result = new Array();
+  var topic = this.getView();
+  if(!topic) return false;
+	foreach (var item in topic.item) {
+		result.push(
+			this.Viewpoint.htMap.getItem(item)
+		);
+	}
+	var narrower = view.narrower;
+  foreach(var topic in narrower)
+  {
+    var items = topic.getItems();
+    if(!items) continue;
+    for(var i=0, item; item = items[i]; i++)
+      result.push(item);
+  }
+	return result;
+}
+
+HtMapTopic.prototype.getHighlights = function() {
+	var result = new Array();
+  var topic = this.getView();
+  if(!topic) return false;
+
+	foreach (var highlight in topic.highlight) {
+		result.push(
+			this.Viewpoint.htMap.getHighlight(highlight)
+		);
+	}
+	var narrower = view.narrower;
+  foreach(var t in narrower)
+  {
+    var topic = this.Viewpoint.getTopic(t);
+    var highlights = topic.getHighlights();
+    if(!highlights) continue;
+    for(var i=0, highlight; highlight = highlights[i]; i++)
+      result.push(highlight);
+  }
+	return result;
+}
+
+HtMapTopic.prototype.rename = function(name) {
+  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+  viewpoint.topics[this.getID()].name = name;
+	return this.htMap.httpPut(viewpoint);
+}
+
+HtMapTopic.prototype.destroy = function() {
+  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+  delete viewpoint.topics[this.getID()];
+	return this.htMap.httpPut(viewpoint);
+}
+
+HtMapTopic.prototype.moveTopics = function(narrowerTopics) {
+  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics) return false;
+  for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
+  {
+    if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+    if(!viewpoint.topics[this.getID()].broader) viewpoint.topics[this.getID()].broader = new Array(this.getID());
+  }
+	return this.htMap.httpPut(viewpoint);
+}
+
+/**
+ * Unlink from broader topics
+ */
+HtMapTopic.prototype.unlink = function() {
+  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()]) return false;
+  viewpoint.topics[this.getID()].broader = new Array();
+	return this.htMap.httpPut(viewpoint);
+}
+
+HtMapTopic.prototype.linkTopics = function(narrowerTopics) {
+  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()]) return false;
+  for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
+  {
+    if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+    if(!viewpoint.topics[this.getID()].broader) viewpoint.topics[this.getID()].broader = new Array();
+    viewpoint.topics[this.getID()].broader.push(this.getID());
+  }
+	return this.htMap.httpPut(viewpoint);
+}

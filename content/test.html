@@ -35,8 +35,13 @@
 
   	<script language="javascript">
       function test(){
-        var db = new HtMap('http://hypertopic.couchone.com/argos/_design/argos/_rewrite/', '','');
-        var htMapUser = db.getUser('christophe@hypertopic.org');
+        var db = new HtMap('http://127.0.0.1/argos/_design/argos/_rewrite/', '','');
+        var htMapUser = db.getUser('me');
+
+        h3("htMapUser.createCorpus('test corpus')");
+        json(htMapUser.createCorpus('test corpus'));
+        h3("htMapUser.createViewpoint('test viewpoint')");
+        json(htMapUser.createViewpoint('test viewpoint'));
         h3("htMapUser.listCorpora()");
         json(htMapUser.listCorpora());
         h3("htMapUser.listViewpoints()");
