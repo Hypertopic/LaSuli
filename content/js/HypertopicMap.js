@@ -9,6 +9,21 @@ include("resource://lasuli/modules/XMLHttpRequest.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
 
+function getObject(obj) {
+  var logger = Log4Moz.repository.getLogger("getObject");
+  var self = JSON.parse(JSON.stringify(obj));
+  for(var k in self)
+  {
+    //logger.debug(k);
+    //logger.debug(typeof(self[k]));
+    if(typeof(self[k]) == "function" || k == "htMap")
+      delete self[k];
+    if(typeof(self[k]) == "object")
+      self[k] = getObject(self[k]);
+  }
+  return JSON.parse(JSON.stringify(self));
+}
+
 /*
 * Recursively merge properties of two objects
 */
@@ -62,7 +77,7 @@ function HtMap(baseUrl, user, pass) {
   //Initial the local cache
   this.cache = {};
   //Set to false to disable cache for debuging
-  this.cache.enable = true;
+  this.cache.enable = false;
 }
 /**
  * @param object null if method is GET or DELETE
@@ -291,6 +306,8 @@ HtMapUser.prototype.getID = function() {
   return this.id;
 }
 
+HtMapUser.prototype.getObject = function() { return getObject(this); }
+
 HtMapUser.prototype.getView = function() {
   var ret = this.htMap.httpGet("user/" + this.getID());
   return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
@@ -342,9 +359,34 @@ HtMapCorpus.prototype.getID = function() {
   return this.id;
 }
 
+HtMapCorpus.prototype.getObject = function() { return getObject(this); }
+
 HtMapCorpus.prototype.getView = function() {
   var ret = this.htMap.httpGet("corpus/" + this.getID());
   return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
+}
+
+HtMapCorpus.prototype.register = function(user) {
+  var userID = (typeof(user) == "object") ? user.getID() : user;
+  var corpus = this.htMap.httpGet(this.getID());
+  if(!corpus) return false;
+  if(!corpus.users) corpus.users = new Array();
+  corpus.users.push(userID);
+  this.htMap.httpPut(corpus);
+}
+
+HtMapCorpus.prototype.unregister = function(user) {
+  var corpus = this.htMap.httpGet(this.getID());
+  if(!corpus) return false;
+  if(!corpus.users) return true;
+  for(var i=0, el; el = corpus.users[i]; i++)
+    if(el == user.getID())
+    {
+      corpus.users.splice(i, 1);
+      i--;
+    }
+
+	this.htMap.httpPut(corpus);
 }
 
 HtMapCorpus.prototype.listUsers = function() {
@@ -371,6 +413,12 @@ HtMapCorpus.prototype.rename = function(name) {
   if(!ret) return false;
   ret.corpus_name = name;
   return this.htMap.httpPut(ret);
+}
+
+HtMapCorpus.prototype.getName = function() {
+  var ret = this.htMap.httpGet(this.getID());
+  if(!ret) return false;
+  return ret.corpus_name;
 }
 
 /**
@@ -413,6 +461,8 @@ HtMapItem.prototype.getID = function() {
   return this.id;
 }
 
+HtMapItem.prototype.getObject = function() { return getObject(this); }
+
 HtMapItem.prototype.getView = function() {
   var view = this.Corpus.getView();
   if(!view) return false;
@@ -443,46 +493,46 @@ HtMapItem.prototype.getTopics = function() {
 }
 
 HtMapItem.prototype.rename = function(name) {
-  var item = Corpus.htMap.httpGet(this.getID());
+  var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
   item.item_name = name;
-  return Corpus.htMap.httpPut(item);
+  return this.Corpus.htMap.httpPut(item);
 }
 
 HtMapItem.prototype.describe = function(attribute, value) {
-  var item = Corpus.htMap.httpGet(this.getID());
+  var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
   item[attribute] = value;
-  return Corpus.htMap.httpPut(item);
+  return this.Corpus.htMap.httpPut(item);
 }
 
 HtMapItem.prototype.undescribe = function(attribute, value) {
-  var item = Corpus.htMap.httpGet(this.getID());
+  var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
   if(item[attribute] && item[attribute] == value)
     delete item[attribute];
-  return Corpus.htMap.httpPut(item);
+  return this.Corpus.htMap.httpPut(item);
 }
 
 HtMapItem.prototype.tag = function(topic) {
-  var item = Corpus.htMap.httpGet(this.getID());
+  var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
   if(!item.topics) item.topics = {};
   item.topics[topic.getID()] = {"viewpoint": topic.getViewpointID() };
-  return Corpus.htMap.httpPut(item);
+  return this.Corpus.htMap.httpPut(item);
 }
 
 HtMapItem.prototype.untag = function(topic) {
-  var item = Corpus.htMap.httpGet(this.getID());
+  var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
   if(!item.topics) return true;
   if(item.topics && item.topics[topic.getID()])
     delete item.topics[topic.getID()];
-  return Corpus.htMap.httpPut(item);
+  return this.Corpus.htMap.httpPut(item);
 }
 
 HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
-  var item = Corpus.htMap.httpGet(this.getID());
+  var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
   if(!item.highlights) item.highlights = {};
 
@@ -494,7 +544,7 @@ HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
     "topic": topic.getID()
   };
 
-  var ret = Corpus.htMap.httpPut(item);
+  var ret = this.Corpus.htMap.httpPut(item);
   if(!ret) return false;
   return this.getHighlight(id);
 }
@@ -521,6 +571,8 @@ function HtMapHighlight(highlightID, item) {
 HtMapHighlight.prototype.getID = function() {
   return this.id;
 }
+
+HtMapHighlight.prototype.getObject = function() { return getObject(this); }
 
 HtMapHighlight.prototype.getView = function() {
   var view = this.Item.getView();
@@ -571,6 +623,8 @@ HtMapViewpoint.prototype.getID = function() {
   return this.id;
 }
 
+HtMapViewpoint.prototype.getObject = function() { return getObject(this); }
+
 HtMapViewpoint.prototype.getView = function() {
   var viewpoint = this.htMap.httpGet("viewpoint/" + this.getID());
   if(!viewpoint) return false;
@@ -581,7 +635,7 @@ HtMapViewpoint.prototype.register = function(user) {
   var viewpoint = this.htMap.httpGet(this.getID());
   if(!viewpoint) return false;
   if(!viewpoint.users) viewpoint.users = new Array();
-  viewpoint.users.push(this.getID());
+  viewpoint.users.push(user.getID());
   this.htMap.httpPut(viewpoint);
 }
 
@@ -671,12 +725,15 @@ HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
   if(!viewpoint) return false;
 
   var broader = new Array();
-  for(var i=0, topic; topic = broaderTopics[i]; i++)
-    if(typeof(topic) == "string")
-      broader.push(topic);
-    else
-      broader.push(topic.getID());
-
+  if(broaderTopics)
+  {
+    if(!broaderTopics.length) broaderTopics = new Array(broaderTopics);
+    for(var i=0, topic; topic = broaderTopics[i]; i++)
+      if(typeof(topic) == "string")
+        broader.push(topic);
+      else
+        broader.push(topic.getID());
+  }
   if(!viewpoint.topics)
     viewpoint.topics = {};
 
@@ -705,8 +762,10 @@ HtMapTopic.prototype.getID = function() {
   return this.id;
 }
 
+HtMapTopic.prototype.getObject = function() { return getObject(this); }
+
 HtMapTopic.prototype.getViewpointID = function() {
-  return this.Viewpoint.getId();
+  return this.Viewpoint.getID();
 }
 
 HtMapTopic.prototype.getView = function() {
@@ -726,7 +785,7 @@ HtMapTopic.prototype.getNarrower = function() {
   var view = this.getView();
   if(!view) return false;
   var narrower = view.narrower;
-  foreach(var topic in narrower)
+  for each(var topic in narrower)
     result.push(this.Viewpoint.getTopic(topic));
   return result;
 }
@@ -736,7 +795,7 @@ HtMapTopic.prototype.getBroader = function() {
   var view = this.getView();
   if(!view) return false;
   var broader = view.broader;
-  foreach(var topic in broader)
+  for each(var topic in broader)
     result.push(this.Viewpoint.getTopic(topic));
   return result;
 }
@@ -749,13 +808,13 @@ HtMapTopic.prototype.getItems = function() {
 	var result = new Array();
   var topic = this.getView();
   if(!topic) return false;
-	foreach (var item in topic.item) {
+	for each (var item in topic.item) {
 		result.push(
 			this.Viewpoint.htMap.getItem(item)
 		);
 	}
 	var narrower = view.narrower;
-  foreach(var topic in narrower)
+  for each(var topic in narrower)
   {
     var items = topic.getItems();
     if(!items) continue;
@@ -770,13 +829,13 @@ HtMapTopic.prototype.getHighlights = function() {
   var topic = this.getView();
   if(!topic) return false;
 
-	foreach (var highlight in topic.highlight) {
+	for each (var highlight in topic.highlight) {
 		result.push(
 			this.Viewpoint.htMap.getHighlight(highlight)
 		);
 	}
 	var narrower = view.narrower;
-  foreach(var t in narrower)
+  for each(var t in narrower)
   {
     var topic = this.Viewpoint.getTopic(t);
     var highlights = topic.getHighlights();

@@ -34,23 +34,69 @@
   	</style>
 
   	<script language="javascript">
-      function test(){
-        var db = new HtMap('http://127.0.0.1/argos/_design/argos/_rewrite/', '','');
-        var htMapUser = db.getUser('me');
 
-        h3("htMapUser.createCorpus('test corpus')");
+  	  var map, user, corpus, item, highlight, viewpoint, topic, childTopic, otherTopic;
+
+      function test(){
+        map = new HtMap('http://127.0.0.1/argos/_design/argos/_rewrite/', '','');
+        user = map.getUser("me");
+        corpus = user.createCorpus("my corpus");
+        item = corpus.createItem("my item");
+        item.describe("foo", "bar");
+        item.describe("resource", "http://acme.com/foo");
+        viewpoint = user.createViewpoint("my viewpoint");
+	      topic = viewpoint.createTopic();
+	      childTopic = viewpoint.createTopic(topic);
+	      otherTopic = viewpoint.createTopic();
+	      highlight = item.createHighlight(
+		      childTopic, "FOO", 1024, 1096
+	      );
+	      item.tag(childTopic);
+	      h3("User");
+        json(user.getObject());
+        h3("Corpus");
+        json(corpus.getObject());
+        h3("Item");
+	      json(item.getObject());
+	      h3("Viewpoint");
+	      json(viewpoint.getObject());
+
+        var userHim = map.getUser("him");
+        corpus.register(userHim);
+        h3("Corpus");
+        json(corpus.getObject());
+        h3("Corpus.listUsers()");
+        json(corpus.listUsers());
+
+        corpus.unregister(user);
+        json(corpus.listUsers());
+        corpus.rename("new name");
+        h3("corpus rename");
+        json(corpus.getName());
+
+        h3("corpus.destroy()");
+        json(corpus.destroy());
+        /*h3("htMapUser.createCorpus('test corpus')");
         json(htMapUser.createCorpus('test corpus'));
         h3("htMapUser.createViewpoint('test viewpoint')");
         json(htMapUser.createViewpoint('test viewpoint'));
         h3("htMapUser.listCorpora()");
         json(htMapUser.listCorpora());
         h3("htMapUser.listViewpoints()");
-        json(htMapUser.listViewpoints());
+        json(htMapUser.listViewpoints());*/
       }
       function json(obj)
       {
-        obj = (typeof(obj) == "string") ? JSON.parse(obj) : obj;
-        var div = $('<div class="jsonview"></div>').jsonView(obj);
+        var div;
+        if(typeof(obj) == "string")
+          try{
+            obj = JSON.parse(obj);
+            div = $('<div class="jsonview"></div>').jsonView(obj);
+          }catch(e){
+            div = $('<div class="jsonview"></div>').html(obj);
+          }
+        else
+          div = $('<div class="jsonview"></div>').jsonView(obj);
         $('#result').append(div);
       }
       function h3(str)
