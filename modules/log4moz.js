@@ -578,7 +578,7 @@ function prettyJSON(objectOrString, initialIndent) {
 	// and modified to do some pretty printing
 	function prettyPrint(_oo, _l) {
 		let _p = [];
-		
+
 		function l(n) {
 			let rv = '';
 			while(--n >= 0) {
@@ -636,11 +636,14 @@ function prettyJSON(objectOrString, initialIndent) {
 			}
 		}
 		p(_oo, _l ? _l : 0);
-		
+
 		return _p.join("");
 	}
 	if (typeof objectOrString != 'string') {
 		objectOrString = JSON.stringify(objectOrString);
 	}
-	return prettyPrint(JSON.parse(objectOrString), initialIndent);
+	try{
+	  var ret = prettyPrint(JSON.parse(objectOrString), initialIndent);
+	  return ret;
+	}catch(e){}
 }

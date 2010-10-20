@@ -263,9 +263,16 @@ HtMap.prototype.httpPut = function(object) {
  */
 HtMap.prototype.httpDelete = function(object) {
   var logger = Log4Moz.repository.getLogger("HtMap.httpDelete");
-  var url = this.baseUrl + object._id;
-  if(object._rev)
-    url += "?rev=" + object._rev;
+
+  var url;
+  if(typeof(object) == "string")
+    url = this.baseUrl + object;
+  else
+  {
+    url = this.baseUrl + object._id;
+    if(object._rev)
+      url += "?rev=" + object._rev;
+  }
 
   try{
     var body = this.send("DELETE", url, null);
@@ -284,12 +291,45 @@ HtMap.prototype.getUser = function(userID) {
   return new HtMapUser(userID, this);
 }
 
+HtMap.prototype.getCorpus = function(corpusID) {
+  //var logger = Log4Moz.repository.getLogger("HtMap.getCorpus");
+  //logger.debug(corpusID);
+  return new HtMapCorpus(corpusID, this);
+}
+
+HtMap.prototype.getItem = function(obj) {
+  //var logger = Log4Moz.repository.getLogger("HtMap.getItem");
+  //logger.debug(obj);
+  if(typeof(obj) == "string")
+  {
+    item = this.httpGet("resource/" + encodeURIComponent(obj));
+    if(!item) return false;
+    obj = item[obj].item;
+  }
+  //logger.debug(obj.corpus);
+  var corpus = 	this.getCorpus(obj.corpus);
+  //logger.debug(corpus);
+  //logger.debug(corpus.getItem(obj.id));
+  return corpus.getItem(obj.id);
+}
+
 HtMap.prototype.getViewpoint = function(viewpointID) {
   return new HtMapViewpoint(viewpointID, this);
 }
 
-HtMap.prototype.getCorpus = function(corpusID) {
-  return new HtMapCorpus(corpusID, this);
+HtMap.prototype.getTopic = function(topic) {
+  var logger = Log4Moz.repository.getLogger("HtMap.getTopic");
+  var viewpoint = this.getViewpoint(topic.viewpoint);
+  logger.debug(viewpoint);
+  return viewpoint.getTopic(topic);
+}
+
+HtMap.prototype.getHighlight = function(highlight) {
+  var corpus = this.getCorpus(highlight.corpus);
+  if(!corpus) return false;
+  var item = corpus.getItem(highlight.item);
+  if(!item) return false;
+  return item.getHighlight(highlight.id);
 }
 
 HtMap.prototype.isReserved = function(key) {
@@ -365,6 +405,9 @@ HtMapCorpus.prototype.getView = function() {
   var ret = this.htMap.httpGet("corpus/" + this.getID());
   return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
 }
+HtMapCorpus.prototype.getRaw = function() {
+  return this.htMap.httpGet(this.getID());
+}
 
 HtMapCorpus.prototype.register = function(user) {
   var userID = (typeof(user) == "object") ? user.getID() : user;
@@ -399,12 +442,17 @@ HtMapCorpus.prototype.listUsers = function() {
  * @return whole items contained in the corpus
  */
 HtMapCorpus.prototype.getItems = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapCorpus.getItems");
   var view = this.getView();
   if(!view) return false;
+  //logger.debug(view);
   var result = new Array();
   for(var key in view)
     if(!this.htMap.isReserved(key))
+    {
+      //logger.debug(key);
       result.push(this.getItem(key));
+    }
   return result;
 }
 
@@ -425,14 +473,16 @@ HtMapCorpus.prototype.getName = function() {
  * Destroy the nodes of the corpus and of all its documents.
  */
 HtMapCorpus.prototype.destroy = function() {
-	var ret = this.htMap.httpDelete(this.getID());
-	if(!ret) return false;
-
+  var logger = Log4Moz.repository.getLogger("HtMapUser.destroy");
+  logger.debug(this.getID());
 	var items = this.getItems();
 	if(!items) return true;
 	for (var i=0, item; item = items[i]; i++) {
 		item.destroy();
 	}
+	var corpus = this.htMap.httpGet(this.getID());
+	var ret = this.htMap.httpDelete(corpus);
+	if(!ret) return false;
 	return true;
 }
 
@@ -469,24 +519,51 @@ HtMapItem.prototype.getView = function() {
   return view[this.getID()];
 }
 
+HtMapItem.prototype.getRaw = function() {
+  return this.Corpus.htMap.httpGet(this.getID());
+}
+
+HtMapItem.prototype.getName = function() {
+  var ret = this.getRaw();
+  if(!ret) return false;
+  return ret.item_name;
+}
+
 HtMapItem.prototype.getCorpusID = function() {
   return this.Corpus.getID();
 }
 
+HtMapItem.prototype.destroy = function() {
+  //var logger = Log4Moz.repository.getLogger("HtMapItem.destroy");
+	var item = this.getRaw();
+	var ret = this.Corpus.htMap.httpDelete(item);
+	if(!ret) return false;
+	return true;
+}
+
+HtMapItem.prototype.getResource = function() {
+	var item = this.getRaw();
+	return (!item || !item.resource) ? false : item.resource;
+}
+
 HtMapItem.prototype.getAttributes = function() {
-  var view = this.getView();
-  if(!view) return false;
+  //var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
+  var item = this.getRaw();
+  if(!item) return false;
+  var reserved = {"highlights": null, "name": null, "resource": null, "thumbnail": null, "topics": null, "_id": null, "_rev": null, "item_name": null, "item_corpus": null };
   var result = new Array();
-  for(var key in view)
-    if(!this.Corpus.htMap.isReserved(key))
-      result.push({"name": key, "value": view[key]});
+  for(var key in item)
+    if(!(key in reserved))
+      result.push({"name": key, "value": item[key]});
   return result;
 }
 
 HtMapItem.prototype.getTopics = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getTopics");
   var view = this.getView();
   if(!view) return false;
   var result = new Array();
+  logger.debug(view.topic);
   for(var topic, i=0; topic = view.topic[i]; i++)
     result.push(this.Corpus.htMap.getTopic(topic));
   return result;
@@ -502,15 +579,32 @@ HtMapItem.prototype.rename = function(name) {
 HtMapItem.prototype.describe = function(attribute, value) {
   var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
-  item[attribute] = value;
+  if(!item[attribute])
+    item[attribute] = value;
+  else
+    if(typeof(item[attribute]) == "string")
+      item[attribute] = new Array(item[attribute], value);
+    else
+      if(item[attribute] instanceof Array && item[attribute].indexOf(value) < 0)
+        item[attribute].push(value);
   return this.Corpus.htMap.httpPut(item);
 }
 
 HtMapItem.prototype.undescribe = function(attribute, value) {
   var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
-  if(item[attribute] && item[attribute] == value)
+  if(!item[attribute]) return true;
+  if(typeof(item[attribute]) == "string" && item[attribute] == value)
     delete item[attribute];
+  else
+    if(item[attribute] instanceof Array && item[attribute].indexOf(value) > -1)
+      for(var i=0, attr; attr = item[attribute][i]; i++)
+        if(attr == value)
+        {
+          item[attribute].splice(i, 1);
+          i--;
+        }
+
   return this.Corpus.htMap.httpPut(item);
 }
 
@@ -528,6 +622,11 @@ HtMapItem.prototype.untag = function(topic) {
   if(!item.topics) return true;
   if(item.topics && item.topics[topic.getID()])
     delete item.topics[topic.getID()];
+
+  var i=0;
+  for each(var t in item.topics)
+    i++;
+  if(i == 0) delete item.topics;
   return this.Corpus.htMap.httpPut(item);
 }
 
@@ -554,7 +653,7 @@ HtMapItem.prototype.getHighlights = function() {
 	var view = this.getView();
 	for(var key in view)
 		if(!this.Corpus.htMap.isReserved(key))
-			result.add(this.getHighlight(key));
+			result.push(this.getHighlight(key));
 
 	return result;
 }
@@ -597,7 +696,7 @@ HtMapHighlight.prototype.getTopic = function() {
 HtMapHighlight.prototype.getText = function() {
   var view = this.getView();
   if(!view) return false;
-  return (view.text) ? view.text : false;
+  return (view.text) ? view.text + "" : false;
 }
 
 HtMapHighlight.prototype.getCoordinates = function() {
@@ -629,6 +728,16 @@ HtMapViewpoint.prototype.getView = function() {
   var viewpoint = this.htMap.httpGet("viewpoint/" + this.getID());
   if(!viewpoint) return false;
   return viewpoint[this.getID()];
+}
+
+HtMapViewpoint.prototype.getRaw = function() {
+  return this.htMap.httpGet(this.getID());
+}
+
+HtMapViewpoint.prototype.destroy = function() {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  return this.htMap.httpDelete(viewpoint);
 }
 
 HtMapViewpoint.prototype.register = function(user) {
@@ -665,17 +774,22 @@ HtMapViewpoint.prototype.getUpperTopics = function() {
   if(!view) return false;
   if(!view.upper) return result;
   for(var i=0, topicID; topicID = view.upper[i]; i++)
-    result.push(this.htMap.getTopic(topicID));
+    result.push(this.getTopic(topicID));
   return result;
 }
 
 HtMapViewpoint.prototype.getTopics = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getTopics");
   var result = new Array();
   var view = this.getView();
+  logger.debug(view);
   if(!view) return false;
   for(var key in view)
     if(!this.htMap.isReserved(key))
-      result.push(this.htMap.getTopic(topicID));
+    {
+      logger.debug(key);
+      result.push(this.getTopic(key));
+    }
   return result;
 }
 
@@ -692,13 +806,21 @@ HtMapViewpoint.prototype.getItems = function() {
 }
 
 HtMapViewpoint.prototype.getHighlights = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getHighlights");
   var result = new Array();
   var topics = this.getTopics();
+  var highlightIDs = {};
   for(var i=0, topic; topic = topics[i]; i++)
   {
+    logger.debug(topic);
     var highlights = topic.getHighlights();
+    logger.debug(highlights);
     for(var j=0, highlight; highlight = highlights[j]; j++)
-      result.push(highlight);
+      if(!(highlight.id in highlightIDs))
+      {
+        highlightIDs[highlight.id] = {};
+        result.push(highlight);
+      }
   }
   return result;
 }
@@ -775,9 +897,10 @@ HtMapTopic.prototype.getView = function() {
 }
 
 HtMapTopic.prototype.getName = function() {
-  var topic = this.htMap.httpGet(this.getID());
-  if(!topic) return false;
-  return topic.name;
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+  return (viewpoint.topics[this.getID()].name) ? viewpoint.topics[this.getID()].name : '';
 }
 
 HtMapTopic.prototype.getNarrower = function() {
@@ -805,22 +928,42 @@ HtMapTopic.prototype.getBroader = function() {
  * Precondition: narrower topics graph must be acyclic.
  */
 HtMapTopic.prototype.getItems = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.getItems");
 	var result = new Array();
   var topic = this.getView();
   if(!topic) return false;
-	for each (var item in topic.item) {
-		result.push(
-			this.Viewpoint.htMap.getItem(item)
-		);
-	}
-	var narrower = view.narrower;
-  for each(var topic in narrower)
-  {
-    var items = topic.getItems();
-    if(!items) continue;
-    for(var i=0, item; item = items[i]; i++)
-      result.push(item);
-  }
+  //logger.debug("start view");
+  //logger.debug(topic);
+  //logger.debug("end view");
+
+  if(topic.item)
+  	for each (var item in topic.item) {
+  	  //logger.debug(item);
+  		result.push(
+  			this.Viewpoint.htMap.getItem(item)
+  		);
+  	}
+	var narrower = topic.narrower;
+	if(narrower)
+    for(var i=0, nTopic; nTopic = narrower[i]; i++)
+    {
+      var topic = this.Viewpoint.getTopic(nTopic);
+      //logger.debug("topic");
+      //logger.debug(topic);
+      //logger.debug("getItems");
+      var items = topic.getItems();
+      //logger.debug("items");
+      //logger.debug(items);
+      if(!items) continue;
+      for(var j=0, item; item = items[j]; j++)
+      {
+        //logger.debug(getObject(item));
+        result.push(item);
+
+      }
+    }
+  //logger.debug("result");
+  //logger.debug(result);
 	return result;
 }
 
@@ -834,7 +977,7 @@ HtMapTopic.prototype.getHighlights = function() {
 			this.Viewpoint.htMap.getHighlight(highlight)
 		);
 	}
-	var narrower = view.narrower;
+	var narrower = topic.narrower;
   for each(var t in narrower)
   {
     var topic = this.Viewpoint.getTopic(t);
@@ -847,47 +990,53 @@ HtMapTopic.prototype.getHighlights = function() {
 }
 
 HtMapTopic.prototype.rename = function(name) {
-  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
   viewpoint.topics[this.getID()].name = name;
-	return this.htMap.httpPut(viewpoint);
+	return this.Viewpoint.htMap.httpPut(viewpoint);
 }
 
 HtMapTopic.prototype.destroy = function() {
-  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics) return false;
   if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
   delete viewpoint.topics[this.getID()];
-	return this.htMap.httpPut(viewpoint);
+	return this.Viewpoint.htMap.httpPut(viewpoint);
 }
 
 HtMapTopic.prototype.moveTopics = function(narrowerTopics) {
-  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.moveTopics");
+  logger.debug(narrowerTopics);
+  logger.debug(this.getID());
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics) return false;
+  if(!(narrowerTopics instanceof Array)) narrowerTopics = new Array(narrowerTopics);
   for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
   {
-    if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
-    if(!viewpoint.topics[this.getID()].broader) viewpoint.topics[this.getID()].broader = new Array(this.getID());
+    if(!viewpoint.topics || !viewpoint.topics[nTopic.getID()] ) return false;
+    viewpoint.topics[nTopic.getID()].broader = new Array(this.getID());
+    logger.debug(viewpoint.topics[nTopic.getID()].broader);
   }
-	return this.htMap.httpPut(viewpoint);
+  logger.debug(viewpoint);
+	return this.Viewpoint.htMap.httpPut(viewpoint);
 }
 
 /**
  * Unlink from broader topics
  */
 HtMapTopic.prototype.unlink = function() {
-  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics || !viewpoint.topics[this.getID()]) return false;
   viewpoint.topics[this.getID()].broader = new Array();
-	return this.htMap.httpPut(viewpoint);
+	return this.Viewpoint.htMap.httpPut(viewpoint);
 }
 
 HtMapTopic.prototype.linkTopics = function(narrowerTopics) {
-  var viewpoint = this.htMap.httpGet(this.Viewpoint.getID());
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics || !viewpoint.topics[this.getID()]) return false;
   for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
@@ -896,5 +1045,5 @@ HtMapTopic.prototype.linkTopics = function(narrowerTopics) {
     if(!viewpoint.topics[this.getID()].broader) viewpoint.topics[this.getID()].broader = new Array();
     viewpoint.topics[this.getID()].broader.push(this.getID());
   }
-	return this.htMap.httpPut(viewpoint);
+	return this.Viewpoint.htMap.httpPut(viewpoint);
 }

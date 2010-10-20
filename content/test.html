@@ -49,17 +49,42 @@
 	      childTopic = viewpoint.createTopic(topic);
 	      otherTopic = viewpoint.createTopic();
 	      highlight = item.createHighlight(
-		      childTopic, "FOO", 1024, 1096
+		      childTopic, "FOO", new Array(1024, 1096)
 	      );
 	      item.tag(childTopic);
 	      h3("User");
         json(user.getObject());
         h3("Corpus");
-        json(corpus.getObject());
+        json(corpus.getRaw());
         h3("Item");
-	      json(item.getObject());
+	      json(item.getRaw());
 	      h3("Viewpoint");
-	      json(viewpoint.getObject());
+	      json(viewpoint.getRaw());
+	      json(viewpoint.getView());
+        //return false;
+
+        item.describe("foo", "bar2");
+
+        h3("item.getAttributes()");
+        json(item.getAttributes());
+        item.undescribe("foo", "bar");
+        json(item.getAttributes());
+
+        h3("item.getTopics()");
+        json(item.getTopics());
+
+        h3("item.getResource()");
+        json(item.getResource());
+
+        h3("Item.getHighlights");
+	      json(item.getHighlights());
+
+        h3("topic.getHighlights");
+	      json(topic.getHighlights());
+
+
+	      h3("viewpoint.getHighlights");
+	      json(viewpoint.getHighlights());
 
         var userHim = map.getUser("him");
         corpus.register(userHim);
@@ -74,16 +99,86 @@
         h3("corpus rename");
         json(corpus.getName());
 
-        h3("corpus.destroy()");
-        json(corpus.destroy());
-        /*h3("htMapUser.createCorpus('test corpus')");
-        json(htMapUser.createCorpus('test corpus'));
-        h3("htMapUser.createViewpoint('test viewpoint')");
+        h3("highlight.getText");
+        json(highlight.getText());
+
+        h3("item.getName");
+        json(item.getName());
+
+        h3("corpus.getItems()");
+        json(corpus.getItems());
+
+        h3("childTopic.getItems()");
+        json(viewpoint.getView());
+        json(childTopic);
+        json(childTopic.getItems());
+
+        h3("viewpoint.getItems()");
+        json(viewpoint.getItems());
+
+        item.untag(childTopic);
+        h3("Item.untag");
+	      json(item.getRaw());
+
+
+
+        h3("topic.getName");
+        json(topic.getName());
+
+        topic.rename("a topic");
+        json(topic.getName());
+
+        h3("topic.getNarrower()");
+        json(viewpoint.getRaw());
+        json(topic.getNarrower());
+
+        h3("topic.moveTopics");
+        json(childTopic);
+        json(otherTopic);
+        json(viewpoint.getRaw());
+        otherTopic.moveTopics(childTopic);
+	      var broader = childTopic.getBroader();
+	      json(viewpoint.getRaw());
+	      json(broader);
+
+        h3("topic.linkTopics");
+        json(viewpoint.getRaw());
+	      otherTopic.linkTopics(childTopic);
+	      var broader = childTopic.getBroader();
+	      json(viewpoint.getRaw());
+        json(otherTopic);
+	      json(broader);
+
+        h3("topic.unlink");
+        json(viewpoint.getRaw());
+        childTopic.unlink();
+	      var broader = childTopic.getBroader();
+        json(viewpoint.getRaw());
+        json(childTopic);
+	      json(broader);
+
+        h3("viewpoint.getUpperTopics()");
+        json(viewpoint.getUpperTopics());
+
+
+
+        h3("topic.destroy()");
+        json(topic.destroy());
+
+        h3("viewpoint.destroy()");
+        json(viewpoint.destroy());
+        /*h3("htMapUser.createViewpoint('test viewpoint')");
         json(htMapUser.createViewpoint('test viewpoint'));
         h3("htMapUser.listCorpora()");
         json(htMapUser.listCorpora());
         h3("htMapUser.listViewpoints()");
         json(htMapUser.listViewpoints());*/
+        $('div.lvl-0').children('ul').children('li').children('dl').children('dt').children('a.property-toggle-button').each(
+          function(){
+            if(!$(this).parent('property-name').hasClass('closed-string'))
+              $(this).click();
+          }
+        );
       }
       function json(obj)
       {
@@ -96,7 +191,10 @@
             div = $('<div class="jsonview"></div>').html(obj);
           }
         else
+        {
+          obj = getObject(obj);
           div = $('<div class="jsonview"></div>').jsonView(obj);
+        }
         $('#result').append(div);
       }
       function h3(str)
@@ -107,8 +205,7 @@
 
     </script>
 	</head>
-<body id="result">
-<input type="button" onclick="test()" value="enable">
+<body id="result" onLoad="test();">
 <!--<input type="button" onclick="Observers.notify('lasuli.contextmenu.doHide', null);" value="disable"> //-->
 </body>
 </html>
