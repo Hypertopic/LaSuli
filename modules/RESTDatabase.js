@@ -168,6 +168,7 @@ var RESTDatabase = {
     object._id = body.id;
     if (body.rev)
       object._rev = body.rev;
+    this.purge();
     return object;
   },
 
@@ -290,6 +291,7 @@ var RESTDatabase = {
       body = this._send("PUT", url, object);
       if(!body)
         throw Exception(JSON.stringify(body));
+      this.purge();
     }catch(e)
     {
       logger.error(url);
@@ -316,6 +318,7 @@ var RESTDatabase = {
       body = this._send("DELETE", url, null);
       if(!body)
         throw Exception(JSON.stringify(body));
+      this.purge();
     }catch(e)
     {
       logger.error(url);
