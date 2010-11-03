@@ -1,3 +1,5 @@
+include("resource://lasuli/modules/HypertopicMap.js");
+
 lasuli.hypertopic = {
   _myCorpusID : null,
 
@@ -282,10 +284,24 @@ lasuli.hypertopic = {
 
   get viewpoints(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.viewpoints");
-    if(this._viewpoints) return this._viewpoints;
+    logger.debug(typeof(this._viewpoints));
+    //if(this._viewpoints) return this._viewpoints;
+    logger.debug(HtServers.freecoding);
+
     this._viewpoints = {};
-    var viewpoints = HypertopicMap.listViewpoints();
-    logger.debug(viewpoints);
+    var user = HtServers.freecoding.getUser(HtServers.freecoding.user);
+    if(!user)
+    {
+      logger.fatal("User {" + HtServers.freecoding.user + "} isn't exist");
+      return null;
+    }
+
+    logger.debug(user.getObject());
+
+    var viewpoints = user.listViewpoints();
+    if(!viewpoints) return null;
+    logger.debug(JSON.stringify(viewpoints));
+
     for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++)
       this._viewpoints[viewpoint.id] = viewpoint.name;
     return this._viewpoints;
@@ -293,6 +309,38 @@ lasuli.hypertopic = {
 
   set viewpoints(v){
     this._viewpoints = v;
+  },
+
+  createViewpoint : function(viewpointName){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createViewpoint");
+    var user = HtServers.freecoding.getUser(HtServers.freecoding.user);
+    if(!user)
+    {
+      logger.fatal("User {" + HtServers.freecoding.user + "} isn't exist");
+      return false;
+    }
+
+    var viewpoint = user.createViewpoint(viewpointName);
+    if(viewpoint)
+    {
+      this._viewpoints = null;
+      return true;
+    }
+    else
+      return false;
+  },
+
+  destroyViewpoint: function(viewpointID){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyViewpoint");
+    logger.debug(viewpointID);
+    var viewpoint = HtServers.freecoding.getViewpoint(viewpointID);
+    logger.debug(viewpoint);
+    if(viewpoint.destroy())
+    {
+      this._viewpoints = null;
+      return true;
+    }
+    return false;
   },
 
   createMyCorpus : function(){
@@ -574,7 +622,6 @@ lasuli.hypertopic = {
     logger.debug(viewpointIDs);
     return viewpointIDs;
   },
-
 
   createFragment: function(startPos, endPos, text, viewpointID, topicID){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createFragment");

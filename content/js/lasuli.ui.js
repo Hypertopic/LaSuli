@@ -24,6 +24,8 @@ lasuli.ui = {
 
     $tabs.bind('tabsselect', function(event, ui) {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.tabsselect");
+      logger.debug($(ui.tab).attr("class"));
+
       if($(ui.tab).hasClass("tab-viewpoint"))
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
@@ -34,12 +36,14 @@ lasuli.ui = {
       }
       else
         dispatch('lasuli.contextmenu.doHide', null);
+
       if($(ui.tab).hasClass("tab-document"))
       {
         dispatch("lasuli.core.doLoadDocument", null);
       }
       if($(ui.tab).hasClass("tab-add"))
       {
+        logger.debug("lasuli.core.doListViewpoints");
         dispatch("lasuli.core.doListViewpoints", null);
         dispatch('lasuli.highlighter.doClear', null);
       }

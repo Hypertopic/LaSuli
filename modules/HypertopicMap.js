@@ -1,22 +1,4 @@
-/*
-HYPERTOPIC - Infrastructure for community-driven knowledge organization systems
-
-OFFICIAL WEB SITE
-http://www.hypertopic.org/
-
-Copyright (C) 2010 Chao ZHOU, Aurelien Benel.
-
-LEGAL ISSUES
-This library is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free
-Software Foundation, either version 3 of the license, or (at your option) any
-later version.
-This library is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details:
-http://www.gnu.org/licenses/lgpl.html
-*/
-let EXPORTED_SYMBOLS = ["HypertopicMap"];
+let EXPORTED_SYMBOLS = ["HtMaps", "HtServers", "HtMap"];
 
 const Exception = Components.Exception;
 const Cc = Components.classes;
@@ -25,475 +7,1060 @@ const Cu = Components.utils;
 const include = Cu.import;
 
 include("resource://lasuli/modules/log4moz.js");
-include("resource://lasuli/modules/RESTDatabase.js");
+include("resource://lasuli/modules/XMLHttpRequest.js");
+include("resource://lasuli/modules/Services.js");
+include("resource://lasuli/modules/Sync.js");
 
-let HypertopicMap = {
-  set baseUrl(url)
+var HtMaps = {
+  init : function(servers)
   {
-    this._baseUrl = url;
-  },
-  get baseUrl()
-  {
-    return this._baseUrl;
-  },
-
-  set user(str)
-  {
-    this._user = str;
-  },
-  get user()
-  {
-    return this._user;
-  },
-
-  set pass(str)
-  {
-    this._pass = str;
-  },
-  get pass()
-  {
-    return this._pass;
-  },
-
-
-  init: function(){
-    let logger = Log4Moz.repository.getLogger("HypertopicMap.init");
-    let designDocument = this.designDocument || "_design/argos";
-    RESTDatabase.init(this.baseUrl + designDocument + "/_rewrite/");
-    logger.debug(this.baseUrl + designDocument + "/_rewrite/");
-  },
-
-  get : function(objectID) {
-    return RESTDatabase.httpGet(objectID);
-  },
-  //====================================================================== CORPUS
-
-  /**
-   * @param user e.g. "cecile@hypertopic.org"
-   */
-  listCorpora : function(user) {
-    let logger = Log4Moz.repository.getLogger("HypertopicMap.listCorpora");
-    var obj = RESTDatabase.httpGet("user/" + user);
-    if(!obj || !obj[user] || !obj[user].corpus) return false;
-    logger.debug(obj);
-    return obj[user].corpus;
-  },
-
-  getCorpus : function(corpusID) {
-    let logger = Log4Moz.repository.getLogger("HypertopicMap.getCorpus");
-    var obj = RESTDatabase.httpGet("corpus/" + corpusID);
-    //logger.debug(corpusID);
-    //logger.debug(obj);
-    if(!obj)
-      return false;
-    else
-      return obj[corpusID];
-  },
-
-  /**
-   * @return corpusID
-   */
-  createCorpus : function(name, user){
-    var obj = {};
-    obj.corpus_name = name;
-    obj.users = [user];
-    var result = RESTDatabase.httpPost(obj);
-    return (!result) ? false : result._id;
-  },
-
-  renameCorpus : function(corpusID, name) {
-    var obj = RESTDatabase.httpGet(corpusID);
-    if(!obj) return false;
-    obj.corpus_name = name;
-    return RESTDatabase.httpPut(obj);
-  },
-
-  /**
-   * Destroy the nodes of the corpus and of all its documents.
-   */
-  destroyCorpus : function(corpusID)
-  {
-    //TODO
-    log(corpusID, "[destroyCorpus] corpusID");
-    var obj = RESTDatabase.httpGet(corpusID);
-    if(!obj) return false;
-
-    log(obj, "[destroyCorpus] obj");
-    var result = RESTDatabase.httpDelete(obj);
-    if(!result) return false;
-
-    var items = this.listItems(corpusID);
-    log(items, "[destroyCorpus] items");
-    for(var i=0, documentID; documentID = items[i]; i++)
+    for each(var n in HtServers)
+      delete HtServers[n];
+    for(var i=0, server; server = servers[i]; i++)
     {
-      log(documentID, "[destroyCorpus] documentID");
-      var obj = RESTDatabase.httpGet(documentID);
-      if(!obj) continue;
-      RESTDatabase.httpDelete(obj);
+      var n = getUUID();
+      if(server.default)
+        n = "freecoding";
+      HtServers[n] = new HtMap(server.url, server.user, server.pass);
     }
-    return true;
-  },
-  //======================================================================== ITEM
-  /**
-   * @param corpus e.g. "MISS"
-   * @param item e.g. null, or "d0" to get only an item and its fragments
-   */
-  listItems : function(corpusID){
-    var obj = this.getCorpus(corpusID);
-    var items = [];
-    for(var k in obj)
-    {
-      if(!"name" == k && !"user" == key)
-        items.push(k);
-    }
-    return items;
-  },
-
-  getItem : function(corpusID, itemID) {
-    var obj = this.getCorpus(corpusID);
-    if(!obj)
-      return false;
-    else
-      return obj[itemID];
-  },
-
-  /**
-   * @return itemID
-   */
-  createItem : function(name, corpusID) {
-    var object = {};
-    object.item_name = name;
-    object.item_corpus = corpusID;
-
-    var result = RESTDatabase.httpPost(object);
-    return (!result) ? false : result._id;
-  },
-
-  destroyItem : function(itemID){
-    var object = RESTDatabase.httpGet(itemID);
-    if(!object)
-     return false;
-    return RESTDatabase.httpDelete(object);
-  },
-
-  renameItem : function(itemID, item_name){
-    if(!itemID) return false;
-    var item = RESTDatabase.httpGet(itemID);
-    if(!item) return false;
-    item.item_name = item_name;
-    return RESTDatabase.httpPut(item);
-  },
-
-  reservedWords : new Array("highlight","name","resource","thumbnail","topic","topics","upper","user","resource", "item_name", "item_corpus", "highlights", "_id", "_rev"),
-
-  listItemDescriptions : function(itemID)
-  {
-    var logger = Log4Moz.repository.getLogger("HypertopicMap.listItemDescriptions");
-    if(!itemID) return false;
-    var item = RESTDatabase.httpGet(itemID);
-    //logger.debug(item);
-    if(!item) return false;
-    for(var i=0, word; word = this.reservedWords[i]; i++)
-      if(word in item)
-        delete item[word];
-
-    //logger.debug(item);
-    return item;
-  },
-
-  describeItem : function(itemID, attribute, value)
-  {
-    if(!itemID) return false;
-    var item = RESTDatabase.httpGet(itemID);
-    if(!item) return false;
-    if(!item[attribute])
-      item[attribute] = value;
-    else{
-      if(typeof(item[attribute]) == "string")
-      {
-        item[attribute] = new Array(item[attribute]);
-      }
-      item[attribute].push(value);
-    }
-    return RESTDatabase.httpPut(item);
-  },
-
-  undescribeItem : function(itemID, attribute, value)
-  {
-    var logger = Log4Moz.repository.getLogger("HypertopicMap.undescribeItem");
-    var item = RESTDatabase.httpGet(itemID);
-    logger.debug(item);
-    if(!item[attribute]) return true;
-    logger.debug(attribute + "," + value);
-    if(typeof(item[attribute]) == "string")
-    {
-      if(item[attribute] == value) delete item[attribute];
-    }
-    else
-    {
-      while(item[attribute].indexOf(value) >=0 )
-        item[attribute].splice(item[attribute].indexOf(value), 1);
-
-      if(item[attribute].length == 0)
-        delete item[attribute];
-    }
-    logger.debug(item);
-    return RESTDatabase.httpPut(item);
-  },
-
-  tagItem : function(itemID, viewpointID, topicID)
-  {
-    var item = RESTDatabase.httpGet(itemID);
-    if(!item) return false;
-    if(!item.topics)
-      item.topics = {};
-    if(!item.topics[topicID])
-      item.topics[topicID] = {};
-    item.topics[topicID].viewpoint = viewpointID;
-    return RESTDatabase.httpPut(item);
-  },
-
-  untagItem : function(itemID, viewpointID, topicID)
-  {
-    var item = RESTDatabase.httpGet(itemID);
-    if(!item) return false;
-    if(!item.topics || !item.topics[topicID]) return true;
-    delete item.topics[topicID];
-    return RESTDatabase.httpPut(item);
-  },
-
-  /**
-   * @param itemID Note: replaced by a corpusID in Cassandre.
-   * @return the ID of the highlight
-   */
-  tagFragment : function(itemID, coordinates, text, viewpointID, topicID)
-  {
-    var item = RESTDatabase.httpGet(itemID);
-    if(!item) return false;
-
-    if (!item.highlights)
-      item.highlights = {};
-
-    var highlights = {};
-    highlights.coordinates = coordinates;
-    highlights.text = text;
-    highlights.viewpoint = viewpointID;
-    highlights.topic = topicID;
-
-    var highlightID = this.getUUID();
-    item.highlights[highlightID] = highlights;
-    RESTDatabase.httpPut(item);
-    return highlightID;
-  },
-
-  untagFragment : function(itemID, highlightID)
-  {
-    var logger = Log4Moz.repository.getLogger("HypertopicMap.untagFragment");
-    //logger.debug(itemID);
-    //logger.debug(highlightID);
-    var item = RESTDatabase.httpGet(itemID);
-    //logger.debug(item);
-    if(!item) return false;
-    //logger.debug(item["highlights"][highlightID]);
-    if(!item["highlights"][highlightID]) return true;
-    delete item["highlights"][highlightID];
-    return RESTDatabase.httpPut(item);
-  },
-
-  moveFragment : function(itemID, highlightID, viewpointID, topicID)
-  {
-    var logger = Log4Moz.repository.getLogger("HypertopicMap.moveFragment");
-    var item = RESTDatabase.httpGet(itemID);
-
-    if(!item || !item["highlights"][highlightID]) return false;
-    logger.debug(item);
-    item["highlights"][highlightID].viewpoint = viewpointID;
-    item["highlights"][highlightID].topic = topicID;
-    return RESTDatabase.httpPut(item);
-  },
-
-  //=================================================================== VIEWPOINT
-  /**
-   * @param actor e.g. "cecile@hypertopic.org"
-   */
-  listViewpoints : function(user)
-  {
-    user = user || this.user;
-    var result = RESTDatabase.httpGet("user/" + user);
-    if(!result || !result[user]) return false;
-
-    var obj = result[user];
-    return (obj.viewpoint) ? obj.viewpoint : false;
-  },
-
-  getViewpoint : function(viewpointID)
-  {
-    var result = RESTDatabase.httpGet("viewpoint/" + viewpointID);
-    if(!result || !result[viewpointID] ) return false;
-    result[viewpointID].id = viewpointID;
-    return result[viewpointID];
-  },
-
-  createViewpoint : function(name, user)
-  {
-    user = user || this.user;
-    var viewpoint = {};
-    viewpoint.viewpoint_name = name;
-    viewpoint.users = [ user ];
-
-    var result = RESTDatabase.httpPost(viewpoint);
-    return (!result) ? false : result._id;
-  },
-
-  renameViewpoint : function(viewpointID, name)
-  {
-    var obj = RESTDatabase.httpGet(viewpointID);
-    if(!obj) return false;
-    obj.viewpoint_name = name;
-    var result = RESTDatabase.httpPut(obj);
-    //log(result, '[renameViewpoint] result');
-    return (result) ? true : false;
-  },
-
-  destroyViewpoint : function(viewpointID)
-  {
-    var viewpoint = RESTDatabase.httpGet(viewpointID);
-    if(!viewpoint) return false;
-    return RESTDatabase.httpDelete(viewpoint);
-  },
-  //======================================================================= TOPIC
-
-  /**
-   * @param topicID null for the virtual root
-   * @return an object with broader, narrower and name
-   */
-  getTopic : function(viewpointID, topicID)
-  {
-    var obj = this.getViewpoint(viewpointID);
-
-    if(obj && obj[topicID])
-    {
-      obj[topicID].id = topicID;
-      obj[topicID].viewpoint = viewpointID;
-      return obj[topicID];
-    }
-    else
-      return false;
-  },
-
-  /**
-   * @param topics can be empty
-   * @return topic ID
-   */
-  createTopicIn : function(viewpointID, topicsIDs)
-  {
-    var topicID = this.getUUID();
-    var viewpoint = RESTDatabase.httpGet(viewpointID);
-    if(!viewpoint) return false;
-
-    if(!viewpoint.topics)
-      viewpoint.topics = {};
-    if(!viewpoint.topics[topicID])
-      viewpoint.topics[topicID] = {};
-    if(topicsIDs)
-      viewpoint.topics[topicID].broader = topicsIDs;
-    var result = RESTDatabase.httpPut(viewpoint);
-    return (!result) ? false : topicID;
-  },
-
-  renameTopic : function(viewpointID, topicID, name)
-  {
-    var viewpoint = RESTDatabase.httpGet(viewpointID);
-    if(!viewpoint) return false;
-
-    if(!viewpoint.topics)
-      viewpoint.topics = {};
-    if(!viewpoint.topics[topicID])
-      viewpoint.topics[topicID] = {};
-    viewpoint.topics[topicID].name = name;
-    var result = RESTDatabase.httpPut(viewpoint);
-    return (!result) ? false : result;
-  },
-
-  destroyTopic : function(viewpointID, topicID)
-  {
-    var viewpoint = RESTDatabase.httpGet(viewpointID);
-    if(!viewpoint) return false;
-    if(!viewpoint.topics || !viewpoint.topics[topicID]) return true;
-    delete viewpoint.topics[topicID];
-
-    for(var t in viewpoint.topics)
-    {
-      if(viewpoint.topics[t] && viewpoint.topics[t].broader && viewpoint.topics[t].broader.length > 0)
-      {
-        while(viewpoint.topics[t].broader.indexOf(topicID) >=0 )
-          viewpoint.topics[t].broader.splice(viewpoint.topics[t].broader.indexOf(topicID), 1);
-
-        if(viewpoint.topics[t].broader.length == 0)
-          delete viewpoint.topics[t].broader;
-      }
-    }
-    var result = RESTDatabase.httpPut(viewpoint);
-    return (!result) ? false : result;
-  },
-
-
-  /**
-   * @param topicID can be empty (to unlik from parents)
-   */
-  moveTopicsIn : function(topicsIDs, viewpointID, topicID)
-  {
-    var viewpoint = RESTDatabase.httpGet(viewpointID);
-    if(!viewpoint) return false;
-
-    if(!viewpoint.topics) viewpoint.topics = {};
-
-    for(var i=0, t; t = topicsIDs[i]; i++)
-    {
-      if(!viewpoint.topics[t]) viewpoint.topics[t] = {};
-
-      viewpoint.topics[t].broader = new Array(topicID);
-    }
-    var result = RESTDatabase.httpPut(viewpoint);
-    return (!result) ? false : result;
-  },
-
-  linkTopicsIn : function(topicsIDs, viewpointID, topicID)
-  {
-    var viewpoint = RESTDatabase.httpGet(viewpointID);
-    if(!viewpoint) return false;
-
-    if(!viewpoint.topics) viewpoint.topics = {};
-
-    for(var i=0, t; t = topicsIDs[i]; i++)
-    {
-      if(!viewpoint.topics[t]) viewpoint.topics[t] = {};
-      if(!viewpoint.topics[t].broader) viewpoint.topics[t].broader = new Array();
-
-      viewpoint.topics[t].broader.push(topicID);
-    }
-    var result = RESTDatabase.httpPut(viewpoint);
-    return (!result) ? false : result;
-  },
-
-  //==================================================================== RESOURCE
-  /**
-   * @param resource e.g. "http://cassandre/text/d0"
-   */
-  getResources : function(resource)
-  {
-    return RESTDatabase.httpGet("resource/" + encodeURIComponent(resource));
-  },
-
-  //==================================== GUID
-  getUUID : function()
-  {
-    var uuidGenerator =
-      Components.classes["@mozilla.org/uuid-generator;1"]
-              .getService(Components.interfaces.nsIUUIDGenerator);
-    var uuid = uuidGenerator.generateUUID();
-    var uuidString = uuid.toString();
-
-    return uuidString.replace('{', '').replace('}', '').replace(/-/gi, '');
   }
+}
+var HtServers = {};
+
+function getObject(obj) {
+  var logger = Log4Moz.repository.getLogger("getObject");
+  var self = JSON.parse(JSON.stringify(obj));
+  for(var k in self)
+  {
+    //logger.debug(k);
+    //logger.debug(typeof(self[k]));
+    if(typeof(self[k]) == "function" || k == "htMap")
+      delete self[k];
+    if(typeof(self[k]) == "object")
+      self[k] = getObject(self[k]);
+  }
+  return JSON.parse(JSON.stringify(self));
+}
+/*
+* Recursively merge properties of two objects
+*/
+function MergeRecursive(obj1, obj2) {
+  for (var p in obj2)
+    try
+    {
+      // Property in destination object set; update its value.
+      if ( obj2[p].constructor==Object )
+        obj1[p] = MergeRecursive(obj1[p], obj2[p]);
+      else
+        obj1[p] = obj2[p];
+    }
+    catch(e)
+    {
+      obj1[p] = obj2[p]; // Property in destination object not set; create it and set its value.
+    }
+  return obj1;
+}
+function getUUID() {
+  var uuidGenerator =
+    Components.classes["@mozilla.org/uuid-generator;1"]
+            .getService(Components.interfaces.nsIUUIDGenerator);
+  var uuid = uuidGenerator.generateUUID();
+  var uuidString = uuid.toString();
+
+  return uuidString.replace('{', '').replace('}', '').replace(/-/gi, '');
+}
+function HtMap(baseUrl, user, pass) {
+  var logger = Log4Moz.repository.getLogger("HtMap");
+  var regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+
+  //Check the baseUrl is a correct URL
+  if(!baseUrl || baseUrl === "" || !regexp.test(baseUrl))
+  {
+      logger.fatal("BaseUrl is not a validate URL:" + baseUrl);
+      throw URIError('baseUrl is not a vaildate URL!');
+  }
+  //If the baseUrl is not end with "/" append slash to the end.
+  baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
+
+  this.baseUrl = baseUrl;
+  this.user = user || "";
+  this.pass = pass || "";
+
+  //Create the XMLHttpRequest object for HTTP requests
+  this.xhr = new XMLHttpRequest();
+  //Overrides the MIME type returned by the hypertopic service.
+  this.xhr.overrideMimeType('application/json');
+
+  //Initial the local cache
+  this.cache = {};
+  //Set to false to disable cache for debuging
+  this.cache.enable = false;
+}
+/**
+ * @param object null if method is GET or DELETE
+ * @return response body
+ */
+HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
+  var logger = Log4Moz.repository.getLogger("HtMap.send");
+  //Default HTTP action is "GET"
+  httpAction = (httpAction) ? httpAction : "GET";
+  //Default HTTP URL is the baseUrl
+  httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
+  //Uncomment the following line to disable cache
+  //httpUrl = (httpUrl.indexOf('?') > 0) ? httpUrl + "&_t=" + (new Date()).getTime() : httpUrl + "?_t=" + (new Date()).getTime();
+
+  httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object") ? JSON.stringify(httpBody) : httpBody);
+  var result = null;
+
+  try{
+    this.xhr.open(httpAction, httpUrl, false);
+    //If there is a request body, set the content-type to json
+    if(httpBody && httpBody != '')
+      this.xhr.setRequestHeader('Content-Type', 'application/json');
+
+    //If the request body is an object, serialize it to json
+    if(typeof(httpBody) != 'string')
+      httpBody = JSON.stringify(httpBody);
+
+    this.xhr.send(httpBody);
+
+    //If the response status code is not start with "2", there must be something wrong.
+    if((this.xhr.status + "").substr(0,1) != '2')
+    {
+      logger.fatal(this.xhr.status);
+      throw Error(httpAction + " " + httpUrl + "\nResponse: " + this.xhr.status);
+    }
+    result = this.xhr.responseText;
+    return JSON.parse(result);
+  }
+  catch(e)
+  {
+    logger.fatal("Ajax Error, xhr.status: " + this.xhr.status + " " + this.xhr.statusText + ". \nRequest:\n" + httpAction + " " + httpUrl + "\n" + httpBody);
+    throw Error(httpAction + " " + httpUrl + "\nResponse: " + this.xhr.status);
+  }
+}
+/**
+ * @param object The object to create on the server.
+ *               It is updated with an _id (and a _rev if the server features conflict management).
+ */
+HtMap.prototype.httpPost = function(object) {
+  var logger = Log4Moz.repository.getLogger("HtMap.httpPost");
+  var body;
+  try{
+    body = this.send("POST", null, object);
+    if(!body || !body.ok)
+      throw Error(JSON.stringify(object));
+  }
+  catch(e)
+  {
+    logger.fatal(object);
+    logger.fatal(e);
+    throw e;
+  }
+
+  //Get object id from response result.
+  object._id = body.id;
+  return object;
+}
+/**
+ * Notice: In-memory parser not suited to long payload.
+ * @param query the path to get the view from the baseURL
+ * @return if the queried object was like
+ * {rows:[ {key:[key0, key1], value:{attribute0:value0}},
+ * {key:[key0, key1], value:{attribute0:value1}}]}
+ * then the returned object is
+ * {key0:{key1:{attribute0:[value0, value1...]}}}
+ * otherwise the original object is returned.
+ */
+HtMap.prototype.httpGet = function(query) {
+  var logger = Log4Moz.repository.getLogger("HtMap.httpGet");
+  //Try to load the data from cache first
+  if(this.cache[query] && this.cache.enable)
+    return this.cache[query];
+  logger.debug("load from server" + this.baseUrl + query);
+  var body;
+  try{
+    body = this.send("GET", this.baseUrl + query, null);
+    if(!body)
+      throw Error(this.baseUrl + query);
+  }catch(e)
+  {
+    logger.fatal(query);
+    logger.fatal(e);
+    throw e;
+  }
+
+  //TODO, need to rewrite this part of algorithm
+  if(body.rows && body.rows.length > 0)
+  {
+    var rows = {};
+    //Combine the array according to the index key.
+    for(var i=0, row; row = body.rows[i]; i++)
+    {
+      var _key = JSON.stringify(row.key);
+      if(!rows[_key])
+        rows[_key] = new Array();
+      rows[_key].push(row.value);
+    }
+    //Combine the value according to the value name.
+    for(var _key in rows)
+    {
+      var obj = {};
+      for(var i=0, val; val = rows[_key][i] ; i++)
+      {
+        for(var n in val)
+        {
+          if(!obj[n])
+            obj[n] = new Array();
+          obj[n].push(val[n]);
+        }
+      }
+      rows[_key] = obj;
+    }
+    var result = {};
+
+    for(var _key in rows)
+    {
+      var keys = JSON.parse(_key);
+      var obj = null,tmp,key;
+      if(typeof(keys) == "object")
+        for(var i=keys.length-1; i >= 0; i--)
+        {
+          key = keys[i];
+          if(obj == null)
+          {
+            obj = {};
+            obj[key] = rows[_key];
+            tmp = JSON.parse(JSON.stringify(obj));
+          }
+          else
+          {
+            obj = {};
+            obj[key] = tmp;
+            tmp = JSON.parse(JSON.stringify(obj));
+          }
+        }
+      else
+      {
+        obj = {};
+        obj[keys] = rows[_key];
+      }
+      result = MergeRecursive(result, obj);
+    }
+    body = result;
+  }
+  if(this.cache.enable) this.cache[query] = body;
+  return body;
+}
+/**
+ * @param object the object to update on the server
+ * (_id is mandatory, the server may need _rev for conflict management)
+ * if the server features conflict management, the object is updated with _rev
+ */
+HtMap.prototype.httpPut = function(object) {
+  var logger = Log4Moz.repository.getLogger("HtMap.httpPut");
+  var url = this.baseUrl + object._id;
+  try{
+    var body = this.send("PUT", url, object);
+    if(!body)
+      throw Error(JSON.stringify(object));
+  }catch(e)
+  {
+    logger.fatal(url);
+    logger.fatal(object);
+    logger.fatal(e);
+    throw e;
+  }
+  return object;
+}
+
+/**
+ * @param object the object to delete on the server
+ * (_id is mandatory, the server may need _rev for conflict management)
+ */
+HtMap.prototype.httpDelete = function(object) {
+  var logger = Log4Moz.repository.getLogger("HtMap.httpDelete");
+
+  var url;
+  if(typeof(object) == "string")
+    url = this.baseUrl + object;
+  else
+  {
+    url = this.baseUrl + object._id;
+    if(object._rev)
+      url += "?rev=" + object._rev;
+  }
+
+  try{
+    var body = this.send("DELETE", url, null);
+    if(!body)
+      throw Exception(JSON.stringify(object));
+  }catch(e)
+  {
+    logger.fatal(url);
+    logger.fatal(e);
+    throw e;
+  }
+  return true;
+}
+
+HtMap.prototype.getUser = function(userID) {
+  return new HtMapUser(userID, this);
+}
+
+HtMap.prototype.getCorpus = function(corpusID) {
+  //var logger = Log4Moz.repository.getLogger("HtMap.getCorpus");
+  //logger.debug(corpusID);
+  return new HtMapCorpus(corpusID, this);
+}
+
+HtMap.prototype.getItem = function(obj) {
+  //var logger = Log4Moz.repository.getLogger("HtMap.getItem");
+  //logger.debug(obj);
+  if(typeof(obj) == "string")
+  {
+    item = this.httpGet("resource/" + encodeURIComponent(obj));
+    if(!item) return false;
+    obj = item[obj].item;
+  }
+  //logger.debug(obj.corpus);
+  var corpus = 	this.getCorpus(obj.corpus);
+  //logger.debug(corpus);
+  //logger.debug(corpus.getItem(obj.id));
+  return corpus.getItem(obj.id);
+}
+
+HtMap.prototype.getViewpoint = function(viewpointID) {
+  return new HtMapViewpoint(viewpointID, this);
+}
+
+HtMap.prototype.getTopic = function(topic) {
+  var logger = Log4Moz.repository.getLogger("HtMap.getTopic");
+  var viewpoint = this.getViewpoint(topic.viewpoint);
+  logger.debug(viewpoint);
+  return viewpoint.getTopic(topic);
+}
+
+HtMap.prototype.getHighlight = function(highlight) {
+  var corpus = this.getCorpus(highlight.corpus);
+  if(!corpus) return false;
+  var item = corpus.getItem(highlight.item);
+  if(!item) return false;
+  return item.getHighlight(highlight.id);
+}
+
+HtMap.prototype.isReserved = function(key) {
+	var reserved = {"highlight": null, "name": null, "resource": null, "thumbnail": null, "topic": null, "upper": null, "user": null };
+	return (key in reserved);
+}
+
+function HtMapUser(id, htMap) {
+  this.id = id;
+  this.htMap = htMap;
+}
+
+HtMapUser.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapUser.prototype.getObject = function() { return getObject(this); }
+
+HtMapUser.prototype.getView = function() {
+  var ret = this.htMap.httpGet("user/" + this.getID());
+  return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
+}
+
+HtMapUser.prototype.listCorpora = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return view.corpus;
+}
+
+/**
+ * @return a list of IDs and names pairs... fast!
+ */
+HtMapUser.prototype.listViewpoints = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return view.viewpoint;
+}
+
+HtMapUser.prototype.createCorpus = function(name) {
+  var logger = Log4Moz.repository.getLogger("HtMapUser.createCorpus");
+  var corpus = {};
+  corpus.corpus_name = name;
+  corpus.users = new Array(this.getID());
+  logger.debug(corpus);
+  var ret = this.htMap.httpPost(corpus);
+  logger.debug(ret);
+  if(!ret) return false;
+  logger.debug(this.htMap.getCorpus(ret._id));
+  return this.htMap.getCorpus(ret._id);
+}
+
+HtMapUser.prototype.createViewpoint = function(name) {
+  var viewpoint = {};
+  viewpoint.viewpoint_name = name;
+  viewpoint.users = new Array(this.getID());
+  var ret = this.htMap.httpPost(viewpoint);
+  if(!ret) return false;
+  return this.htMap.getViewpoint(ret._id);
+}
+
+function HtMapCorpus(id, htMap) {
+  this.id = id;
+  this.htMap = htMap;
+}
+
+HtMapCorpus.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapCorpus.prototype.getObject = function() { return getObject(this); }
+
+HtMapCorpus.prototype.getView = function() {
+  var ret = this.htMap.httpGet("corpus/" + this.getID());
+  return (ret && ret[this.getID()]) ? ret[this.getID()] : false;
+}
+HtMapCorpus.prototype.getRaw = function() {
+  return this.htMap.httpGet(this.getID());
+}
+
+HtMapCorpus.prototype.register = function(user) {
+  var userID = (typeof(user) == "object") ? user.getID() : user;
+  var corpus = this.htMap.httpGet(this.getID());
+  if(!corpus) return false;
+  if(!corpus.users) corpus.users = new Array();
+  corpus.users.push(userID);
+  this.htMap.httpPut(corpus);
+}
+
+HtMapCorpus.prototype.unregister = function(user) {
+  var corpus = this.htMap.httpGet(this.getID());
+  if(!corpus) return false;
+  if(!corpus.users) return true;
+  for(var i=0, el; el = corpus.users[i]; i++)
+    if(el == user.getID())
+    {
+      corpus.users.splice(i, 1);
+      i--;
+    }
+
+	this.htMap.httpPut(corpus);
+}
+
+HtMapCorpus.prototype.listUsers = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.user) ? view.user : {};
+}
+
+/**
+ * @return whole items contained in the corpus
+ */
+HtMapCorpus.prototype.getItems = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapCorpus.getItems");
+  var view = this.getView();
+  if(!view) return false;
+  //logger.debug(view);
+  var result = new Array();
+  for(var key in view)
+    if(!this.htMap.isReserved(key))
+    {
+      //logger.debug(key);
+      result.push(this.getItem(key));
+    }
+  return result;
+}
+
+HtMapCorpus.prototype.rename = function(name) {
+  var ret = this.htMap.httpGet(this.getID());
+  if(!ret) return false;
+  ret.corpus_name = name;
+  return this.htMap.httpPut(ret);
+}
+
+HtMapCorpus.prototype.getName = function() {
+  var ret = this.htMap.httpGet(this.getID());
+  if(!ret) return false;
+  return ret.corpus_name;
+}
+
+/**
+ * Destroy the nodes of the corpus and of all its documents.
+ */
+HtMapCorpus.prototype.destroy = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapUser.destroy");
+  logger.debug(this.getID());
+	var items = this.getItems();
+	if(!items) return true;
+	for (var i=0, item; item = items[i]; i++) {
+		item.destroy();
+	}
+	var corpus = this.htMap.httpGet(this.getID());
+	var ret = this.htMap.httpDelete(corpus);
+	if(!ret) return false;
+	return true;
+}
+
+
+HtMapCorpus.prototype.createItem = function(name) {
+  var item = {
+    "item_name": name,
+    "item_corpus": this.getID()
+  };
+
+  var ret = this.htMap.httpPost(item);
+  if(!ret) return false;
+  return this.getItem(ret._id);
+}
+
+HtMapCorpus.prototype.getItem = function(itemID) {
+  return new HtMapItem(itemID, this);
+}
+
+function HtMapItem(itemID, Corpus) {
+  this.Corpus = Corpus;
+  this.id = itemID;
+}
+
+HtMapItem.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapItem.prototype.getObject = function() { return getObject(this); }
+
+HtMapItem.prototype.getView = function() {
+  var view = this.Corpus.getView();
+  if(!view) return false;
+  return view[this.getID()];
+}
+
+HtMapItem.prototype.getRaw = function() {
+  return this.Corpus.htMap.httpGet(this.getID());
+}
+
+HtMapItem.prototype.getName = function() {
+  var ret = this.getRaw();
+  if(!ret) return false;
+  return ret.item_name;
+}
+
+HtMapItem.prototype.getCorpusID = function() {
+  return this.Corpus.getID();
+}
+
+HtMapItem.prototype.destroy = function() {
+  //var logger = Log4Moz.repository.getLogger("HtMapItem.destroy");
+	var item = this.getRaw();
+	var ret = this.Corpus.htMap.httpDelete(item);
+	if(!ret) return false;
+	return true;
+}
+
+HtMapItem.prototype.getResource = function() {
+	var item = this.getRaw();
+	return (!item || !item.resource) ? false : item.resource;
+}
+
+HtMapItem.prototype.getAttributes = function() {
+  //var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
+  var item = this.getRaw();
+  if(!item) return false;
+  var reserved = {"highlights": null, "name": null, "resource": null, "thumbnail": null, "topics": null, "_id": null, "_rev": null, "item_name": null, "item_corpus": null };
+  var result = new Array();
+  for(var key in item)
+    if(!(key in reserved))
+      result.push({"name": key, "value": item[key]});
+  return result;
+}
+
+HtMapItem.prototype.getTopics = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getTopics");
+  var view = this.getView();
+  if(!view) return false;
+  var result = new Array();
+  logger.debug(view.topic);
+  for(var topic, i=0; topic = view.topic[i]; i++)
+    result.push(this.Corpus.htMap.getTopic(topic));
+  return result;
+}
+
+HtMapItem.prototype.rename = function(name) {
+  var item = this.Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  item.item_name = name;
+  return this.Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.describe = function(attribute, value) {
+  var item = this.Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item[attribute])
+    item[attribute] = value;
+  else
+    if(typeof(item[attribute]) == "string")
+      item[attribute] = new Array(item[attribute], value);
+    else
+      if(item[attribute] instanceof Array && item[attribute].indexOf(value) < 0)
+        item[attribute].push(value);
+  return this.Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.undescribe = function(attribute, value) {
+  var item = this.Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item[attribute]) return true;
+  if(typeof(item[attribute]) == "string" && item[attribute] == value)
+    delete item[attribute];
+  else
+    if(item[attribute] instanceof Array && item[attribute].indexOf(value) > -1)
+      for(var i=0, attr; attr = item[attribute][i]; i++)
+        if(attr == value)
+        {
+          item[attribute].splice(i, 1);
+          i--;
+        }
+
+  return this.Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.tag = function(topic) {
+  var item = this.Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item.topics) item.topics = {};
+  item.topics[topic.getID()] = {"viewpoint": topic.getViewpointID() };
+  return this.Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.untag = function(topic) {
+  var item = this.Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item.topics) return true;
+  if(item.topics && item.topics[topic.getID()])
+    delete item.topics[topic.getID()];
+
+  var i=0;
+  for each(var t in item.topics)
+    i++;
+  if(i == 0) delete item.topics;
+  return this.Corpus.htMap.httpPut(item);
+}
+
+HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
+  var item = this.Corpus.htMap.httpGet(this.getID());
+  if(!item) return false;
+  if(!item.highlights) item.highlights = {};
+
+  var id = getUUID();
+  item.highlights[id] = {
+    "coordinates" : coordinates,
+    "text": text,
+    "viewpoint": topic.getViewpointID(),
+    "topic": topic.getID()
+  };
+
+  var ret = this.Corpus.htMap.httpPut(item);
+  if(!ret) return false;
+  return this.getHighlight(id);
+}
+
+HtMapItem.prototype.getHighlights = function() {
+	var result = new Array();
+	var view = this.getView();
+	for(var key in view)
+		if(!this.Corpus.htMap.isReserved(key))
+			result.push(this.getHighlight(key));
+
+	return result;
+}
+
+HtMapItem.prototype.getHighlight = function(highlightID) {
+  return new HtMapHighlight(highlightID, this);
+}
+
+function HtMapHighlight(highlightID, item) {
+  this.id = highlightID;
+  this.Item = item;
+}
+
+HtMapHighlight.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapHighlight.prototype.getObject = function() { return getObject(this); }
+
+HtMapHighlight.prototype.getView = function() {
+  var view = this.Item.getView();
+  if(!view) return false;
+  return (view[this.getID()]) ? view[this.getID()] : false;
+}
+
+HtMapHighlight.prototype.getItemID = function() {
+  return this.Item.getID();
+}
+
+HtMapHighlight.prototype.getCorpusID = function() {
+  return this.Item.Corpus.getID();
+}
+
+HtMapHighlight.prototype.getTopic = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.topic) ? view.topic : false;
+}
+
+HtMapHighlight.prototype.getText = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.text) ? view.text + "" : false;
+}
+
+HtMapHighlight.prototype.getCoordinates = function() {
+  var view = this.getView();
+  if(!view) return false;
+  return (view.coordinates) ? view.coordinates : false;
+}
+
+HtMapHighlight.prototype.destroy = function() {
+  var item = this.Item.Corpus.htMap.httpGet(this.getItemID());
+  if(!item) return false;
+  if(!item.highlights && !item.highlights[this.getID()]) return true;
+  delete item.highlights[this.getID()];
+  return this.Item.Corpus.htMap.httpPut(item);
+}
+
+function HtMapViewpoint(viewpointID, htMap) {
+  this.id = viewpointID;
+  this.htMap = htMap;
+}
+
+HtMapViewpoint.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapViewpoint.prototype.getObject = function() { return getObject(this); }
+
+HtMapViewpoint.prototype.getView = function() {
+  var viewpoint = this.htMap.httpGet("viewpoint/" + this.getID());
+  if(!viewpoint) return false;
+  return viewpoint[this.getID()];
+}
+
+HtMapViewpoint.prototype.getRaw = function() {
+  return this.htMap.httpGet(this.getID());
+}
+
+HtMapViewpoint.prototype.destroy = function() {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  return this.htMap.httpDelete(viewpoint);
+}
+
+HtMapViewpoint.prototype.register = function(user) {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.users) viewpoint.users = new Array();
+  viewpoint.users.push(user.getID());
+  this.htMap.httpPut(viewpoint);
+}
+
+HtMapViewpoint.prototype.unregister = function(user) {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.users) return true;
+  for(var i=0, el; el = viewpoint.users[i]; i++)
+    if(el == user.getID())
+    {
+      viewpoint.users.splice(i, 1);
+      i--;
+    }
+
+	this.htMap.httpPut(viewpoint);
+}
+
+HtMapViewpoint.prototype.getName = function() {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  return viewpoint.viewpoint_name;
+}
+
+HtMapViewpoint.prototype.getUpperTopics = function() {
+  var result = new Array();
+  var view = this.getView();
+  if(!view) return false;
+  if(!view.upper) return result;
+  for(var i=0, topicID; topicID = view.upper[i]; i++)
+    result.push(this.getTopic(topicID));
+  return result;
+}
+
+HtMapViewpoint.prototype.getTopics = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getTopics");
+  var result = new Array();
+  var view = this.getView();
+  logger.debug(view);
+  if(!view) return false;
+  for(var key in view)
+    if(!this.htMap.isReserved(key))
+    {
+      logger.debug(key);
+      result.push(this.getTopic(key));
+    }
+  return result;
+}
+
+HtMapViewpoint.prototype.getItems = function() {
+  var result = new Array();
+  var topics = this.getTopics();
+  for(var i=0, topic; topic = topics[i]; i++)
+  {
+    var items = topic.getItems();
+    for(var j=0, item; item = items[j]; j++)
+      result.push(item);
+  }
+  return result;
+}
+
+HtMapViewpoint.prototype.getHighlights = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getHighlights");
+  var result = new Array();
+  var topics = this.getTopics();
+  var highlightIDs = {};
+  for(var i=0, topic; topic = topics[i]; i++)
+  {
+    logger.debug(topic);
+    var highlights = topic.getHighlights();
+    logger.debug(highlights);
+    for(var j=0, highlight; highlight = highlights[j]; j++)
+      if(!(highlight.id in highlightIDs))
+      {
+        highlightIDs[highlight.id] = {};
+        result.push(highlight);
+      }
+  }
+  return result;
+}
+
+HtMapViewpoint.prototype.listUsers = function() {
+  var view = this.getView();
+  if(!view) return false;
+
+  return (view.user) ? view.user : (new Array());
+}
+
+HtMapViewpoint.prototype.rename = function(name) {
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+  viewpoint.viewpoint_name = name;
+
+	return this.htMap.httpPut(viewpoint);
+}
+
+HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
+  var topicID = getUUID();
+
+  var viewpoint = this.htMap.httpGet(this.getID());
+  if(!viewpoint) return false;
+
+  var broader = new Array();
+  if(broaderTopics)
+  {
+    if(!broaderTopics.length) broaderTopics = new Array(broaderTopics);
+    for(var i=0, topic; topic = broaderTopics[i]; i++)
+      if(typeof(topic) == "string")
+        broader.push(topic);
+      else
+        broader.push(topic.getID());
+  }
+  if(!viewpoint.topics)
+    viewpoint.topics = {};
+
+  viewpoint.topics[topicID] = {
+    "broader": broader
+  };
+
+	var ret = this.htMap.httpPut(viewpoint);
+	if(!ret) return false;
+	return this.getTopic(topicID);
+}
+
+HtMapViewpoint.prototype.getTopic = function(topic) {
+  if(typeof(topic) == "string")
+    return new HtMapTopic(topic, this);
+  else
+    return new HtMapTopic(topic.id, this);
+}
+
+function HtMapTopic(topicID, viewpoint) {
+  this.id = topicID;
+  this.Viewpoint = viewpoint;
+}
+
+HtMapTopic.prototype.getID = function() {
+  return this.id;
+}
+
+HtMapTopic.prototype.getObject = function() { return getObject(this); }
+
+HtMapTopic.prototype.getViewpointID = function() {
+  return this.Viewpoint.getID();
+}
+
+HtMapTopic.prototype.getView = function() {
+  var viewpoint = this.Viewpoint.getView();
+  if(!viewpoint) return false;
+  return viewpoint[this.getID()];
+}
+
+HtMapTopic.prototype.getName = function() {
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+  return (viewpoint.topics[this.getID()].name) ? viewpoint.topics[this.getID()].name : '';
+}
+
+HtMapTopic.prototype.getNarrower = function() {
+  var result = new Array();
+  var view = this.getView();
+  if(!view) return false;
+  var narrower = view.narrower;
+  for each(var topic in narrower)
+    result.push(this.Viewpoint.getTopic(topic));
+  return result;
+}
+
+HtMapTopic.prototype.getBroader = function() {
+  var result = new Array();
+  var view = this.getView();
+  if(!view) return false;
+  var broader = view.broader;
+  for each(var topic in broader)
+    result.push(this.Viewpoint.getTopic(topic));
+  return result;
+}
+
+/**
+ * Recursive. Could be optimized with a cache.
+ * Precondition: narrower topics graph must be acyclic.
+ */
+HtMapTopic.prototype.getItems = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.getItems");
+	var result = new Array();
+  var topic = this.getView();
+  if(!topic) return false;
+  //logger.debug("start view");
+  //logger.debug(topic);
+  //logger.debug("end view");
+
+  if(topic.item)
+  	for each (var item in topic.item) {
+  	  //logger.debug(item);
+  		result.push(
+  			this.Viewpoint.htMap.getItem(item)
+  		);
+  	}
+	var narrower = topic.narrower;
+	if(narrower)
+    for(var i=0, nTopic; nTopic = narrower[i]; i++)
+    {
+      var topic = this.Viewpoint.getTopic(nTopic);
+      //logger.debug("topic");
+      //logger.debug(topic);
+      //logger.debug("getItems");
+      var items = topic.getItems();
+      //logger.debug("items");
+      //logger.debug(items);
+      if(!items) continue;
+      for(var j=0, item; item = items[j]; j++)
+      {
+        //logger.debug(getObject(item));
+        result.push(item);
+
+      }
+    }
+  //logger.debug("result");
+  //logger.debug(result);
+	return result;
+}
+
+HtMapTopic.prototype.getHighlights = function() {
+	var result = new Array();
+  var topic = this.getView();
+  if(!topic) return false;
+
+	for each (var highlight in topic.highlight) {
+		result.push(
+			this.Viewpoint.htMap.getHighlight(highlight)
+		);
+	}
+	var narrower = topic.narrower;
+  for each(var t in narrower)
+  {
+    var topic = this.Viewpoint.getTopic(t);
+    var highlights = topic.getHighlights();
+    if(!highlights) continue;
+    for(var i=0, highlight; highlight = highlights[i]; i++)
+      result.push(highlight);
+  }
+	return result;
+}
+
+HtMapTopic.prototype.rename = function(name) {
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+  viewpoint.topics[this.getID()].name = name;
+	return this.Viewpoint.htMap.httpPut(viewpoint);
+}
+
+HtMapTopic.prototype.destroy = function() {
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+  delete viewpoint.topics[this.getID()];
+	return this.Viewpoint.htMap.httpPut(viewpoint);
+}
+
+HtMapTopic.prototype.moveTopics = function(narrowerTopics) {
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.moveTopics");
+  logger.debug(narrowerTopics);
+  logger.debug(this.getID());
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics) return false;
+  if(!(narrowerTopics instanceof Array)) narrowerTopics = new Array(narrowerTopics);
+  for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
+  {
+    if(!viewpoint.topics || !viewpoint.topics[nTopic.getID()] ) return false;
+    viewpoint.topics[nTopic.getID()].broader = new Array(this.getID());
+    logger.debug(viewpoint.topics[nTopic.getID()].broader);
+  }
+  logger.debug(viewpoint);
+	return this.Viewpoint.htMap.httpPut(viewpoint);
+}
+
+/**
+ * Unlink from broader topics
+ */
+HtMapTopic.prototype.unlink = function() {
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()]) return false;
+  viewpoint.topics[this.getID()].broader = new Array();
+	return this.Viewpoint.htMap.httpPut(viewpoint);
+}
+
+HtMapTopic.prototype.linkTopics = function(narrowerTopics) {
+  var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
+  if(!viewpoint) return false;
+  if(!viewpoint.topics || !viewpoint.topics[this.getID()]) return false;
+  for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
+  {
+    if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
+    if(!viewpoint.topics[this.getID()].broader) viewpoint.topics[this.getID()].broader = new Array();
+    viewpoint.topics[this.getID()].broader.push(this.getID());
+  }
+	return this.Viewpoint.htMap.httpPut(viewpoint);
 }

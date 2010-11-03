@@ -1,7 +1,6 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/log4moz.js");
-include("resource://lasuli/modules/RESTDatabase.js");
 include("resource://lasuli/modules/HypertopicMap.js");
 
 lasuli.core = {
@@ -23,13 +22,12 @@ lasuli.core = {
   loadSetting : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.loadSetting");
     logger.level = Log4Moz.Level["Debug"];
-    HypertopicMap.baseUrl   = Preferences.get("extensions.lasuli.baseUrl", lasuli._baseUrl);
-    HypertopicMap.user      = Preferences.get("extensions.lasuli.user", lasuli._username);
-    HypertopicMap.pass      = Preferences.get("extensions.lasuli.pass", lasuli._password);
-    //logger.debug("BaseUrl:" + HypertopicMap.baseUrl);
-    //logger.debug("Username:" + HypertopicMap.user);
-    //logger.debug("Password:" + HypertopicMap.pass);
-    HypertopicMap.init();
+    var servers = Preferences.get("extensions.lasuli.setting", JSON.stringify(new Array()));
+    if(typeof(servers) == "string")
+      servers = JSON.parse(servers);
+    //logger.debug(servers);
+    HtMaps.init(servers);
+    //logger.debug(HtServers.freecoding);
     return true;
   },
 
@@ -147,6 +145,7 @@ lasuli.core = {
   doListViewpoints: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doListViewpoints");
     //Notify lasuli.ui to show the viewpoints
+    logger.debug("lasuli.hypertopic.viewpoints");
     dispatch("lasuli.ui.doShowViewpoints", lasuli.hypertopic.viewpoints);
   },
 
@@ -154,21 +153,24 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateViewpoint");
     logger.debug("Name:" + viewpointName);
 
-    var result = HypertopicMap.createViewpoint(viewpointName);
-    lasuli.hypertopic.viewpoints = null;
-    logger.debug(result);
+    var result = lasuli.hypertopic.createViewpoint(viewpointName);
     //reload the viewpoints
-    this.doListViewpoints();
+    if(result)
+      this.doListViewpoints();
+    else
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('create.viewpoint.error', viewpointName)});
   },
 
   doDestroyViewpoint : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyViewpoint");
-    HypertopicMap.destroyViewpoint(viewpointID);
-    lasuli.hypertopic.viewpoints = null;
-    this.doListViewpoints();
-    dispatch("lasuli.ui.doCloseViewpointPanel", viewpointID);
+    if(lasuli.hypertopic.destroyViewpoint(viewpointID))
+    {
+      this.doListViewpoints();
+      dispatch("lasuli.ui.doCloseViewpointPanel", viewpointID);
+    }
+    else
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('destroy.viewpoint.error', viewpointName)});
   },
-
 
   doRenameItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameItem");
@@ -534,11 +536,12 @@ lasuli.core = {
 
   chromeCreated : function(domWindow, url){
     var logger = Log4Moz.repository.getLogger("lasuli.core.chromeCreated");
-    if(domWindow.name && domWindow.name == 'sidebar')
+    //TODO
+    /*if(domWindow.name && domWindow.name == 'sidebar')
       if(lasuli.core.isSidebarOpen())
         RESTDatabase.listen = true;
       else
-        RESTDatabase.listen = false;
+        RESTDatabase.listen = false;*/
   }
 }
 
