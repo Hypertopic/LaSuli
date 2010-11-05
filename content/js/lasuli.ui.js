@@ -394,20 +394,22 @@ lasuli.ui = {
   	  var bValid = true;
       $('#attribute-name').removeClass('ui-state-error');
       $('#attribute-value').removeClass('ui-state-error');
-      if ( $('#attribute-name').val().length == 0)
+      var attributeName = $('#attribute-name').val();
+      var attributeValue = $('#attribute-value').val();
+      if ( attributeName.length == 0)
       {
         $('#attribute-name').addClass('ui-state-error');
         bValid = false;
       }
 
-      if ( $('#attribute-value').val().length == 0)
+      if ( attributeValue.length == 0)
       {
         $('#attribute-value').addClass('ui-state-error');
         bValid = false;
       }
 
       if (bValid) {
-        var attribute = {"name": $('#attribute-name').val(), "value": $('#attribute-value').val()};
+        var attribute = {"name": attributeName, "value": attributeValue};
         dispatch("lasuli.core.doCreateAttribute", attribute);
         $('#attribute-dialog').dialog('close');
       }
@@ -726,13 +728,6 @@ lasuli.ui = {
     if(!attributes) return false;
     var index = 1;
     for(var name in attributes)
-      if(typeof(attributes[name]) == "string")
-      {
-        logger.debug({"name": name, "value": attributes[name]});
-        $("#attribute-grid").addRowData(index, {"name": name, "value": attributes[name]});
-        index++;
-      }
-      else
       for(var j=0, v; v = attributes[name][j]; j++)
       {
         logger.debug({"name": name, "value": v});

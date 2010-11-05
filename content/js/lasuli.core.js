@@ -25,9 +25,16 @@ lasuli.core = {
     var servers = Preferences.get("extensions.lasuli.setting", JSON.stringify(new Array()));
     if(typeof(servers) == "string")
       servers = JSON.parse(servers);
-    //logger.debug(servers);
-    HtMaps.init(servers);
-    //logger.debug(HtServers.freecoding);
+
+    HtServers = {};
+    for(var i=0, server; server = servers[i]; i++)
+    {
+      var n = getUUID();
+      if(server.default)
+        n = "freecoding";
+      HtServers[n] = new HtMap(server.url, server.user, server.pass);
+    }
+
     return true;
   },
 
@@ -134,12 +141,12 @@ lasuli.core = {
 
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
-    dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.users);
-    dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.tags);
+    dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.docUsers);
+    dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.docTags);
     // Highlight all fragments
-    logger.debug(lasuli.hypertopic.allFragments);
-    this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.allFragments;
-    dispatch("lasuli.highlighter.doHighlight", {"fragments": lasuli.hypertopic.allFragments});
+    logger.debug(lasuli.hypertopic.docFragments);
+    this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.docFragments;
+    dispatch("lasuli.highlighter.doHighlight", {"fragments": lasuli.hypertopic.docFragments});
   },
 
   doListViewpoints: function(){
@@ -197,10 +204,12 @@ lasuli.core = {
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
   },
 
+  //TODO
   doOpenViewpointByTopicName : function(topicName) {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doOpenViewpointByTopicName");
     logger.debug("topicName: " + topicName);
-    if(!lasuli.hypertopic.tags || !lasuli.hypertopic.tags[topicName]) return false;
+    if(!lasuli.hypertopic.docTags || !lasuli.hypertopic.docTags[topicName])
+      return false;
 
     var topics = lasuli.hypertopic.tags[topicName].topics;
     var viewpoints = new Array();
@@ -212,10 +221,7 @@ lasuli.core = {
 
   doOpenViewpointByUser : function(user){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doOpenViewpointByUser");
-    var viewpoints = new Array();
-    var viewpointIDs = lasuli.hypertopic.getViewpointIDsByUser(user);
-    for(var i=0, viewpointID; viewpointID = viewpointIDs[i]; i++)
-      viewpoints.push({"id": viewpointID, "name": lasuli.hypertopic.getViewpointName(viewpointID)});
+    var viewpoints = lasuli.hypertopic.getViewpointsByUser(user);
     logger.debug(viewpoints);
     //TODO filter not related viewpoints
     dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);

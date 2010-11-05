@@ -1,4 +1,4 @@
-let EXPORTED_SYMBOLS = ["HtMaps", "HtServers", "HtMap"];
+let EXPORTED_SYMBOLS = ["getUUID", "HtServers", "HtMap"];
 
 const Exception = Components.Exception;
 const Cc = Components.classes;
@@ -11,20 +11,6 @@ include("resource://lasuli/modules/XMLHttpRequest.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
 
-var HtMaps = {
-  init : function(servers)
-  {
-    for each(var n in HtServers)
-      delete HtServers[n];
-    for(var i=0, server; server = servers[i]; i++)
-    {
-      var n = getUUID();
-      if(server.default)
-        n = "freecoding";
-      HtServers[n] = new HtMap(server.url, server.user, server.pass);
-    }
-  }
-}
 var HtServers = {};
 
 function getObject(obj) {
@@ -96,6 +82,10 @@ function HtMap(baseUrl, user, pass) {
   //Set to false to disable cache for debuging
   this.cache.enable = false;
 }
+HtMap.prototype.getType = function() {
+  return "HtMap";
+}
+
 /**
  * @param object null if method is GET or DELETE
  * @return response body
@@ -136,7 +126,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
   catch(e)
   {
     logger.fatal("Ajax Error, xhr.status: " + this.xhr.status + " " + this.xhr.statusText + ". \nRequest:\n" + httpAction + " " + httpUrl + "\n" + httpBody);
-    throw Error(httpAction + " " + httpUrl + "\nResponse: " + this.xhr.status);
+    return false;
   }
 }
 /**
@@ -149,13 +139,16 @@ HtMap.prototype.httpPost = function(object) {
   try{
     body = this.send("POST", null, object);
     if(!body || !body.ok)
-      throw Error(JSON.stringify(object));
+    {
+      logger.fatal(object);
+      return false;
+    }
   }
   catch(e)
   {
     logger.fatal(object);
     logger.fatal(e);
-    throw e;
+    return false;
   }
 
   //Get object id from response result.
@@ -182,12 +175,12 @@ HtMap.prototype.httpGet = function(query) {
   try{
     body = this.send("GET", this.baseUrl + query, null);
     if(!body)
-      throw Error(this.baseUrl + query);
+      return false;
   }catch(e)
   {
     logger.fatal(query);
     logger.fatal(e);
-    throw e;
+    return false;
   }
 
   //TODO, need to rewrite this part of algorithm
@@ -269,7 +262,7 @@ HtMap.prototype.httpPut = function(object) {
     logger.fatal(url);
     logger.fatal(object);
     logger.fatal(e);
-    throw e;
+    return false;
   }
   return object;
 }
@@ -299,12 +292,13 @@ HtMap.prototype.httpDelete = function(object) {
   {
     logger.fatal(url);
     logger.fatal(e);
-    throw e;
+    return false;
   }
   return true;
 }
 
 HtMap.prototype.getUser = function(userID) {
+  userID = userID || this.user;
   return new HtMapUser(userID, this);
 }
 
@@ -315,18 +309,23 @@ HtMap.prototype.getCorpus = function(corpusID) {
 }
 
 HtMap.prototype.getItem = function(obj) {
-  //var logger = Log4Moz.repository.getLogger("HtMap.getItem");
+  var logger = Log4Moz.repository.getLogger("HtMap.getItem");
   //logger.debug(obj);
   if(typeof(obj) == "string")
   {
-    item = this.httpGet("resource/" + encodeURIComponent(obj));
-    if(!item) return false;
-    obj = item[obj].item;
+    var item = this.httpGet("resource/" + encodeURIComponent(obj));
+
+    //logger.debug(JSON.stringify(item));
+    if(!item || !item[obj] || !item[obj].item || !(item[obj].item.length > 0))
+      return false;
+    obj = item[obj].item[0];
+    //logger.debug(obj);
   }
   //logger.debug(obj.corpus);
+  //logger.debug(obj.id);
   var corpus = 	this.getCorpus(obj.corpus);
-  //logger.debug(corpus);
-  //logger.debug(corpus.getItem(obj.id));
+  //logger.debug(corpus.getObject());
+  //logger.debug(corpus.getItem(obj.id).getObject());
   return corpus.getItem(obj.id);
 }
 
@@ -357,6 +356,10 @@ HtMap.prototype.isReserved = function(key) {
 function HtMapUser(id, htMap) {
   this.id = id;
   this.htMap = htMap;
+}
+
+HtMapUser.prototype.getType = function() {
+  return "HtMapUser";
 }
 
 HtMapUser.prototype.getID = function() {
@@ -399,10 +402,13 @@ HtMapUser.prototype.createCorpus = function(name) {
 }
 
 HtMapUser.prototype.createViewpoint = function(name) {
+  var logger = Log4Moz.repository.getLogger("HtMapUser.createViewpoint");
   var viewpoint = {};
   viewpoint.viewpoint_name = name;
   viewpoint.users = new Array(this.getID());
+  logger.debug(viewpoint);
   var ret = this.htMap.httpPost(viewpoint);
+  logger.debug(JSON.stringify(ret));
   if(!ret) return false;
   return this.htMap.getViewpoint(ret._id);
 }
@@ -411,7 +417,9 @@ function HtMapCorpus(id, htMap) {
   this.id = id;
   this.htMap = htMap;
 }
-
+HtMapCorpus.prototype.getType = function() {
+  return "HtMapCorpus";
+}
 HtMapCorpus.prototype.getID = function() {
   return this.id;
 }
@@ -523,7 +531,9 @@ function HtMapItem(itemID, Corpus) {
   this.Corpus = Corpus;
   this.id = itemID;
 }
-
+HtMapItem.prototype.getType = function() {
+  return "HtMapItem";
+}
 HtMapItem.prototype.getID = function() {
   return this.id;
 }
@@ -567,7 +577,7 @@ HtMapItem.prototype.getAttributes = function() {
   //var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
   var item = this.getRaw();
   if(!item) return false;
-  var reserved = {"highlights": null, "name": null, "resource": null, "thumbnail": null, "topics": null, "_id": null, "_rev": null, "item_name": null, "item_corpus": null };
+  var reserved = {"highlights": null, "resource": null, "thumbnail": null, "topics": null, "_id": null, "_rev": null, "item_name": null, "item_corpus": null };
   var result = new Array();
   for(var key in item)
     if(!(key in reserved))
@@ -683,7 +693,9 @@ function HtMapHighlight(highlightID, item) {
   this.id = highlightID;
   this.Item = item;
 }
-
+HtMapHighlight.prototype.getType = function() {
+  return "HtMapHighlight";
+}
 HtMapHighlight.prototype.getID = function() {
   return this.id;
 }
@@ -734,7 +746,9 @@ function HtMapViewpoint(viewpointID, htMap) {
   this.id = viewpointID;
   this.htMap = htMap;
 }
-
+HtMapViewpoint.prototype.getType = function() {
+  return "HtMapViewpoint";
+}
 HtMapViewpoint.prototype.getID = function() {
   return this.id;
 }
@@ -896,7 +910,9 @@ function HtMapTopic(topicID, viewpoint) {
   this.id = topicID;
   this.Viewpoint = viewpoint;
 }
-
+HtMapTopic.prototype.getType = function() {
+  return "HtMapTopic";
+}
 HtMapTopic.prototype.getID = function() {
   return this.id;
 }
