@@ -830,9 +830,8 @@ lasuli.ui = {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowKeywords");
     var html = "";
     var viewpointID = null;
-    for(var topicID in keywords)
+    for each(var topic in keywords)
     {
-      var topic = keywords[topicID];
       if(!viewpointID) viewpointID = topic.viewpointID;
       var el = 'div#' + topic.viewpointID + ' ul.topics-ul li a[uri="' + topic.topicID + '"]';
       logger.info(el);

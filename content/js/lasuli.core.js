@@ -142,6 +142,7 @@ lasuli.core = {
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
     dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.docUsers);
+    logger.debug(lasuli.hypertopic.docKeywords);
     dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.docTags);
     // Highlight all fragments
     logger.debug(lasuli.hypertopic.docFragments);
@@ -239,15 +240,12 @@ lasuli.core = {
   doCreateTopicTreeItem: function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateTopicTreeItem");
     logger.debug(arg);
-    var name = _("no.name");
-    var topic = lasuli.hypertopic.createAnalysis(arg.viewpointID, arg.topicID, name);
+    var topic = lasuli.hypertopic.createAnalysis(arg.viewpointID, arg.topicID, _("no.name"));
     logger.debug(topic);
     if(topic)
     {
       dispatch("lasuli.ui.doCreateTopicTreeItem", {"viewpointID": arg.viewpointID, "topicID": topic.topicID, "sourceObj":arg.sourceObj});
 
-      lasuli.hypertopic.tags = null;
-      lasuli.hypertopic.users = null;
       //append to analysis
       dispatch("lasuli.ui.doCreateAnalysis", topic);
       //add menu item to context menu
@@ -270,8 +268,8 @@ lasuli.core = {
         dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
         dispatch("lasuli.ui.doDestroyAnalysis", arg );
         dispatch("lasuli.contextmenu.doRemoveMenuItem", topicID );
-        lasuli.hypertopic.tags = null;
-        lasuli.hypertopic.users = null;
+        //lasuli.hypertopic.tags = null;
+        //lasuli.hypertopic.users = null;
         for(var i=0, fragmentID; fragmentID = result[i]; i++)
             dispatch("lasuli.highlighter.doRemoveFragment", fragmentID );
       }
@@ -288,8 +286,8 @@ lasuli.core = {
       {
         dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
         dispatch("lasuli.ui.doDestroyKeyword", arg);
-        lasuli.hypertopic.users = null;
-        lasuli.hypertopic.tags = null;
+        //lasuli.hypertopic.users = null;
+        //lasuli.hypertopic.tags = null;
       }
       else
         dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.topic.delete.failed', [arg.name])});
@@ -358,11 +356,10 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doTagTopicTreeItem");
     logger.debug(arg);
     var result = lasuli.hypertopic.createKeyword(arg.viewpointID, arg.topicID, arg.name);
-    logger.debug(result);
     if(!result) return false;
 
-    lasuli.hypertopic.users = null;
-    lasuli.hypertopic.tags = null;
+    //lasuli.hypertopic.users = null;
+    //lasuli.hypertopic.tags = null;
     dispatch("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
     //update the sourceobj rel value
     dispatch("lasuli.ui.doUpdateTopicTreeMenuItem", {"sourceObj": arg.sourceObj, "rel": "keyword" });
@@ -389,8 +386,6 @@ lasuli.core = {
     else
     {
       dispatch("lasuli.ui.doDestroyKeyword", keyword);
-      lasuli.hypertopic.users = null;
-      lasuli.hypertopic.tags = null;
       dispatch("lasuli.ui.doCreateAnalysis", topic );
       dispatch("lasuli.contextmenu.doAddMenuItem", topic );
     }

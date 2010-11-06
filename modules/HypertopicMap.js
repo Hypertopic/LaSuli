@@ -872,27 +872,36 @@ HtMapViewpoint.prototype.rename = function(name) {
 }
 
 HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.createTopic");
   var topicID = getUUID();
 
   var viewpoint = this.htMap.httpGet(this.getID());
   if(!viewpoint) return false;
+  logger.debug(viewpoint);
 
   var broader = new Array();
   if(broaderTopics)
   {
-    if(!broaderTopics.length) broaderTopics = new Array(broaderTopics);
+    logger.debug(broaderTopics);
+    logger.debug((broaderTopics instanceof Array));
+    if(!(broaderTopics instanceof Array)) broaderTopics = new Array(broaderTopics);
+
     for(var i=0, topic; topic = broaderTopics[i]; i++)
       if(typeof(topic) == "string")
         broader.push(topic);
       else
         broader.push(topic.getID());
+
   }
+  logger.debug(broader);
   if(!viewpoint.topics)
     viewpoint.topics = {};
 
   viewpoint.topics[topicID] = {
-    "broader": broader
+    "broader": broader,
+    "name": name
   };
+  logger.debug(viewpoint);
 
 	var ret = this.htMap.httpPut(viewpoint);
 	if(!ret) return false;
