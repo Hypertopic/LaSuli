@@ -113,7 +113,6 @@ lasuli.core = {
   doStateChange : function(domWindow){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doStateChange");
     var url = domWindow.document.location.href;
-    //TODO hash part
     if(!url || url == "about:blank") return false;
     logger.debug(domWindow.document.location.href);
     url = (url.indexOf('#') > 0) ? url.substr(0, url.indexOf('#')) : url;
@@ -125,8 +124,10 @@ lasuli.core = {
     if(nodes.length > 0) return false;
     if(this.fragments[url]){
       var fragments = this.fragments[url];
-      logger.debug(fragments);
-      dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
+      //TOD find out why cannot pass dom windows as a parameter
+      //dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
+      dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
+      //logger.debug("finish highlighter");
     }
   },
 
@@ -142,12 +143,11 @@ lasuli.core = {
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
     dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.docUsers);
-    logger.debug(lasuli.hypertopic.docKeywords);
     dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.docTags);
     // Highlight all fragments
-    logger.debug(lasuli.hypertopic.docFragments);
-    this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.docFragments;
-    dispatch("lasuli.highlighter.doHighlight", {"fragments": lasuli.hypertopic.docFragments});
+    var fragments = lasuli.hypertopic.docCoordinates;
+    this.fragments[lasuli.hypertopic.currentUrl] = fragments;
+    dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
   },
 
   doListViewpoints: function(){
@@ -205,18 +205,13 @@ lasuli.core = {
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
   },
 
-  //TODO
   doOpenViewpointByTopicName : function(topicName) {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doOpenViewpointByTopicName");
     logger.debug("topicName: " + topicName);
     if(!lasuli.hypertopic.docTags || !lasuli.hypertopic.docTags[topicName])
       return false;
 
-    var topics = lasuli.hypertopic.tags[topicName].topics;
-    var viewpoints = new Array();
-    for(var i=0, topic; topic = topics[i]; i++)
-      viewpoints.push({"id": topic.viewpointID, "name": lasuli.hypertopic.getViewpointName(topic.viewpointID)});
-    logger.debug(viewpoints);
+    var viewpoints = lasuli.hypertopic.getViewpointsByTopicName(topicName);
     dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
 
@@ -473,7 +468,7 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
     logger.debug(fragment);
     try{
-      var result = lasuli.hypertopic.createFragment(fragment.startPos, fragment.endPos, fragment.text, fragment.viewpointID, fragment.topicID);
+      var result = lasuli.hypertopic.createFragment(fragment.topicID, fragment.text, [fragment.startPos, fragment.endPos]);
       var topics = {}
       //If we need to create a topic first
       if(result && result.topic)

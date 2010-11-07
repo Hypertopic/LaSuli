@@ -61,22 +61,28 @@ lasuli.highlighter = {
   doHighlight: function(arg)
   {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlight");
+    logger.debug(arg);
     var fragments = arg.fragments;
+    logger.debug(fragments);
     this.fragments = fragments;
+
     var m_document;
     if(!arg.domWindow){
       m_document = this.getContentDocument();
       if(m_document.readyState != 'complete'){
+        logger.debug("not loaded yet");
         return false;
       }
     }
-    else
+    else{
+      logger.debug("with domWindow");
       m_document = arg.domWindow.document;
-
+    }
+    logger.debug("clearDocument");
     //logger.debug(m_document.location.href);
     this.clearDocument(m_document);
 
-    //logger.debug(fragments);
+    logger.debug(fragments);
 
     var coordinates = [];
     for each(var fragment in fragments)
