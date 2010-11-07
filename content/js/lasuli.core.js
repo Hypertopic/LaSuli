@@ -21,7 +21,6 @@ lasuli.core = {
 	//Load setting from preferences
   loadSetting : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.loadSetting");
-    logger.level = Log4Moz.Level["Debug"];
     var servers = Preferences.get("extensions.lasuli.setting", JSON.stringify(new Array()));
     if(typeof(servers) == "string")
       servers = JSON.parse(servers);

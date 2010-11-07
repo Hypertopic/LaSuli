@@ -86,7 +86,6 @@ function HtMap(baseUrl, user, pass) {
 HtMap.prototype.getType = function() {
   return "HtMap";
 }
-
 /**
  * @param object null if method is GET or DELETE
  * @return response body
@@ -277,7 +276,6 @@ HtMap.prototype.httpPut = function(object) {
   }
   return object;
 }
-
 /**
  * @param object the object to delete on the server
  * (_id is mandatory, the server may need _rev for conflict management)
