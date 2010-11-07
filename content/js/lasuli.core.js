@@ -45,7 +45,6 @@ lasuli.core = {
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.add("lasuli.core." + func, lasuli.core[func], lasuli.core);
-
   },
   unregister: function(){
     for(var func in this)
@@ -124,7 +123,7 @@ lasuli.core = {
     if(nodes.length > 0) return false;
     if(this.fragments[url]){
       var fragments = this.fragments[url];
-      //TOD find out why cannot pass dom windows as a parameter
+      //TODO find out why cannot pass dom windows as a parameter
       //dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
       dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
       //logger.debug("finish highlighter");
@@ -412,8 +411,6 @@ lasuli.core = {
     logger.debug(viewpointID);
     var topic = lasuli.hypertopic.createAnalysis(viewpointID);
     if(topic){
-      lasuli.hypertopic.tags = null;
-      lasuli.hypertopic.users = null;
       dispatch("lasuli.ui.doCreateAnalysis", topic );
       dispatch("lasuli.contextmenu.doAddMenuItem", topic );
     }
@@ -427,8 +424,6 @@ lasuli.core = {
     if(result){
       dispatch("lasuli.ui.doDestroyAnalysis", arg );
       dispatch("lasuli.contextmenu.doRemoveMenuItem", topicID );
-      lasuli.hypertopic.tags = null;
-      lasuli.hypertopic.users = null;
       for(var i=0, fragmentID; fragmentID = result[i]; i++)
           dispatch("lasuli.highlighter.doRemoveFragment", fragmentID );
     }
@@ -443,7 +438,6 @@ lasuli.core = {
     if(result){
       dispatch("lasuli.contextmenu.doUpdateMenuItem", {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "name": arg.newName});
       arg.name = arg.newName;
-      lasuli.hypertopic.tags = null;
     }
 
     dispatch("lasuli.ui.doRestoreAnalysis", arg );
@@ -453,13 +447,8 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadFragments");
     lasuli.hypertopic.viewpointID = viewpointID;
     dispatch("lasuli.ui.doShowFragments", {"topics": lasuli.hypertopic.topics, "fragments": lasuli.hypertopic.fragments} );
-    var fragments = lasuli.hypertopic.fragments;
-    for(var fragmentID in fragments){
-      fragments[fragmentID].color = lasuli.hypertopic.topics[fragments[fragmentID].topicID].color;
-    }
-    this.fragments[lasuli.hypertopic.currentUrl] = fragments;
-    logger.debug(fragments);
-    dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
+    this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
+    dispatch("lasuli.highlighter.doHighlight", {"fragments": lasuli.hypertopic.coordinates});
     //Enable the mozilla context menu
     dispatch('lasuli.contextmenu.doShow', lasuli.hypertopic.topics);
   },
@@ -469,30 +458,21 @@ lasuli.core = {
     logger.debug(fragment);
     try{
       var result = lasuli.hypertopic.createFragment(fragment.topicID, fragment.text, [fragment.startPos, fragment.endPos]);
-      var topics = {}
-      //If we need to create a topic first
-      if(result && result.topic)
+      var topics = {};
+      var fragments = {};
+      if(!result) return false;
+
+      if("topic" in result)
       {
-        topics[result.topic.topicID] = result.topic;
-        //add the new created analysis topic to the context menu
+        topics[result.topic.getID()] = result.topic;
         dispatch('lasuli.contextmenu.doAddMenuItem', result.topic);
-        fragment.topicID = result.topic.topicID;
       }
 
-      if(result.itemID)
-        fragment.itemID = result.itemID;
-      fragments = {};
-      if(result && result.fragmentID){
-        fragment.fragmentID = result.fragmentID;
-        fragments[result.fragmentID] = fragment;
-        fragment.color = lasuli.hypertopic.topics[fragment.topicID].color;
-        dispatch("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments, "scroll": true});
-        //Highlight this fragment
-        this.fragments[lasuli.hypertopic.currentUrl][fragment.fragmentID] = fragment;
-        dispatch("lasuli.highlighter.doHighlight", {"fragments": this.fragments[lasuli.hypertopic.currentUrl]});
-      }
-      lasuli.hypertopic.tags = null;
-      lasuli.hypertopic.users = null;
+      fragments[result.fragment.getID()] = result.fragment;
+      dispatch("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments, "scroll": true});
+      //Highlight this fragment
+      this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
+      dispatch("lasuli.highlighter.doHighlight", {"fragments": this.fragments[lasuli.hypertopic.currentUrl]});
     }catch(e){
       logger.fatal(e);
     }
@@ -501,13 +481,12 @@ lasuli.core = {
   doDestroyFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyFragment");
     logger.debug(fragment);
-    var result = lasuli.hypertopic.destroyFragment(fragment.itemID, fragment.fragmentID);
+    var result = lasuli.hypertopic.destroyFragment(fragment.fragmentID);
     logger.debug(result);
     if(result)
     {
       dispatch("lasuli.ui.doRemoveFragment", fragment.fragmentID );
       dispatch("lasuli.highlighter.doRemoveFragment", fragment.fragmentID );
-      lasuli.hypertopic.tags = null;
     }
   },
 
@@ -515,14 +494,13 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doMoveFragment");
     logger.debug(arg);
 
-    var result = lasuli.hypertopic.moveFragment(arg.itemID, arg.fragmentID, arg.viewpointID, arg.targetTopicID);
+    var result = lasuli.hypertopic.moveFragment(arg.fragmentID, arg.targetTopicID);
     logger.debug(result);
     if(result){
       dispatch("lasuli.ui.doDropFragmentAccepted", arg );
       logger.debug(lasuli.hypertopic.topics[arg.targetTopicID]);
       var color = lasuli.hypertopic.topics[arg.targetTopicID].color;
       dispatch("lasuli.highlighter.doReColorFragment", arg.fragmentID, color );
-      lasuli.hypertopic.tags = null;
     }
     else{
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});

@@ -334,7 +334,7 @@ lasuli.ui = {
       var viewpointID = $(this).parent().attr("viewpointID");
       var topicID = $(this).parent().attr("topicID");
       var itemID = $(this).parent().attr("itemID");
-      dispatch("lasuli.core.doDestroyFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID, "itemID": itemID});
+      dispatch("lasuli.core.doDestroyFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID});
     });
 
     //Add analysis topic
@@ -993,12 +993,16 @@ lasuli.ui = {
     for(var fragmentID in fragments)
     {
       fragment = fragments[fragmentID];
-      var li_html = '<li class="fragment ui-corner-bottom" itemID="' + fragment.itemID + '" fragmentID="' + fragmentID + '" viewpointID="' + fragment.viewpointID
-             + '" topicID="' + fragment.topicID + '" startPos="' + fragment.startPos + '" >'
+      var coordinates = fragment.getCoordinates();
+      var startPos = coordinates[0][0];
+      var viewpointID = fragment.topic.getViewpointID();
+      var topicID = fragment.topic.getID();
+      var text = fragment.getText();
+      var li_html = '<li class="fragment ui-corner-bottom" viewpointID="' + viewpointID + '" topicID="' + topicID + '" fragmentID="' + fragmentID + '" startPos="' + startPos + '" >'
              +'<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'
-             + fragment.text + '</li>';
+             + text + '</li>';
       logger.debug(li_html);
-      var el = "div.fragments[viewpointID='" + fragment.viewpointID + "'][topicID='" + fragment.topicID + "']";
+      var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + topicID + "']";
       logger.debug(el);
       if($(el).length > 0)
         $(el).find("ul").append(li_html);
@@ -1010,13 +1014,14 @@ lasuli.ui = {
 
   doShowFragments : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowFragments");
+    logger.debug(arg);
     var topics = arg.topics;
-    logger.debug(topics);
     for each(var topic in topics)
     {
       lasuli.ui._initFragmentsContainer(topic);
     }
     dispatch("lasuli.ui.doMakeFragmentsDroppable", null);
+    //logger.debug(arg.fragments);
     dispatch("lasuli.ui.doCreateFragments", {"fragments": arg.fragments, "highlight": true} );
   },
 
@@ -1044,7 +1049,6 @@ lasuli.ui = {
         var targetTopicID = $(this).attr("topicID");
         var fragmentID = li_element.attr("fragmentID");
         var viewpointID = li_element.attr("viewpointID");
-        var itemID = li_element.attr("itemID");
 
         logger.debug("sourceTopicID:" + sourceTopicID + ", targetTopicID:" + targetTopicID + ",fragmentID:" + fragmentID);
 
@@ -1054,7 +1058,7 @@ lasuli.ui = {
           return;
         }
         dispatch("lasuli.core.doMoveFragment", {"fragmentID": fragmentID, "sourceTopicID": sourceTopicID, "targetTopicID": targetTopicID, "helper": ui.helper,
-          "viewpointID": viewpointID, "itemID": itemID} );
+          "viewpointID": viewpointID} );
       }
     });
   },
@@ -1068,10 +1072,12 @@ lasuli.ui = {
     var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + arg.targetTopicID + "'] ul";
     logger.debug(el);
     $('li[fragmentID="' + arg.fragmentID + '"]').clone().appendTo($(el)).attr("topicID", arg.targetTopicID);
+    logger.debug($('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').html());
     $('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').hide().remove();
+    logger.debug("old fragment hide");
     $('li.ui-draggable-dragging[fragmentID="' + arg.fragmentID + '"]').hide().remove();
+    logger.debug("sort fragments");
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
-    //TODO Update the highlight
     dispatch("lasuli.ui.doMakeFragmentsDragable", null);
   },
 

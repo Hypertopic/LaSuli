@@ -12,6 +12,7 @@ include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
 
 var HtServers = {};
+var HtCaches = {};
 
 function getObject(obj) {
   var logger = Log4Moz.repository.getLogger("getObject");
@@ -78,9 +79,9 @@ function HtMap(baseUrl, user, pass) {
   this.xhr.overrideMimeType('application/json');
 
   //Initial the local cache
-  this.cache = {};
+  HtCaches[baseUrl] = {};
   //Set to false to disable cache for debuging
-  this.cache.enable = false;
+  this.enableCache = true;
 }
 HtMap.prototype.getType = function() {
   return "HtMap";
@@ -94,6 +95,18 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
   var logger = Log4Moz.repository.getLogger("HtMap.send");
   //Default HTTP action is "GET"
   httpAction = (httpAction) ? httpAction : "GET";
+  //cache is enabled
+  if(this.enableCache)
+  {
+    //Is PUT/DELETE/POST action then clear the cache
+    if(httpAction != 'GET')
+      HtCaches[this.baseUrl] = {};
+    else
+      //Try to load from the cache
+      if(httpUrl in HtCaches[this.baseUrl])
+        return HtCaches[this.baseUrl][httpUrl];
+  }
+  logger.debug(httpAction + " " + httpUrl);
   //Default HTTP URL is the baseUrl
   httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
   //Uncomment the following line to disable cache
@@ -121,6 +134,9 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
       throw Error(httpAction + " " + httpUrl + "\nResponse: " + this.xhr.status);
     }
     result = this.xhr.responseText;
+    //PUT it in cache
+    if(this.enableCache && httpAction == 'GET')
+      HtCaches[this.baseUrl][httpUrl] = JSON.parse(result);
     return JSON.parse(result);
   }
   catch(e)
@@ -167,10 +183,6 @@ HtMap.prototype.httpPost = function(object) {
  */
 HtMap.prototype.httpGet = function(query) {
   var logger = Log4Moz.repository.getLogger("HtMap.httpGet");
-  //Try to load the data from cache first
-  if(this.cache[query] && this.cache.enable)
-    return this.cache[query];
-  logger.debug("load from server" + this.baseUrl + query);
   var body;
   try{
     body = this.send("GET", this.baseUrl + query, null);
@@ -242,7 +254,6 @@ HtMap.prototype.httpGet = function(query) {
     }
     body = result;
   }
-  if(this.cache.enable) this.cache[query] = body;
   return body;
 }
 /**
@@ -720,6 +731,13 @@ HtMapHighlight.prototype.getTopic = function() {
   var view = this.getView();
   if(!view) return false;
   return (view.topic) ? view.topic : false;
+}
+HtMapHighlight.prototype.moveToTopic = function(topicID) {
+  var item = this.Item.Corpus.htMap.httpGet(this.getItemID());
+  if(!item) return false;
+  if(!item.highlights && !item.highlights[this.getID()]) return false;
+  item.highlights[this.getID()].topic = topicID;
+  return this.Item.Corpus.htMap.httpPut(item);
 }
 
 HtMapHighlight.prototype.getText = function() {
