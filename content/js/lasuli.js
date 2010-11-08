@@ -83,6 +83,49 @@ var lasuli = {
     oScript.charset = 'utf-8';
     oScript.src = url;
     oHead.appendChild(oScript);
+  },
+
+  chromeCreated : function(domWindow, url){
+    var logger = Log4Moz.repository.getLogger("lasuli.chromeCreated");
+    if(domWindow.name && domWindow.name == 'sidebar')
+    {
+      if(document.getElementById("viewLaSuliSidebar").getAttribute("checked") == "true")
+      {
+        logger.debug("opening LaSuli sidebar");
+        lasuliPrefObserver.register();
+        lasuli.core.register();
+
+        lasuli.core.loadSetting();
+        lasuli.changeWatcher.doStart();
+      }
+      else
+        if(this.chromeUrl && this.chromeUrl.indexOf("chrome://lasuli/") == 0)
+        {
+          logger.debug("closing LaSuli sidebar");
+          lasuliPrefObserver.unregister();
+          lasuli.core.unregister();
+          lasuli.changeWatcher.doShutdown();
+        }
+    }
+    logger.debug(this.chromeUrl);
+    this.chromeUrl = domWindow.document.location.href;
+  },
+
+  onSidebarOpened: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.onSidebarOpened");
+    logger.debug("opening LaSuli sidebar");
+    lasuliPrefObserver.register();
+    lasuli.core.register();
+
+    lasuli.core.loadSetting();
+    lasuli.changeWatcher.doStart();
+  },
+  onSidebarClosed: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.onSidebarClosed");
+    logger.debug("closing LaSuli sidebar");
+    lasuliPrefObserver.unregister();
+    lasuli.core.unregister();
+    lasuli.changeWatcher.doShutdown();
   }
 };
 
@@ -220,3 +263,14 @@ var colorUtil = {
     }catch(e){}
   }
 }
+
+window.addEventListener("load", function() {
+  lasuli.setupLogging();
+  Observers.add("lasuli.onSidebarOpened", lasuli.onSidebarOpened, lasuli);
+  Observers.add("lasuli.onSidebarClosed", lasuli.onSidebarClosed, lasuli);
+}, false);
+
+window.addEventListener("unload", function() {
+  Observers.remove("lasuli.onSidebarOpened", lasuli.onSidebarOpened, lasuli);
+  Observers.remove("lasuli.onSidebarClosed", lasuli.onSidebarClosed, lasuli);
+}, false);

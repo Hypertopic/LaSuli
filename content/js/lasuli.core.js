@@ -33,7 +33,6 @@ lasuli.core = {
         n = "freecoding";
       HtServers[n] = new HtMap(server.url, server.user, server.pass);
     }
-
     return true;
   },
 
@@ -505,16 +504,6 @@ lasuli.core = {
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});
       dispatch("lasuli.ui.doDropFragmentDenied", arg );
     }
-  },
-
-  chromeCreated : function(domWindow, url){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.chromeCreated");
-    //TODO
-    /*if(domWindow.name && domWindow.name == 'sidebar')
-      if(lasuli.core.isSidebarOpen())
-        RESTDatabase.listen = true;
-      else
-        RESTDatabase.listen = false;*/
   }
 }
 
@@ -542,19 +531,3 @@ var lasuliPrefObserver = {
     lasuli.core.doPrefChange();
   }
 }
-
-window.addEventListener("load", function() {
-  lasuli.setupLogging();
-
-  lasuliPrefObserver.register();
-  lasuli.core.register();
-  Observers.add("chrome-document-global-created", lasuli.core.chromeCreated, lasuli.core);
-
-  lasuli.core.loadSetting();
-}, false);
-
-window.addEventListener("unload", function() {
-  lasuliPrefObserver.unregister();
-  lasuli.core.unregister();
-  Observers.remove("chrome-document-global-created", lasuli.core.chromeCreated, lasuli.core);
-}, false);

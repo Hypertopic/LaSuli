@@ -67,22 +67,49 @@ function HtMap(baseUrl, user, pass) {
       throw URIError('baseUrl is not a vaildate URL!');
   }
   //If the baseUrl is not end with "/" append slash to the end.
-  baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
-
-  this.baseUrl = baseUrl;
-  this.user = user || "";
-  this.pass = pass || "";
+  this.baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
 
   //Create the XMLHttpRequest object for HTTP requests
   this.xhr = new XMLHttpRequest();
   //Overrides the MIME type returned by the hypertopic service.
   this.xhr.overrideMimeType('application/json');
 
+  this.serverType = this.getServerType();
+  if(!this.serverType)
+    return false;
+  logger.debug(this.serverType);
+  this.baseUrl = baseUrl + "_design/" + this.serverType + "/_rewrite/";
+  logger.debug(this.baseUrl);
+  this.user = user || "";
+  this.pass = pass || "";
+
   //Initial the local cache
   HtCaches[baseUrl] = {};
   //Set to false to disable cache for debuging
   this.enableCache = true;
 }
+HtMap.prototype.purgeCache = function(){
+  HtCaches[this.baseUrl] = {};
+}
+HtMap.prototype.getServerType = function(){
+  var result = this.httpGet('_all_docs?startkey="_design/"&endkey="_design0"');
+  for(var doc in result)
+  {
+    if(doc.indexOf("argos") != -1)
+      return "argos";
+    if(doc.indexOf("cassandre") != -1)
+      return "cassandre";
+  }
+  return false;
+}
+HtMap.prototype.getLastSeq = function(){
+  var result = this.httpGet('../../../_changes');
+  if(result)
+    return result.last_seq;
+  else
+    return false;
+}
+
 HtMap.prototype.getType = function() {
   return "HtMap";
 }

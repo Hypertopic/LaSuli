@@ -1239,6 +1239,7 @@ $(window).bind("load", function(){
   lasuli.ui.initTagCloud();
   lasuli.ui.initItemName();
   lasuli.ui.initDocumentPanel();
+  dispatch('lasuli.onSidebarOpened', null);
 });
 
 $(window).bind("unload", function(){
@@ -1246,4 +1247,5 @@ $(window).bind("unload", function(){
   dispatch('lasuli.core.doClearFragmentsCache', null);
   dispatch('lasuli.contextmenu.doHide', null);
   dispatch('lasuli.highlighter.doClear', null);
+  dispatch('lasuli.onSidebarClosed', null);
 });
