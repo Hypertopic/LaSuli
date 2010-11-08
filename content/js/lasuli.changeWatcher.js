@@ -188,7 +188,7 @@ lasuli.changeWatcher = {
     }
   }
 }
-
+/*
 window.addEventListener("load", function() {
   lasuli.changeWatcher.register();
   Observers.add("chrome-document-global-created", lasuli.changeWatcher.chromeCreated, lasuli.changeWatcher);
@@ -198,4 +198,4 @@ window.addEventListener("unload", function() {
   lasuli.changeWatcher.doShutdown();
   lasuli.changeWatcher.unregister();
   Observers.remove("chrome-document-global-created", lasuli.changeWatcher.chromeCreated, lasuli.changeWatcher);
-}, false)
+}, false)*/

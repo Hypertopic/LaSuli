@@ -3,7 +3,7 @@
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         id="statswindow" title="View Web page stats">
   <script src="chrome://lasuli/content/js/lasuli.js" type="application/x-javascript" />
-  <script src="chrome://lasuli/content/js/lasuli.changeWatcher.js" type="application/x-javascript" />
-<button label="start Me" oncommand="dispatch('lasuli.changeWatcher.doStart', null);"/>
-<button label="stop Me" oncommand="dispatch('lasuli.changeWatcher.doShutdown', null);"/>
+  <script src="chrome://lasuli/content/js/lasuli.changeWatcher2.js" type="application/x-javascript" />
+<button label="start Me" oncommand="lasuli.changeWatcher.doStart();"/>
+<button label="stop Me" oncommand="lasuli.changeWatcher.doShutdown();"/>
 </window>
