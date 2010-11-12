@@ -124,12 +124,15 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
   //cache is enabled
   if(this.enableCache)
   {
+    if(typeof(HtCaches[this.baseUrl]) == "undefined")
+      HtCaches[this.baseUrl] = {};
+
     //Is PUT/DELETE/POST action then clear the cache
     if(httpAction != 'GET')
       HtCaches[this.baseUrl] = {};
     else
       //Try to load from the cache
-      if(httpUrl in HtCaches[this.baseUrl])
+      if(typeof( HtCaches[this.baseUrl][httpUrl]) != "undefined")
         return HtCaches[this.baseUrl][httpUrl];
   }
   logger.debug(httpAction + " " + httpUrl);

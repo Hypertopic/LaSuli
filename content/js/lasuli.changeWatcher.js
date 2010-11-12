@@ -10,6 +10,22 @@ lasuli.changeWatcher = {
   threads : {},
   servers : {},
 
+  doCheckThread : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.changeWatcher.doCheckThread");
+    for(var server in this.threads)
+    {
+      logger.debug(server);
+      logger.debug(typeof(this.threads[server]));
+      try{
+        this.threads[server].processNextEvent(false);
+        var pending = this.threads[server].hasPendingEvents();
+        logger.debug(typeof(pending));
+      }catch(e){
+        logger.fatal(e);
+      }
+
+    }
+  },
   doRestart: function(){
   },
   doStart: function(){
@@ -85,8 +101,9 @@ fetcher.prototype = {
         if(str.indexOf("}") > 0)
         {
           mainThread.dispatch(new messageThread(this.server, "notify", "changed"), Ci.nsIThread.DISPATCH_NORMAL);
-          thread.processNextEvent(true);
         }
+        if(thread.hasPendingEvents())
+          thread.processNextEvent(false);
       }
       mainThread.dispatch(new messageThread(this.server, "debug", "exiting thread"), Ci.nsIThread.DISPATCH_NORMAL);
       if(this.scriptableInputStream) this.scriptableInputStream.close();

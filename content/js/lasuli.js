@@ -23,6 +23,20 @@ var lasuli = {
   _class : "_LASULI_APPEND_CLASS_",
   _htClass : "_LASULI_HIGHTLIGHT_CLASS_",
 
+  init: function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.init");
+    lasuli.setupLogging();
+    this.changeWorker = new Worker("chrome://lasuli/content/js/change_worker.js");
+    this.changeWorker.onmessage = function(event) {
+      if(event.data)
+      {
+        logger.debug(event.data);
+        if(HtServers[event.data])
+          HtServers[event.data].purgeCache();
+      }
+    }
+  },
+
   getLocalDirectory : function() {
     var directoryService =
       Cc["@mozilla.org/file/directory_service;1"].
@@ -59,11 +73,11 @@ var lasuli = {
     capp.level = Log4Moz.Level["All"];
     root.addAppender(capp);
 
-    /*var logFile = lasuli.getLocalDirectory();
+    var logFile = lasuli.getLocalDirectory();
     logFile.append("log.txt");
     var appender = new Log4Moz.RotatingFileAppender(logFile, formatter);
-    appender.level = Log4Moz.Level["Debug"];
-    root.addAppender(appender);*/
+    appender.level = Log4Moz.Level["All"];
+    root.addAppender(appender);
   },
 
   jqGirdLoader : function()
@@ -85,32 +99,6 @@ var lasuli = {
     oHead.appendChild(oScript);
   },
 
-  chromeCreated : function(domWindow, url){
-    var logger = Log4Moz.repository.getLogger("lasuli.chromeCreated");
-    if(domWindow.name && domWindow.name == 'sidebar')
-    {
-      if(document.getElementById("viewLaSuliSidebar").getAttribute("checked") == "true")
-      {
-        logger.debug("opening LaSuli sidebar");
-        lasuliPrefObserver.register();
-        lasuli.core.register();
-
-        lasuli.core.loadSetting();
-        lasuli.changeWatcher.doStart();
-      }
-      else
-        if(this.chromeUrl && this.chromeUrl.indexOf("chrome://lasuli/") == 0)
-        {
-          logger.debug("closing LaSuli sidebar");
-          lasuliPrefObserver.unregister();
-          lasuli.core.unregister();
-          lasuli.changeWatcher.doShutdown();
-        }
-    }
-    logger.debug(this.chromeUrl);
-    this.chromeUrl = domWindow.document.location.href;
-  },
-
   onSidebarOpened: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.onSidebarOpened");
     logger.debug("opening LaSuli sidebar");
@@ -118,14 +106,16 @@ var lasuli = {
     lasuli.core.register();
 
     lasuli.core.loadSetting();
-    lasuli.changeWatcher.doStart();
+    this.changeWorker.postMessage(HtServers);
+    //lasuli.changeWatcher.doStart();
   },
   onSidebarClosed: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.onSidebarClosed");
     logger.debug("closing LaSuli sidebar");
     lasuliPrefObserver.unregister();
     lasuli.core.unregister();
-    lasuli.changeWatcher.doShutdown();
+    this.changeWorker.postMessage('shutdown');
+    //lasuli.changeWatcher.doShutdown();
   }
 };
 
@@ -265,7 +255,7 @@ var colorUtil = {
 }
 
 window.addEventListener("load", function() {
-  lasuli.setupLogging();
+  lasuli.init();
   Observers.add("lasuli.onSidebarOpened", lasuli.onSidebarOpened, lasuli);
   Observers.add("lasuli.onSidebarClosed", lasuli.onSidebarClosed, lasuli);
 }, false);

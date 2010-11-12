@@ -11,7 +11,6 @@
 <script src="chrome://lasuli/content/js/lasuli.highlighter.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.mozillaContextMenu.js" type="application/x-javascript" />
 <script src="chrome://lasuli/content/js/lasuli.tabWatcher.js" type="application/x-javascript" />
-<script src="chrome://lasuli/content/js/lasuli.changeWatcher.js" type="application/x-javascript" />
   <menupopup id="viewSidebarMenu">
     <menuitem key="key_openLaSuliSidebar" observes="viewLaSuliSidebar"  />
   </menupopup>
