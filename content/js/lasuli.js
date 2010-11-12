@@ -24,17 +24,7 @@ var lasuli = {
   _htClass : "_LASULI_HIGHTLIGHT_CLASS_",
 
   init: function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.init");
     lasuli.setupLogging();
-    this.changeWorker = new Worker("chrome://lasuli/content/js/change_worker.js");
-    this.changeWorker.onmessage = function(event) {
-      if(event.data)
-      {
-        logger.debug(event.data);
-        if(HtServers[event.data])
-          HtServers[event.data].purgeCache();
-      }
-    }
   },
 
   getLocalDirectory : function() {
@@ -78,6 +68,8 @@ var lasuli = {
     var appender = new Log4Moz.RotatingFileAppender(logFile, formatter);
     appender.level = Log4Moz.Level["All"];
     root.addAppender(appender);
+    var logger = Log4Moz.repository.getLogger("setupLogging");
+    logger.debug(lasuli.getLocalDirectory());
   },
 
   jqGirdLoader : function()
@@ -97,25 +89,6 @@ var lasuli = {
     oScript.charset = 'utf-8';
     oScript.src = url;
     oHead.appendChild(oScript);
-  },
-
-  onSidebarOpened: function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.onSidebarOpened");
-    logger.debug("opening LaSuli sidebar");
-    lasuliPrefObserver.register();
-    lasuli.core.register();
-
-    lasuli.core.loadSetting();
-    this.changeWorker.postMessage(HtServers);
-    //lasuli.changeWatcher.doStart();
-  },
-  onSidebarClosed: function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.onSidebarClosed");
-    logger.debug("closing LaSuli sidebar");
-    lasuliPrefObserver.unregister();
-    lasuli.core.unregister();
-    this.changeWorker.postMessage('shutdown');
-    //lasuli.changeWatcher.doShutdown();
   }
 };
 
@@ -132,6 +105,12 @@ function _(n,arg)
     logger.error(n);
     return n;
   }
+}
+
+function getColor(id)
+{
+  if(id.length > 6)
+    return "#" + id.substr(-6);
 }
 
 var colorUtil = {
@@ -253,14 +232,3 @@ var colorUtil = {
     }catch(e){}
   }
 }
-
-window.addEventListener("load", function() {
-  lasuli.init();
-  Observers.add("lasuli.onSidebarOpened", lasuli.onSidebarOpened, lasuli);
-  Observers.add("lasuli.onSidebarClosed", lasuli.onSidebarClosed, lasuli);
-}, false);
-
-window.addEventListener("unload", function() {
-  Observers.remove("lasuli.onSidebarOpened", lasuli.onSidebarOpened, lasuli);
-  Observers.remove("lasuli.onSidebarClosed", lasuli.onSidebarClosed, lasuli);
-}, false);

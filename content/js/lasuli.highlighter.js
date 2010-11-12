@@ -61,28 +61,28 @@ lasuli.highlighter = {
   doHighlight: function(arg)
   {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlight");
-    logger.debug(arg);
+    //logger.debug(arg);
     var fragments = arg.fragments;
-    logger.debug(fragments);
+    //logger.debug(fragments);
     this.fragments = fragments;
 
     var m_document;
     if(!arg.domWindow){
       m_document = this.getContentDocument();
       if(m_document.readyState != 'complete'){
-        logger.debug("not loaded yet");
+        //logger.debug("not loaded yet");
         return false;
       }
     }
     else{
-      logger.debug("with domWindow");
+      //logger.debug("with domWindow");
       m_document = arg.domWindow.document;
     }
-    logger.debug("clearDocument");
+    //logger.debug("clearDocument");
     //logger.debug(m_document.location.href);
     this.clearDocument(m_document);
 
-    logger.debug(fragments);
+    //logger.debug(fragments);
 
     var coordinates = [];
     for each(var fragment in fragments)
@@ -93,8 +93,8 @@ lasuli.highlighter = {
 
     coordinates = coordinates.unique();
     coordinates.sort(function(a,b){return a - b});
-    logger.debug("doHighlight::coordinates");
-    logger.debug(coordinates);
+    //logger.debug("doHighlight::coordinates");
+    //logger.debug(coordinates);
 
     if(coordinates.length == 0) return;
 
@@ -222,7 +222,7 @@ lasuli.highlighter = {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doRemoveFragment");
     var m_document = this.getContentDocument();
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
-    logger.debug(nodes.length);
+    //logger.debug(nodes.length);
     if(nodes.length == 0)
       return;
 
@@ -280,7 +280,7 @@ lasuli.highlighter = {
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.add("lasuli.highlighter." + func, lasuli.highlighter[func], lasuli.highlighter);
-    logger.debug("registered");
+    //logger.debug("registered");
   },
 
   unregister: function(){

@@ -24,7 +24,7 @@ lasuli.ui = {
 
     $tabs.bind('tabsselect', function(event, ui) {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.tabsselect");
-      logger.debug($(ui.tab).attr("class"));
+      //logger.debug($(ui.tab).attr("class"));
 
       if($(ui.tab).hasClass("tab-viewpoint"))
       {
@@ -43,7 +43,7 @@ lasuli.ui = {
       }
       if($(ui.tab).hasClass("tab-add"))
       {
-        logger.debug("lasuli.core.doListViewpoints");
+        //logger.debug("lasuli.core.doListViewpoints");
         dispatch("lasuli.core.doListViewpoints", null);
         dispatch('lasuli.highlighter.doClear', null);
       }
@@ -61,6 +61,8 @@ lasuli.ui = {
   },
 
   initDocumentPanel : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.initDocumentPanel");
+    //logger.debug("initDocumentPanel");
     //var browsingUrl = "http://cassandre/text/d0";
     dispatch("lasuli.core.doLocationChange", null);
   },
@@ -80,7 +82,7 @@ lasuli.ui = {
 		    dispatch("lasuli.ui.doShowMessage", message);
 		    return false;
 		  }
-		  logger.debug("Create viewpoint button click.\nViewpoint name:" + viewpointName);
+		  //logger.debug("Create viewpoint button click.\nViewpoint name:" + viewpointName);
 		  dispatch("lasuli.core.doCreateViewpoint", viewpointName);
 		});
 
@@ -125,7 +127,7 @@ lasuli.ui = {
       var viewpointID = $(this).parent().attr("uri");
       var viewpointName = $(this).text();
       var viewpoints = new Array({"id": viewpointID, "name": viewpointName});
-      logger.debug(viewpoints);
+      //logger.debug(viewpoints);
       dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
       return false;
     });
@@ -289,7 +291,7 @@ lasuli.ui = {
     //Topic side icon click
     $(".fragment-toggle").live('click', function(event){
       var logger = Log4Moz.repository.getLogger("lasuli.ui.fragment-toggle.click");
-      logger.debug($(this).attr('src'));
+      //logger.debug($(this).attr('src'));
       if($(this).attr('src').indexOf('toggle-close.png') > 0)
       {
         $(this).parent().next().slideUp({duration: 1000, easing: 'easeOutBounce'});
@@ -570,7 +572,7 @@ lasuli.ui = {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName");
       var itemName = $(this).html();
       $('div#tabs-document').data('itemName', itemName);
-      logger.debug(itemName);
+      //logger.debug(itemName);
       $(this).replaceWith("<input type='text' class='edit-itemname-in-place' value=''>");
       $("input.edit-itemname-in-place").val(itemName).focus().select();
 
@@ -578,7 +580,7 @@ lasuli.ui = {
         var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName.blur");
         var name = $('div#tabs-document').data('itemName');
         var newName = $(this).val();
-        logger.debug(name + "," + newName);
+        //logger.debug(name + "," + newName);
         if(name == newName){
           dispatch("lasuli.ui.doShowItemName", name);
           $('div#tabs-document').data('itemName', null)
@@ -627,7 +629,7 @@ lasuli.ui = {
 
   doBlockUI : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doBlockUI");
-    logger.debug("block ui");
+    //logger.debug("block ui");
     $('div#overlay-div').removeClass('hide');
   },
 
@@ -637,7 +639,7 @@ lasuli.ui = {
 
   doShowItemName : function(itemName){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowItemName");
-    logger.debug(itemName);
+    //logger.debug(itemName);
     if(!itemName) itemName = _("no.name");
     if($("input.edit-itemname-in-place").length > 0)
       $("input.edit-itemname-in-place").replaceWith('<h3 id="h3-entity-name"></h3>');
@@ -651,7 +653,7 @@ lasuli.ui = {
     if(viewpointID)
     {
       var el = "div#tabs ul li a[href='#" + viewpointID + "']";
-      logger.debug(el);
+      //logger.debug(el);
       $(el).next('span').click();
     }
     else
@@ -723,14 +725,14 @@ lasuli.ui = {
 
   doShowAttributes : function(attributes){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowAttributes");
-    logger.debug(attributes);
+    //logger.debug(attributes);
     $("#attribute-grid").jqGrid('clearGridData');
     if(!attributes) return false;
     var index = 1;
     for(var name in attributes)
       for(var j=0, v; v = attributes[name][j]; j++)
       {
-        logger.debug({"name": name, "value": v});
+        //logger.debug({"name": name, "value": v});
         $("#attribute-grid").addRowData(index, {"name": name, "value": v});
         index++;
       }
@@ -738,7 +740,7 @@ lasuli.ui = {
 
   doShowTagCloud : function(tags){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTagCloud");
-    logger.debug(tags);
+    //logger.debug(tags);
     $("#tags ul li").hide().remove();
     if(!tags) return false;
 
@@ -794,13 +796,13 @@ lasuli.ui = {
 
   doShowViewpointPanels : function(viewpoints){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpointPanels");
-    logger.debug(viewpoints);
+    //logger.debug(viewpoints);
     if(!viewpoints) return false;
 
     var tabIndex = -1;
     for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++)
     {
-      logger.debug($("div#"+viewpoint.id));
+      //logger.debug($("div#"+viewpoint.id));
       //If this viewpoint tab is already created.
       if($("div#"+viewpoint.id).length > 0) continue;
       //Create the tab for this viewpoint
@@ -841,7 +843,7 @@ lasuli.ui = {
       //logger.debug(html);
     }
     //logger.info(viewpointID);
-    logger.debug(html);
+    //logger.debug(html);
     if(viewpointID && $('#' + viewpointID).length > 0)
     {
       //$('#' + viewpointID +' .topics-ul li').remove();
@@ -921,13 +923,13 @@ lasuli.ui = {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.rename");
       var sourceObj   = data.rslt.obj;
       var viewpointID = sourceObj.attr('viewpointID');
-      logger.debug(viewpointID);
+      //logger.debug(viewpointID);
       var topicID     = sourceObj.attr('topicID') || '';
-      logger.debug(topicID);
+      //logger.debug(topicID);
       var topicType   = sourceObj.attr('rel');
       var name        = data.rslt.old_name;
       var newName     = data.rslt.new_name;
-      logger.debug(newName);
+      //logger.debug(newName);
       var arg = {"viewpointID": viewpointID, "topicID": topicID, "topicType": topicType, "name": name, "newName": newName, "sourceObj": sourceObj};
 
       dispatch("lasuli.core.doRenameTopicTreeItem", arg);
@@ -988,7 +990,7 @@ lasuli.ui = {
 
   doCreateFragments : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateFragments");
-    logger.debug(arg);
+    //logger.debug(arg);
     var fragments = arg.fragments;
     for(var fragmentID in fragments)
     {
@@ -1001,9 +1003,9 @@ lasuli.ui = {
       var li_html = '<li class="fragment ui-corner-bottom" viewpointID="' + viewpointID + '" topicID="' + topicID + '" fragmentID="' + fragmentID + '" startPos="' + startPos + '" >'
              +'<span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'
              + text + '</li>';
-      logger.debug(li_html);
+      //logger.debug(li_html);
       var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + topicID + "']";
-      logger.debug(el);
+      //logger.debug(el);
       if($(el).length > 0)
         $(el).find("ul").append(li_html);
     }
@@ -1014,7 +1016,7 @@ lasuli.ui = {
 
   doShowFragments : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowFragments");
-    logger.debug(arg);
+    //logger.debug(arg);
     var topics = arg.topics;
     for each(var topic in topics)
     {
@@ -1041,16 +1043,16 @@ lasuli.ui = {
       drop: function(event, ui)
       {
         var logger = Log4Moz.repository.getLogger("lasuli.ui.doMakeFragmentsDroppable.drop");
-        logger.debug($(this).html());
+        //logger.debug($(this).html());
         var li_element = ui.draggable;
         var ul_element = ui.draggable.parent();
-        logger.debug(ul_element.prev("div").attr("class"));
+        //logger.debug(ul_element.prev("div").attr("class"));
         var sourceTopicID = ul_element.prev("div").attr("topicID");
         var targetTopicID = $(this).attr("topicID");
         var fragmentID = li_element.attr("fragmentID");
         var viewpointID = li_element.attr("viewpointID");
 
-        logger.debug("sourceTopicID:" + sourceTopicID + ", targetTopicID:" + targetTopicID + ",fragmentID:" + fragmentID);
+        //logger.debug("sourceTopicID:" + sourceTopicID + ", targetTopicID:" + targetTopicID + ",fragmentID:" + fragmentID);
 
         if(targetTopicID == sourceTopicID)
         {
@@ -1065,18 +1067,18 @@ lasuli.ui = {
 
   doDropFragmentAccepted : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doDropFragmentAccepted");
-    logger.debug(arg);
+    //logger.debug(arg);
     var viewpointID = $('li[fragmentID="' + arg.fragmentID + '"]').attr("viewpointID");
-    logger.debug(viewpointID);
+    //logger.debug(viewpointID);
 
     var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + arg.targetTopicID + "'] ul";
-    logger.debug(el);
+    //logger.debug(el);
     $('li[fragmentID="' + arg.fragmentID + '"]').clone().appendTo($(el)).attr("topicID", arg.targetTopicID);
-    logger.debug($('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').html());
+    //logger.debug($('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').html());
     $('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').hide().remove();
-    logger.debug("old fragment hide");
+    //logger.debug("old fragment hide");
     $('li.ui-draggable-dragging[fragmentID="' + arg.fragmentID + '"]').hide().remove();
-    logger.debug("sort fragments");
+    //logger.debug("sort fragments");
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
     dispatch("lasuli.ui.doMakeFragmentsDragable", null);
   },
@@ -1088,7 +1090,7 @@ lasuli.ui = {
   doRemoveFragment : function(fragmentID) {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveFragment");
     var el = "li.fragment[fragmentID='" + fragmentID + "']";
-    logger.debug(el);
+    //logger.debug(el);
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
   },
 
@@ -1104,7 +1106,7 @@ lasuli.ui = {
 
   doRenameAnalysis : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doRenameAnalysis");
-    logger.debug(arg);
+    //logger.debug(arg);
     var el="div.fragment-header[viewpointID='" + arg.viewpointID + "'][topicID='" + arg.topicID + "']";
     var span = $(el).find("span");
     span.html(arg.name);
@@ -1112,7 +1114,7 @@ lasuli.ui = {
 
   doRestoreAnalysis : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doRestoreAnalysis");
-    logger.debug(arg);
+    //logger.debug(arg);
 
     var viewpointID = arg.viewpointID;
     var topicID = arg.topicID;
@@ -1126,7 +1128,7 @@ lasuli.ui = {
 
   doDestroyAnalysis : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doDestroyAnalysis");
-    logger.debug(arg);
+    //logger.debug(arg);
 
     var viewpointID = arg.viewpointID;
     var topicID = arg.topicID;
@@ -1138,12 +1140,12 @@ lasuli.ui = {
 
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
     try{ topic = JSON.parse(topic); }catch(e){}
-    logger.debug(topic);
+    //logger.debug(topic);
     var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
     var win = wm.getMostRecentWindow("navigator:browser");
     var content = win.getBrowser().contentWindow;
     var selection = content.getSelection();
-    logger.debug("selection:" + selection);
+    //logger.debug("selection:" + selection);
     var strContent = selection + "";
     strContent = strContent.trim();
     if(strContent == ""){
@@ -1162,7 +1164,7 @@ lasuli.ui = {
     var win = wm.getMostRecentWindow("navigator:browser");
     var contentDocument = win.getBrowser().contentDocument;
     var treewalker;
-    logger.debug('start to get treewalker');
+    //logger.debug('start to get treewalker');
     try{
       treewalker = contentDocument.createTreeWalker(contentDocument.body,
       NodeFilter.SHOW_TEXT,
@@ -1186,7 +1188,7 @@ lasuli.ui = {
       //TODO error message?
       return false;
     }
-    logger.debug('start to get position');
+    //logger.debug('start to get position');
     var curPos = 0;
     var startPos,endPos;
     //logger.debug(startContainer.data);
@@ -1208,13 +1210,13 @@ lasuli.ui = {
         }
         /*if(node.isSameNode(endContainer)){
           endPos = curPos + endOffset;
-          logger.debug("end:" + startPos);
+          //logger.debug("end:" + startPos);
         }*/
         curPos += node.data.length;
     }
     if(!startPos || !endPos) return false;
-    logger.debug(new Array(startPos, endPos));
-    logger.debug(strContent);
+    //logger.debug(new Array(startPos, endPos));
+    //logger.debug(strContent);
     var viewpointID;
     if(topic.viewpointID)
       viewpointID = topic.viewpointID;
@@ -1229,17 +1231,22 @@ lasuli.ui = {
 
 
 $(window).bind("load", function(){
+  var logger = Log4Moz.repository.getLogger("lasuli.ui.load");
+  dispatch('lasuli.sidebar.onSidebarOpened', null);
   lasuli.jqGirdLoader();
   lasuli.ui.register();
   lasuli.ui.doBlockUI();
+  //logger.debug("lasuli.ui.doBlockUI() done");
   lasuli.ui.initTabs();
   lasuli.ui.initViewpointPanel();
   lasuli.ui.initPlusPanel();
+  //logger.debug("lasuli.ui.initPlusPanel() done");
   lasuli.ui.initAttributeGrid();
   lasuli.ui.initTagCloud();
   lasuli.ui.initItemName();
+  //logger.debug("lasuli.ui.initItemName() done");
   lasuli.ui.initDocumentPanel();
-  dispatch('lasuli.onSidebarOpened', null);
+  //logger.debug("lasuli.ui.initDocumentPanel() done");
 });
 
 $(window).bind("unload", function(){
@@ -1247,5 +1254,5 @@ $(window).bind("unload", function(){
   dispatch('lasuli.core.doClearFragmentsCache', null);
   dispatch('lasuli.contextmenu.doHide', null);
   dispatch('lasuli.highlighter.doClear', null);
-  dispatch('lasuli.onSidebarClosed', null);
+  dispatch('lasuli.sidebar.onSidebarClosed', null);
 });

@@ -77,9 +77,9 @@ function HtMap(baseUrl, user, pass) {
   this.serverType = this.getServerType();
   if(!this.serverType)
     return false;
-  logger.debug(this.serverType);
+  //logger.debug(this.serverType);
   this.baseUrl = baseUrl + "_design/" + this.serverType + "/_rewrite/";
-  logger.debug(this.baseUrl);
+  //logger.debug(this.baseUrl);
   this.user = user || "";
   this.pass = pass || "";
 
@@ -135,7 +135,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
       if(typeof( HtCaches[this.baseUrl][httpUrl]) != "undefined")
         return HtCaches[this.baseUrl][httpUrl];
   }
-  logger.debug(httpAction + " " + httpUrl);
+  //logger.debug(httpAction + " " + httpUrl);
   //Default HTTP URL is the baseUrl
   httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
   //Uncomment the following line to disable cache
@@ -375,7 +375,7 @@ HtMap.prototype.getViewpoint = function(viewpointID) {
 HtMap.prototype.getTopic = function(topic) {
   var logger = Log4Moz.repository.getLogger("HtMap.getTopic");
   var viewpoint = this.getViewpoint(topic.viewpoint);
-  logger.debug(viewpoint);
+  //logger.debug(viewpoint);
   return viewpoint.getTopic(topic);
 }
 
@@ -432,11 +432,11 @@ HtMapUser.prototype.createCorpus = function(name) {
   var corpus = {};
   corpus.corpus_name = name;
   corpus.users = new Array(this.getID());
-  logger.debug(corpus);
+  //logger.debug(corpus);
   var ret = this.htMap.httpPost(corpus);
-  logger.debug(ret);
+  //logger.debug(ret);
   if(!ret) return false;
-  logger.debug(this.htMap.getCorpus(ret._id));
+  //logger.debug(this.htMap.getCorpus(ret._id));
   return this.htMap.getCorpus(ret._id);
 }
 
@@ -445,9 +445,9 @@ HtMapUser.prototype.createViewpoint = function(name) {
   var viewpoint = {};
   viewpoint.viewpoint_name = name;
   viewpoint.users = new Array(this.getID());
-  logger.debug(viewpoint);
+  //logger.debug(viewpoint);
   var ret = this.htMap.httpPost(viewpoint);
-  logger.debug(JSON.stringify(ret));
+  //logger.debug(JSON.stringify(ret));
   if(!ret) return false;
   return this.htMap.getViewpoint(ret._id);
 }
@@ -538,7 +538,7 @@ HtMapCorpus.prototype.getName = function() {
  */
 HtMapCorpus.prototype.destroy = function() {
   var logger = Log4Moz.repository.getLogger("HtMapUser.destroy");
-  logger.debug(this.getID());
+  //logger.debug(this.getID());
 	var items = this.getItems();
 	if(!items) return true;
 	for (var i=0, item; item = items[i]; i++) {
@@ -629,7 +629,7 @@ HtMapItem.prototype.getTopics = function() {
   var view = this.getView();
   if(!view) return false;
   var result = new Array();
-  logger.debug(view.topic);
+  //logger.debug(view.topic);
   for(var topic, i=0; topic = view.topic[i]; i++)
     result.push(this.Corpus.htMap.getTopic(topic));
   return result;
@@ -697,19 +697,30 @@ HtMapItem.prototype.untag = function(topic) {
 }
 
 HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
-  var item = this.Corpus.htMap.httpGet(this.getID());
-  if(!item) return false;
-  if(!item.highlights) item.highlights = {};
+  var logger = Log4Moz.repository.getLogger("HtMapItem.createHighlight");
+  //logger.debug(this.Corpus.htMap.serverType);
+  var obj;
+  if(this.Corpus.htMap.serverType  == "argos")
+  {
+    //logger.debug("itemID:" + this.getID());
+    obj = this.getRaw();
+  }
+  else
+    obj = this.Corpus.getRaw();
+
+  if(!obj) return false;
+  if(!obj.highlights) obj.highlights = {};
 
   var id = getUUID();
-  item.highlights[id] = {
+  obj.highlights[id] = {
     "coordinates" : coordinates,
     "text": text,
     "viewpoint": topic.getViewpointID(),
     "topic": topic.getID()
   };
+  //logger.debug(obj);
+  var ret = this.Corpus.htMap.httpPut(obj);
 
-  var ret = this.Corpus.htMap.httpPut(item);
   if(!ret) return false;
   return this.getHighlight(id);
 }
@@ -781,11 +792,18 @@ HtMapHighlight.prototype.getCoordinates = function() {
 }
 
 HtMapHighlight.prototype.destroy = function() {
-  var item = this.Item.Corpus.htMap.httpGet(this.getItemID());
-  if(!item) return false;
-  if(!item.highlights && !item.highlights[this.getID()]) return true;
-  delete item.highlights[this.getID()];
-  return this.Item.Corpus.htMap.httpPut(item);
+  var logger = Log4Moz.repository.getLogger("HtMapItem.createHighlight");
+  //logger.debug(this.Corpus.htMap.serverType);
+  var obj;
+  if(this.Corpus.htMap.serverType == "argos")
+    obj = this.Item.Corpus.htMap.httpGet(this.getItemID());
+  else
+    obj = this.Item.Corpus.getRaw();
+
+  if(!obj) return false;
+  if(!obj.highlights && !obj.highlights[this.getID()]) return true;
+  delete obj.highlights[this.getID()];
+  return this.Item.Corpus.htMap.httpPut(obj);
 }
 
 function HtMapViewpoint(viewpointID, htMap) {
@@ -859,12 +877,12 @@ HtMapViewpoint.prototype.getTopics = function() {
   var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getTopics");
   var result = new Array();
   var view = this.getView();
-  logger.debug(view);
+  //logger.debug(view);
   if(!view) return false;
   for(var key in view)
     if(!this.htMap.isReserved(key))
     {
-      logger.debug(key);
+      //logger.debug(key);
       result.push(this.getTopic(key));
     }
   return result;
@@ -889,9 +907,9 @@ HtMapViewpoint.prototype.getHighlights = function() {
   var highlightIDs = {};
   for(var i=0, topic; topic = topics[i]; i++)
   {
-    logger.debug(topic);
+    //logger.debug(topic);
     var highlights = topic.getHighlights();
-    logger.debug(highlights);
+    //logger.debug(highlights);
     for(var j=0, highlight; highlight = highlights[j]; j++)
       if(!(highlight.id in highlightIDs))
       {
@@ -923,13 +941,13 @@ HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
 
   var viewpoint = this.htMap.httpGet(this.getID());
   if(!viewpoint) return false;
-  logger.debug(viewpoint);
+  //logger.debug(viewpoint);
 
   var broader = new Array();
   if(broaderTopics)
   {
-    logger.debug(broaderTopics);
-    logger.debug((broaderTopics instanceof Array));
+    //logger.debug(broaderTopics);
+    //logger.debug((broaderTopics instanceof Array));
     if(!(broaderTopics instanceof Array)) broaderTopics = new Array(broaderTopics);
 
     for(var i=0, topic; topic = broaderTopics[i]; i++)
@@ -939,7 +957,7 @@ HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
         broader.push(topic.getID());
 
   }
-  logger.debug(broader);
+  //logger.debug(broader);
   if(!viewpoint.topics)
     viewpoint.topics = {};
 
@@ -947,7 +965,7 @@ HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
     "broader": broader,
     "name": name
   };
-  logger.debug(viewpoint);
+  //logger.debug(viewpoint);
 
 	var ret = this.htMap.httpPut(viewpoint);
 	if(!ret) return false;
@@ -1096,8 +1114,8 @@ HtMapTopic.prototype.destroy = function() {
 
 HtMapTopic.prototype.moveTopics = function(narrowerTopics) {
   var logger = Log4Moz.repository.getLogger("HtMapTopic.moveTopics");
-  logger.debug(narrowerTopics);
-  logger.debug(this.getID());
+  //logger.debug(narrowerTopics);
+  //logger.debug(this.getID());
   var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics) return false;
@@ -1106,9 +1124,9 @@ HtMapTopic.prototype.moveTopics = function(narrowerTopics) {
   {
     if(!viewpoint.topics || !viewpoint.topics[nTopic.getID()] ) return false;
     viewpoint.topics[nTopic.getID()].broader = new Array(this.getID());
-    logger.debug(viewpoint.topics[nTopic.getID()].broader);
+    //logger.debug(viewpoint.topics[nTopic.getID()].broader);
   }
-  logger.debug(viewpoint);
+  //logger.debug(viewpoint);
 	return this.Viewpoint.htMap.httpPut(viewpoint);
 }
 
