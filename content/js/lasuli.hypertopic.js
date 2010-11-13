@@ -80,9 +80,6 @@ lasuli.hypertopic = {
 
   get corpus(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.corpus");
-    if(this._corpus)
-      return this._corpus;
-
     this._corpus = null;
     var corpora = this.user.listCorpora();
     if(!corpora || corpora.length == 0){
@@ -98,8 +95,6 @@ lasuli.hypertopic = {
 
   get items(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.items");
-    if(this._items)
-      return this._items;
     this._items = {};
     //Load items from all Hypertopic server by using resource URL
     for(var k in HtServers)
@@ -140,18 +135,15 @@ lasuli.hypertopic = {
   get attributes(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.attributes");
 
-    if(!this._attributes)
+    this._attributes = {};
+    for(var k in this.items)
     {
-      this._attributes = {};
-      for(var k in this.items)
-      {
-        var item = this.items[k];
-        var result = item.getAttributes();
-        //logger.debug(k);
-        //logger.debug(result);
-        if(result)
-          this._attributes[k] = result;
-      }
+      var item = this.items[k];
+      var result = item.getAttributes();
+      //logger.debug(k);
+      //logger.debug(result);
+      if(result)
+        this._attributes[k] = result;
     }
     //logger.debug("this._attributes");
     //logger.debug(this._attributes);
@@ -471,6 +463,8 @@ lasuli.hypertopic = {
   createAttribute : function(attribute){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createAttribute");
     //logger.debug(attribute);
+    if(!this.item)
+      this.createItem(name);
     var result = this.item.describe(attribute.name, attribute.value);
     //logger.debug(this.item.getObject());
     //logger.debug(JSON.stringify(result));
@@ -496,6 +490,8 @@ lasuli.hypertopic = {
 
   createKeyword : function(viewpointID, topicID, name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createKeyword");
+    if(!this.item)
+      this.createItem(name);
     var topic = this.viewpoint.getTopic(topicID);
     var result = this.item.tag(topic);
     if(!result)
@@ -535,6 +531,7 @@ lasuli.hypertopic = {
   createAnalysis : function(viewpointID, topicID, topicName){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createAnalysis");
     //logger.debug(this.viewpoint.getObject());
+    //logger.debug(topicID);
     var topicIDs = (topicID) ? new Array(topicID) : null;
     topicName = (topicName) ? topicName : _("no.name");
     //logger.debug(topicIDs);
@@ -556,8 +553,19 @@ lasuli.hypertopic = {
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyAnalysis");
     if(!this.viewpoint) return false;
     var topic = this.viewpoint.getTopic(topicID);
+    var fragmentIDs = new Array();
+    for each(var fragment in this.docFragments){
+      if(topicID == fragment.topic.getID())
+      {
+        logger.debug(fragment.getObject());
+        if(fragment.destroy())
+          fragmentIDs.push(fragment.getID());
+      }
+    }
     var result = topic.destroy();
-    return result;
+    if(result)
+      return fragmentIDs;
+    return false;
   },
 
   renameAnalysis : function(viewpointID, topicID, name, newName){
@@ -634,6 +642,8 @@ lasuli.hypertopic = {
     //logger.debug(coordinates);
     //logger.debug(topicID);
     //logger.debug(text);
+    if(!this.item)
+      this.createItem(name);
     var analysisTopic;
     if(!topicID)
     {

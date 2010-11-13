@@ -792,10 +792,10 @@ HtMapHighlight.prototype.getCoordinates = function() {
 }
 
 HtMapHighlight.prototype.destroy = function() {
-  var logger = Log4Moz.repository.getLogger("HtMapItem.createHighlight");
-  //logger.debug(this.Corpus.htMap.serverType);
+  var logger = Log4Moz.repository.getLogger("HtMapHighlight.destroy");
+  //logger.debug(this.Item.Corpus.htMap.serverType);
   var obj;
-  if(this.Corpus.htMap.serverType == "argos")
+  if(this.Item.Corpus.htMap.serverType == "argos")
     obj = this.Item.Corpus.htMap.httpGet(this.getItemID());
   else
     obj = this.Item.Corpus.getRaw();
@@ -803,6 +803,7 @@ HtMapHighlight.prototype.destroy = function() {
   if(!obj) return false;
   if(!obj.highlights && !obj.highlights[this.getID()]) return true;
   delete obj.highlights[this.getID()];
+  logger.debug(obj);
   return this.Item.Corpus.htMap.httpPut(obj);
 }
 
@@ -948,7 +949,8 @@ HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
   {
     //logger.debug(broaderTopics);
     //logger.debug((broaderTopics instanceof Array));
-    if(!(broaderTopics instanceof Array)) broaderTopics = new Array(broaderTopics);
+    if(typeof(broaderTopics.length) != "number")
+      broaderTopics = new Array(broaderTopics);
 
     for(var i=0, topic; topic = broaderTopics[i]; i++)
       if(typeof(topic) == "string")

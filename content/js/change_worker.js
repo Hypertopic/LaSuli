@@ -19,7 +19,7 @@ function fetch(){
         try{
           seq = parseInt(result.last_seq);
         }catch(e){}
-        //postMessage(seq);
+        //postMessage(changeWorker.sequences[server] + "," + seq);
         if(!changeWorker.sequences[server] || changeWorker.sequences[server] < seq)
         {
           changeWorker.sequences[server] = seq;
@@ -29,6 +29,7 @@ function fetch(){
       httpRequest = null;
     }
     httpRequest.send(null);
+    //postMessage('fetch:' + changeUrl);
   }
   setTimeout("fetch()", 5000);
 }
@@ -52,7 +53,9 @@ var changeWorker = {
 
 onmessage = function(event){
   if(typeof(event.data) == "object")
+  {
     changeWorker.start(event.data);
+  }
   else
   {
     changeWorker.shutdown();

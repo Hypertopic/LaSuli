@@ -1038,6 +1038,8 @@ lasuli.ui = {
   },
 
   doMakeFragmentsDroppable : function(){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doMakeFragmentsDroppable");
+    logger.debug('doMakeFragmentsDroppable');
     $(".fragments").droppable({
       accept: '.fragment',
       drop: function(event, ui)
@@ -1098,6 +1100,7 @@ lasuli.ui = {
   doCreateAnalysis: function(topic){
     lasuli.ui._initFragmentsContainer(topic);
     dispatch("lasuli.ui.doMakeFragmentsDragable", null);
+    dispatch("lasuli.ui.doMakeFragmentsDroppable", null);
     var el = "div.fragment-header[viewpointID='" + topic.viewpointID + "'][topicID='" + topic.topicID + "']";
     var span = $(el).find("span");
     span[0].scrollIntoView(true);

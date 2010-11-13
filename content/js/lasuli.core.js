@@ -31,6 +31,7 @@ lasuli.core = {
       var n = getUUID();
       if(server.default)
         n = "freecoding";
+      logger.debug(server);
       HtServers[n] = new HtMap(server.url, server.user, server.pass);
     }
     return true;
@@ -541,12 +542,13 @@ var lasuliPrefObserver = {
 
 lasuli.sidebar = {
   init: function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.sidebar.init");
+
     this.changeWorker = new Worker("chrome://lasuli/content/js/change_worker.js");
     this.changeWorker.onmessage = function(event) {
+      var logger = Log4Moz.repository.getLogger("changeWorker.onmessage");
       if(event.data)
       {
-        //logger.debug(event.data);
+        logger.debug(event.data);
         if(HtServers[event.data])
           HtServers[event.data].purgeCache();
       }
@@ -571,6 +573,7 @@ lasuli.sidebar = {
 
 window.addEventListener("load", function() {
   lasuli.init();
+  lasuli.sidebar.init();
   Observers.add("lasuli.sidebar.onSidebarOpened", lasuli.sidebar.onSidebarOpened, lasuli.sidebar);
   Observers.add("lasuli.sidebar.onSidebarClosed", lasuli.sidebar.onSidebarClosed, lasuli.sidebar);
 }, false);
