@@ -616,7 +616,7 @@ HtMapItem.prototype.getAttributes = function() {
   //var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
   var item = this.getRaw();
   if(!item) return false;
-  var reserved = {"highlights": null, "resource": null, "thumbnail": null, "topics": null, "_id": null, "_rev": null, "item_name": null, "item_corpus": null };
+  var reserved = {"highlights": null, "resource": null, "thumbnail": null, "topics": null, "_id": null, "_rev": null, "item_name": null, "item_corpus": null, "corpus": null, "speeches": null };
   var result = new Array();
   for(var key in item)
     if(!(key in reserved))
@@ -628,10 +628,12 @@ HtMapItem.prototype.getTopics = function() {
   var logger = Log4Moz.repository.getLogger("HtMapItem.getTopics");
   var view = this.getView();
   if(!view) return false;
+  //logger.debug(view);
   var result = new Array();
-  //logger.debug(view.topic);
-  for(var topic, i=0; topic = view.topic[i]; i++)
-    result.push(this.Corpus.htMap.getTopic(topic));
+  if(view.topic)
+    //logger.debug(view.topic);
+    for(var topic, i=0; topic = view.topic[i]; i++)
+      result.push(this.Corpus.htMap.getTopic(topic));
   return result;
 }
 

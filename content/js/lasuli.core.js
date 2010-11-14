@@ -461,7 +461,7 @@ lasuli.core = {
 
   doCreateFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
-    //logger.debug(fragment);
+    logger.debug(fragment);
     try{
       var result = lasuli.hypertopic.createFragment(fragment.topicID, fragment.text, [fragment.startPos, fragment.endPos]);
       var topics = {};

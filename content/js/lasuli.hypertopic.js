@@ -99,7 +99,7 @@ lasuli.hypertopic = {
     //Load items from all Hypertopic server by using resource URL
     for(var k in HtServers)
     {
-      //logger.debug(key);
+      //logger.debug(k);
       //logger.debug(HtServers[key].baseUrl);
       var item = HtServers[k].getItem(this.currentUrl);
       if(item)
@@ -165,14 +165,47 @@ lasuli.hypertopic = {
   get docUsers(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docUsers");
     var result = new Array();
-    for each(var item in this.items){
-      //logger.debug(item.Corpus.getObject());
-      var users = item.Corpus.listUsers();
-      //logger.debug(users);
-      for each(var user in users)
-        if(result.indexOf(user) < 0)
-          result.push(user);
-    }
+    //Get users from items.
+    try{
+      for each(var item in this.items){
+        //logger.debug(item.Corpus.getObject());
+        var users = item.Corpus.listUsers();
+        //logger.debug(users);
+        for each(var user in users)
+          if(result.indexOf(user) < 0)
+            result.push(user);
+      }
+    }catch(e){ logger.fatal(e); }
+
+    //Try to get all viewpoint from topics and keywords
+    var viewpoints = {};
+    try{
+      for each(var topic in this.docTopics)
+      {
+        var viewpointID = topic.getViewpointID();
+        if(!(viewpointID in viewpoints) && topic.Viewpoint)
+          viewpoints[viewpointID] = topic.Viewpoint;
+      }
+      for each(var topic in this.docKeywords)
+      {
+        var viewpointID = topic.getViewpointID();
+        if(!(viewpointID in viewpoints) && topic.Viewpoint)
+          viewpoints[viewpointID] = topic.Viewpoint;
+      }
+      //logger.debug(viewpoints);
+    }catch(e){ logger.fatal(e); }
+
+    //Get all users from the viewpoints
+    try{
+      for each(var viewpoint in viewpoints)
+      {
+        var users = viewpoint.listUsers();
+        if(users)
+          for(var i=0, user; user = users[i]; i++)
+            if(result.indexOf(user) < 0)
+              result.push(user);
+      }
+    }catch(e){ logger.fatal(e); }
     //logger.debug(result);
     return result;
   },
@@ -180,27 +213,32 @@ lasuli.hypertopic = {
   get docFragments(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docFragments");
     var result = {};
-    for(var k in this.items){
-      var item = this.items[k];
-      //logger.debug(item.getObject());
-      var fragments = item.getHighlights();
-      for(var j=0, fragment; fragment = fragments[j]; j++){
-        //logger.debug(fragment.getID());
-        this._locations[fragment.getID()] = k;
-        result[fragment.getID()] = fragment;
+    try{
+      for(var k in this.items){
+        var item = this.items[k];
+        //logger.debug(item.getObject());
+        var fragments = item.getHighlights();
+        for(var j=0, fragment; fragment = fragments[j]; j++){
+          //logger.debug(fragment.getObject());
+          this._locations[fragment.getID()] = k;
+          result[fragment.getID()] = fragment;
 
-        var topics = fragment.getTopic();
-        var viewpointID = topics[0].viewpoint;
-        //logger.debug("viewpointID");
-        //logger.debug(viewpointID);
-        //Find out which server the viewpoint is located.
-        var server = this.getViewpointLocation(viewpointID, k);
-        //logger.debug(server);
-        if(!server) continue;
-        var topic = HtServers[server].getTopic(topics[0]);
-        fragment.topic = topic;
+          var topics = fragment.getTopic();
+          //logger.debug(topics);
+          var viewpointID = topics[0].viewpoint;
+          //logger.debug("viewpointID");
+          //logger.debug(viewpointID);
+          //Find out which server the viewpoint is located.
+          var server = this.getViewpointLocation(viewpointID, k);
+          //logger.debug(server);
+          if(!server) continue;
+          var topicID = (topics[0].id) ? topics[0].id : topics[0].topic; //TODO
+          var topic = HtServers[server].getTopic({"viewpoint": topics[0].viewpoint, "id": topicID});
+          //logger.debug(topic);
+          fragment.topic = topic;
+        }
       }
-    }
+    }catch(e){ logger.fatal(e); }
     return result;
   },
 
@@ -208,23 +246,28 @@ lasuli.hypertopic = {
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docKeywords");
     //if(this._docKeywords) return this._docKeywords;
     this._docKeywords = {};
-    //logger.debug("docKeywords");
-    for each(var item in this.items){
-      //logger.debug(item.getObject());
-      var topics = item.getTopics();
-      //logger.debug(topics);
-      for(var j=0, topic; topic = topics[j]; j++)
-      {
-        var topicID = topic.getID();
-        if(topicID in this._docKeywords)
-          this._docKeywords[topicID].count++;
-        else
+    try{
+      //logger.debug("docKeywords");
+      for each(var item in this.items){
+        //logger.debug(item.getObject());
+        var topics = item.getTopics();
+        if(topics)
         {
-          this._docKeywords[topicID] = topic;
-          this._docKeywords[topicID].count = 1;
+          //logger.debug(topics);
+          for(var j=0, topic; topic = topics[j]; j++)
+          {
+            var topicID = topic.getID();
+            if(topicID in this._docKeywords)
+              this._docKeywords[topicID].count++;
+            else
+            {
+              this._docKeywords[topicID] = topic;
+              this._docKeywords[topicID].count = 1;
+            }
+          }
         }
       }
-    }
+    }catch(e){ logger.fatal(e); }
     //logger.debug(this._docKeywords);
     return this._docKeywords;
   },
@@ -233,57 +276,63 @@ lasuli.hypertopic = {
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTopics");
     //if(this._docTopics) return this._docTopics;
     this._docTopics = {};
-    for each(var fragment in this.docFragments){
-      var topic = fragment.topic;
-      //logger.debug(topic.getObject());
-      var topicID = topic.getID();
-      if(topicID in this._docTopics)
-        this._docTopics[topicID].count++;
-      else
-      {
-        this._docTopics[topicID] = topic;
-        this._docTopics[topicID].count = 1;
+    try{
+      for each(var fragment in this.docFragments){
+        var topic = fragment.topic;
+        //logger.debug(topic);
+        var topicID = topic.getID();
+        if(topicID in this._docTopics)
+          this._docTopics[topicID].count++;
+        else
+        {
+          this._docTopics[topicID] = topic;
+          this._docTopics[topicID].count = 1;
+        }
       }
-    }
-    //logger.debug(this._docTopics);
+    }catch(e){ logger.fatal(e); }
     return this._docTopics;
   },
 
   get docTags(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTags");
     var result = {};
-    for each(var topic in this.docTopics)
-    {
-      var topicName = topic.getName();
-      //logger.debug("topic");
-      //logger.debug(topicName);
-      if(topicName)
-        if(topicName in result)
-          result[topicName].size++;
-        else
-          result[topicName] = {"size": topic.count};
-    }
-
-    for each(var topic in this.docKeywords)
-    {
-      var topicName = topic.getName();
-      if(topicName)
-        if(topicName in result)
-          result[topicName].size++;
-        else
-          result[topicName] = {"size": topic.count};
-    }
-    //logger.debug(result);
+    try{
+      for each(var topic in this.docTopics)
+      {
+        //logger.debug("topic");
+        //logger.debug(topic.getObject());
+        var topicName = topic.getName();
+        //logger.debug(topicName);
+        if(topicName)
+          if(topicName in result)
+            result[topicName].size++;
+          else
+            result[topicName] = {"size": topic.count};
+      }
+      //logger.debug(result);
+      for each(var topic in this.docKeywords)
+      {
+        var topicName = topic.getName();
+        if(topicName)
+          if(topicName in result)
+            result[topicName].size++;
+          else
+            result[topicName] = {"size": topic.count};
+      }
+    }catch(e){ logger.fatal(e); }
     return result;
   },
 
   get docCoordinates(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docCoordinates");
     var result = {};
-    for each(var fragment in this.docFragments){
-      var coordinate = fragment.getCoordinates();
-      result[fragment.getID()]={ "startPos": coordinate[0][0], "endPos": coordinate[0][1]};
-    }
+    try{
+      for each(var fragment in this.docFragments){
+        var coordinate = fragment.getCoordinates();
+        //logger.debug(coordinate);
+        result[fragment.getID()]={ "startPos": coordinate[0][0], "endPos": coordinate[0][1]};
+      }
+    }catch(e){ logger.fatal(e); }
     //logger.debug(result);
     return result;
   },
@@ -408,6 +457,7 @@ lasuli.hypertopic = {
       }
     }
     this._locations[viewpointID] = server;
+    //logger.debug(server);
     return server;
   },
   createViewpoint : function(viewpointName){
@@ -443,20 +493,22 @@ lasuli.hypertopic = {
   createItem : function(name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createItem");
     name = name || _("no.name");
-    if(!this.item)
-    {
-      //logger.debug("create a new item");
-      //logger.debug(this.corpus);
-      var item = this.corpus.createItem(name);
-      if(item)
+    try{
+      if(!this.item)
       {
-        item.describe("resource", this.currentUrl);
-        //logger.debug(item.getObject());
-        this._items = null;
-        return true;
+        //logger.debug("create a new item");
+        //logger.debug(this.corpus);
+        var item = this.corpus.createItem(name);
+        if(item)
+        {
+          item.describe("resource", this.currentUrl);
+          //logger.debug(item.getObject());
+          this._items = null;
+          return true;
+        }
+        return false;
       }
-      return false;
-    }
+    }catch(e){ logger.fatal(e); }
     return true;
   },
 
@@ -639,11 +691,11 @@ lasuli.hypertopic = {
   },
   createFragment: function(topicID, text, coordinates){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createFragment");
-    //logger.debug(coordinates);
-    //logger.debug(topicID);
-    //logger.debug(text);
+    logger.debug(coordinates);
+    logger.debug(topicID);
+    logger.debug(text);
     if(!this.item)
-      this.createItem(name);
+      this.createItem();
     var analysisTopic;
     if(!topicID)
     {
