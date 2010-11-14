@@ -46,6 +46,9 @@ var lasuli = {
 
   // Setup log4moz
   setupLogging: function() {
+    var debugLevel = Preferences.get("extensions.lasuli.log.level",'Warn');
+    var logfile = Preferences.get("extensions.lasuli.log.file", "");
+
     // The basic formatter will output lines like:
     // DATE/TIME	LoggerName	LEVEL	(log message)
     var formatter = new Log4Moz.BasicFormatter();
@@ -53,23 +56,22 @@ var lasuli = {
     // Loggers are hierarchical, lowering this log level will affect all output
     var root = Log4Moz.repository.rootLogger;
     if(root.appenders.length > 0) return;
-    root.level = Log4Moz.Level["All"];
-
-    /*var dapp = new lasuli.Log4Moz.DumpAppender(formatter);
-    dapp.level = lasuli.Log4Moz.Level["Debug"];
-    root.addAppender(dapp);*/
+    root.level = Log4Moz.Level[debugLevel];
 
     var capp = new Log4Moz.ConsoleAppender(formatter);
-    capp.level = Log4Moz.Level["All"];
+    capp.level = Log4Moz.Level[debugLevel];
     root.addAppender(capp);
 
-    var logFile = lasuli.getLocalDirectory();
-    logFile.append("log.txt");
-    var appender = new Log4Moz.RotatingFileAppender(logFile, formatter);
-    appender.level = Log4Moz.Level["All"];
-    root.addAppender(appender);
+    if(logfile != "")
+    {
+      var logFile = lasuli.getLocalDirectory();
+      logFile.append("log.txt");
+      var appender = new Log4Moz.RotatingFileAppender(logFile, formatter);
+      appender.level = Log4Moz.Level[debugLevel];
+      root.addAppender(appender);
+    }
     var logger = Log4Moz.repository.getLogger("setupLogging");
-    logger.debug(lasuli.getLocalDirectory());
+    logger.trace(lasuli.getLocalDirectory());
   },
 
   jqGirdLoader : function()

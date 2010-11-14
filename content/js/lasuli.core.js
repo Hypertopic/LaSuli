@@ -12,7 +12,10 @@ lasuli.core = {
    		toggleSidebar('viewLaSuliSidebar', true);
   	}
 	},
-
+  closeSideBar : function(){
+    if(lasuli.core.isSidebarOpen())
+   		toggleSidebar('viewLaSuliSidebar', false);
+  },
   //Get sidebar status
 	isSidebarOpen : function(){
 		return (document.getElementById("viewLaSuliSidebar").getAttribute("checked") == "true");
@@ -21,6 +24,8 @@ lasuli.core = {
 	//Load setting from preferences
   loadSetting : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.loadSetting");
+    var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                        .getService(Ci.nsIPromptService);
     var servers = Preferences.get("extensions.lasuli.setting", JSON.stringify(new Array()));
     if(typeof(servers) == "string")
       servers = JSON.parse(servers);
@@ -31,16 +36,23 @@ lasuli.core = {
       var n = getUUID();
       if(server.default)
         n = "freecoding";
-      logger.debug(server);
+      logger.trace(server);
       HtServers[n] = new HtMap(server.url, server.user, server.pass);
+      if(typeof(HtServers[n].serverType) != "string")
+      {
+        prompts.alert(window, _('Error'), _('options.error.servernotaccessible',[server.url]));
+        this.closeSideBar();
+        return false;
+      }
     }
+
     return true;
   },
 
   //Auto register all observers
   register: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.register");
-    logger.warn("start to register");
+    logger.trace("start to register");
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.add("lasuli.core." + func, lasuli.core[func], lasuli.core);
@@ -352,8 +364,11 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doTagTopicTreeItem");
     //logger.debug(arg);
     var result = lasuli.hypertopic.createKeyword(arg.viewpointID, arg.topicID, arg.name);
-    if(!result) return false;
-
+    if(!result)
+    {
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('tagItem.failed', [name])});
+      return false;
+    }
     //lasuli.hypertopic.users = null;
     //lasuli.hypertopic.tags = null;
     dispatch("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
@@ -416,6 +431,8 @@ lasuli.core = {
       dispatch("lasuli.ui.doCreateAnalysis", topic );
       dispatch("lasuli.contextmenu.doAddMenuItem", topic );
     }
+    else
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.topic.create.failed')});
   },
 
   doDestroyAnalysis : function(arg){
@@ -548,7 +565,7 @@ lasuli.sidebar = {
       var logger = Log4Moz.repository.getLogger("changeWorker.onmessage");
       if(event.data)
       {
-        logger.debug(event.data);
+        logger.trace(event.data);
         if(HtServers[event.data])
           HtServers[event.data].purgeCache();
       }

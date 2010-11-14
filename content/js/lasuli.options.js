@@ -39,7 +39,7 @@ lasuli.options = {
     var logger = Log4Moz.repository.getLogger("lasuli.options.listServers");
     var list = document.getElementById('options-list');
     for(var i=0, node; node = list.childNodes[i]; i++){
-      logger.debug(node.tagName);
+      logger.trace(node.tagName);
       if(node.tagName == 'listitem'){
         list.removeChild(node);
         i--;
@@ -148,10 +148,10 @@ lasuli.options = {
     var logger = Log4Moz.repository.getLogger("lasuli.options.doModify");
     var server = {}, i;
     var obj = this.getSelectedItem();
-    logger.debug(obj.server);
+    logger.trace(obj.server);
     for(i=0; i < this.servers.length; i++)
     {
-      logger.debug(this.servers[i]);
+      logger.trace(this.servers[i]);
       if(this.servers[i].user == obj.server.user &&
           this.servers[i].url == obj.server.url)
       {
@@ -179,7 +179,7 @@ lasuli.options = {
           this.servers.splice(i, 1);
           break;
       }
-    logger.debug(this.servers);
+    logger.trace(this.servers);
     this.listServers();
     this.doSetButtonStatus();
   },

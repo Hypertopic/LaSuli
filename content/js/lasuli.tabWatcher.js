@@ -24,11 +24,11 @@ lasuli.tabWatcher =
     var docHref = doc.location.href;
     if(aFlag & STATE_START)
     {
-      logger.debug("The load event is initiated");
+      logger.trace("The load event is initiated");
     }
     if(aFlag & STATE_STOP)
     {
-      logger.debug(docHref + " is loaded!");
+      logger.trace(docHref + " is loaded!");
       Observers.notify("lasuli.core.doStateChange", aWebProgress.DOMWindow);
     }
     return 0;
@@ -39,10 +39,10 @@ lasuli.tabWatcher =
     var strURI = "";
     if(aURI!= null && typeof(aURI.spec) == "string")
       strURI = aURI.spec;
-    //logger.debug(strURI);
+    //logger.trace(strURI);
     if(strURI.indexOf("#") > 0)
       strURI = strURI.substring(0, strURI.indexOf('#'));
-    logger.debug(strURI);
+    logger.trace(strURI);
 
     Observers.notify("lasuli.core.doLocationChange", strURI);
     return 0;

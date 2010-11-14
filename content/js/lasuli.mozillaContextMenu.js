@@ -10,7 +10,7 @@ lasuli.contextmenu = {
                    .rootTreeItem
                    .QueryInterface(Ci.nsIInterfaceRequestor)
                    .getInterface(Ci.nsIDOMWindow);
-    //logger.debug('init');
+    logger.trace('init');
   },
 
   _appendDefaultTopic : function(topics){
@@ -59,10 +59,10 @@ lasuli.contextmenu = {
   },
   doHide: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doHide");
-    //logger.debug("disable");
+    logger.trace("disable");
     var cm = this.getContextMenu();
     for (var i = 0, node; node = cm.childNodes[i]; i++){
-      //logger.debug(node.getAttribute("id"));
+      logger.trace(node.getAttribute("id"));
       if(node.getAttribute("id") == 'lasuliContextMenu')
         cm.removeChild(node);
     }
@@ -74,14 +74,14 @@ lasuli.contextmenu = {
     this.doHide();
 
     this.topics = this._appendDefaultTopic(topics);
-    //logger.debug(this.topics);
+    logger.trace(this.topics);
     var cm;
     try{
       cm = this.getContextMenu();
     }catch(e){
       logger.fatal(e);
     }
-    //logger.debug("show menu");
+    logger.trace("show menu");
     var menu = this.mainWindow.document.createElement('menu');
     menu.setAttribute('id', 'lasuliContextMenu');
     menu.setAttribute('label', _("lasuli.contextMenu"));
@@ -91,25 +91,25 @@ lasuli.contextmenu = {
     menu.appendChild(menupopup);
     for each(var topic in this.topics)
     {
-      //logger.debug(topic);
+      logger.trace(topic);
       var menuitem = this._createItem(topic);
       menupopup.appendChild(menuitem);
     }
-    //logger.debug("appendChild");
+    logger.trace("appendChild");
 
     cm.appendChild(menu);
-    //logger.debug("this.cacm.appendChild");
+    logger.trace("this.cacm.appendChild");
     if(this.topics['new'])
       delete this.topcis['new'];
   },
 
   doAddMenuItem : function(topic){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doAddMenuItem");
-    //logger.debug(topic);
-    //logger.debug(typeof(this.mainWindow));
+    logger.trace(topic);
+    logger.trace(typeof(this.mainWindow));
     var menupopup = this.mainWindow.document.getElementById('lasuliMenuPopup');
-    //logger.debug(typeof(menupopup));
-    //logger.debug(menupopup.childNodes.length);
+    logger.trace(typeof(menupopup));
+    logger.trace(menupopup.childNodes.length);
     var lastNode = menupopup.childNodes[menupopup.childNodes.length -1];
     var menuitem = this._createItem(topic);
     menupopup.insertBefore(menuitem,lastNode);
@@ -131,10 +131,10 @@ lasuli.contextmenu = {
 
   doUpdateMenuItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doUpdateMenuItem");
-    //logger.debug(arg);
+    logger.trace(arg);
     var menuitem =  this.mainWindow.document.getElementById('lasuli_menuitem_' + arg.topicID);
     menuitem.setAttribute('label', arg.name);
-    //logger.debug(arg);
+    logger.trace(arg);
     this.topics[arg.topicID].name = arg.name;
   }
 }
