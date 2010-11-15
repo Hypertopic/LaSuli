@@ -2,7 +2,8 @@ include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/XMLHttpRequest.js");
 
 lasuli.options = {
-  servers : new Array(),
+  servers: new Array(),
+  changed: false,
 
   init: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.options.init");
@@ -65,6 +66,16 @@ lasuli.options = {
       listitem.appendChild(listcell);
 
       list.appendChild(listitem);
+    }
+  },
+
+  onClose: function(){
+    if(this.changed)
+    {
+      var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                        .getService(Ci.nsIPromptService);
+      prompts.alert(window, _('Warning'), _('options.dialog.changed'));
+      return false;
     }
   },
 
@@ -140,6 +151,7 @@ lasuli.options = {
             this.servers[i].url == server.url)
           return;
       this.servers.push(server);
+      this.changed = true;
       this.listServers();
     }
   },
@@ -165,6 +177,7 @@ lasuli.options = {
       this.servers[i].url = server.url;
       this.servers[i].user = server.user;
       this.servers[i].pass = server.pass;
+      this.changed = true;
       this.listServers();
     }
   },
@@ -177,6 +190,7 @@ lasuli.options = {
           this.servers[i].url == obj.server.url)
       {
           this.servers.splice(i, 1);
+          this.changed = true;
           break;
       }
     logger.trace(this.servers);
@@ -192,7 +206,7 @@ lasuli.options = {
         this.servers[i].default = true;
       else
         this.servers[i].default = false;
-
+    this.changed = true;
     this.listServers();
   },
 

@@ -9,7 +9,8 @@
       title="Options"
       buttons="accept"
       onload="lasuli.options.init();"
-      ondialogaccept="return lasuli.options.okay();">
+      ondialogaccept="return lasuli.options.okay();"
+      ondialogcancel="return lasuli.options.onClose();">
   <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.js"/>
   <script type="application/x-javascript" src="chrome://lasuli/content/js/lasuli.options.js"/>
   <hbox flex="1">
