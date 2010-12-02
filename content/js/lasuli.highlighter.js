@@ -180,7 +180,6 @@ lasuli.highlighter = {
             cssClasses +=  " _" + fragmentID;
           }
         }
-        logger.debug(cssClasses);
         var subText = m_text.substring(absStartPos, absEndPos);
 
         var aNode = m_document.createElement("span");

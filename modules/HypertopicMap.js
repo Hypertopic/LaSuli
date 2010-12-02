@@ -10,6 +10,7 @@ include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/XMLHttpRequest.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
+include("resource://lasuli/modules/Base64.js");
 
 var HtServers = {};
 var HtCaches = {};
@@ -43,7 +44,8 @@ function MergeRecursive(obj1, obj2) {
     }
     catch(e)
     {
-      obj1[p] = obj2[p]; // Property in destination object not set; create it and set its value.
+      obj1[p] = obj2[p]; // Property in destination object not set;
+                         //create it and set its value.
     }
   return obj1;
 }
@@ -78,7 +80,7 @@ function HtMap(baseUrl, user, pass) {
   if(!this.serverType)
     return false;
   //logger.trace(this.serverType);
-  this.baseUrl = baseUrl + "_design/" + this.serverType + "/_rewrite/";
+  this.baseUrl = baseUrl; //+ "_design/" + this.serverType + "/_rewrite/";
   //logger.trace(this.baseUrl);
   this.user = user || "";
   this.pass = pass || "";
@@ -103,7 +105,7 @@ HtMap.prototype.getServerType = function(){
   return false;
 }
 HtMap.prototype.getLastSeq = function(){
-  var result = this.httpGet('../../../_changes');
+  var result = this.httpGet('_changes');
   if(result)
     return result.last_seq;
   else
@@ -139,16 +141,20 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
   //Default HTTP URL is the baseUrl
   httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
   //Uncomment the following line to disable cache
-  //httpUrl = (httpUrl.indexOf('?') > 0) ? httpUrl + "&_t=" + (new Date()).getTime() : httpUrl + "?_t=" + (new Date()).getTime();
 
-  httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object") ? JSON.stringify(httpBody) : httpBody);
+  httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object")
+                                  ? JSON.stringify(httpBody) : httpBody);
   var result = null;
 
   try{
-    this.xhr.open(httpAction, httpUrl, false);
+    var auth = "Basic " + base64_encode(this.user + ':' + this.pass);
+    logger.debug(auth);
+    this.xhr.open(httpAction, httpUrl, false, this.user, this.pass);
     //If there is a request body, set the content-type to json
     if(httpBody && httpBody != '')
       this.xhr.setRequestHeader('Content-Type', 'application/json');
+
+    this.xhr.setRequestHeader('Authorization', auth);
 
     //If the request body is an object, serialize it to json
     if(typeof(httpBody) != 'string')
@@ -156,27 +162,35 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
 
     this.xhr.send(httpBody);
 
-    //If the response status code is not start with "2", there must be something wrong.
+    //If the response status code is not start with "2",
+    //there must be something wrong.
     if((this.xhr.status + "").substr(0,1) != '2')
     {
       logger.fatal(this.xhr.status);
-      throw Error(httpAction + " " + httpUrl + "\nResponse: " + this.xhr.status);
+      throw Error(httpAction + " " + httpUrl + "\nResponse: " +this.xhr.status);
     }
     result = this.xhr.responseText;
     //PUT it in cache
     if(this.enableCache && httpAction == 'GET')
       HtCaches[this.baseUrl][httpUrl] = JSON.parse(result);
-    return JSON.parse(result);
+    try{
+      return JSON.parse(result);
+    }catch(e){ logger.debug(httpUrl); }
+    return true;
   }
   catch(e)
   {
-    logger.fatal("Ajax Error, xhr.status: " + this.xhr.status + " " + this.xhr.statusText + ". \nRequest:\n" + httpAction + " " + httpUrl + "\n" + httpBody);
+    logger.fatal("Ajax Error, xhr.status: " + this.xhr.status + " "
+      + this.xhr.statusText + ". \nRequest:\n" + httpAction + " "
+      + httpUrl + "\n" + httpBody);
+    logger.fatal(e);
     return false;
   }
 }
 /**
  * @param object The object to create on the server.
- *               It is updated with an _id (and a _rev if the server features conflict management).
+ *               It is updated with an _id (and a _rev if the
+ *               server features conflict management).
  */
 HtMap.prototype.httpPost = function(object) {
   var logger = Log4Moz.repository.getLogger("HtMap.httpPost");
@@ -352,9 +366,9 @@ HtMap.prototype.getItem = function(obj) {
   //logger.trace(obj);
   if(typeof(obj) == "string")
   {
-    var item = this.httpGet("resource/" + encodeURIComponent(obj));
+    var item = this.httpGet("/item/?resource=" + encodeURIComponent(obj));
 
-    //logger.trace(JSON.stringify(item));
+    logger.trace(item);
     if(!item || !item[obj] || !item[obj].item || !(item[obj].item.length > 0))
       return false;
     obj = item[obj].item[0];
@@ -388,7 +402,8 @@ HtMap.prototype.getHighlight = function(highlight) {
 }
 
 HtMap.prototype.isReserved = function(key) {
-	var reserved = {"highlight": null, "name": null, "resource": null, "thumbnail": null, "topic": null, "upper": null, "user": null };
+	var reserved = {"highlight": null, "name": null, "resource": null,
+	  "thumbnail": null, "topic": null, "upper": null, "user": null };
 	return (key in reserved);
 }
 
@@ -616,7 +631,9 @@ HtMapItem.prototype.getAttributes = function() {
   //var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
   var item = this.getRaw();
   if(!item) return false;
-  var reserved = {"highlights": null, "resource": null, "thumbnail": null, "topics": null, "_id": null, "_rev": null, "item_name": null, "item_corpus": null, "corpus": null, "speeches": null };
+  var reserved = {"highlights": null, "resource": null, "thumbnail": null,
+    "topics": null, "_id": null, "_rev": null, "item_name": null,
+    "item_corpus": null, "corpus": null, "speeches": null };
   var result = new Array();
   for(var key in item)
     if(!(key in reserved))
@@ -728,11 +745,17 @@ HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
 }
 
 HtMapItem.prototype.getHighlights = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getHighlights");
 	var result = new Array();
 	var view = this.getView();
-	for(var key in view)
-		if(!this.Corpus.htMap.isReserved(key))
-			result.push(this.getHighlight(key));
+	logger.trace(view);
+	if(!view.highlight || view.highlight.length == 0) return result;
+	for(var i=0, highlight; highlight = view.highlight[i]; i++)
+	{
+	  if(!highlight.coordinates) continue;
+	  logger.trace(highlight);
+	  result.push(this.getHighlight(highlight.id));
+	}
 
 	return result;
 }
@@ -756,8 +779,13 @@ HtMapHighlight.prototype.getObject = function() { return getObject(this); }
 
 HtMapHighlight.prototype.getView = function() {
   var view = this.Item.getView();
-  if(!view) return false;
-  return (view[this.getID()]) ? view[this.getID()] : false;
+  if(!view || !view.highlight || view.highlight.length == 0) return false;
+  for(var i=0, highlight; highlight = view.highlight[i]; i++)
+	{
+    if(highlight.id == this.getID())
+      return highlight;
+  }
+  return false;
 }
 
 HtMapHighlight.prototype.getItemID = function() {
@@ -1010,7 +1038,8 @@ HtMapTopic.prototype.getName = function() {
   var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
-  return (viewpoint.topics[this.getID()].name) ? viewpoint.topics[this.getID()].name : '';
+  return (viewpoint.topics[this.getID()].name)
+            ? viewpoint.topics[this.getID()].name : '';
 }
 
 HtMapTopic.prototype.getNarrower = function() {
@@ -1123,7 +1152,8 @@ HtMapTopic.prototype.moveTopics = function(narrowerTopics) {
   var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics) return false;
-  if(!(narrowerTopics instanceof Array)) narrowerTopics = new Array(narrowerTopics);
+  if(!(narrowerTopics instanceof Array))
+    narrowerTopics = new Array(narrowerTopics);
   for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
   {
     if(!viewpoint.topics || !viewpoint.topics[nTopic.getID()] ) return false;
@@ -1152,7 +1182,8 @@ HtMapTopic.prototype.linkTopics = function(narrowerTopics) {
   for(var i=0, nTopic; nTopic = narrowerTopics[i]; i++)
   {
     if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
-    if(!viewpoint.topics[this.getID()].broader) viewpoint.topics[this.getID()].broader = new Array();
+    if(!viewpoint.topics[this.getID()].broader)
+      viewpoint.topics[this.getID()].broader = new Array();
     viewpoint.topics[this.getID()].broader.push(this.getID());
   }
 	return this.Viewpoint.htMap.httpPut(viewpoint);

@@ -194,22 +194,24 @@ lasuli.hypertopic = {
         var item = this.items[k];
         logger.trace(item.getObject());
         var fragments = item.getHighlights();
+        logger.trace("fragments");
+        logger.trace(fragments);
         for(var j=0, fragment; fragment = fragments[j]; j++){
           logger.trace(fragment.getObject());
           this._locations[fragment.getID()] = k;
           result[fragment.getID()] = fragment;
 
-          var topics = fragment.getTopic();
-          logger.trace(topics);
-          var viewpointID = topics[0].viewpoint;
+          var topic = fragment.getTopic();
+          logger.trace(topic);
+          var viewpointID = topic.viewpoint;
           logger.trace("viewpointID");
           logger.trace(viewpointID);
           //Find out which server the viewpoint is located.
           var server = this.getViewpointLocation(viewpointID, k);
           logger.trace(server);
           if(!server) continue;
-          var topicID = (topics[0].id) ? topics[0].id : topics[0].topic; //TODO
-          var topic = HtServers[server].getTopic({"viewpoint": topics[0].viewpoint, "id": topicID});
+          var topicID = (topic.id) ? topic.id : topic.topic; //TODO
+          topic = HtServers[server].getTopic({"viewpoint": topic.viewpoint, "id": topicID});
           logger.trace(topic);
           fragment.topic = topic;
         }
@@ -301,8 +303,8 @@ lasuli.hypertopic = {
     try{
       for each(var fragment in this.docFragments){
         var coordinate = fragment.getCoordinates();
-        logger.trace(coordinate);
-        result[fragment.getID()]={ "startPos": coordinate[0][0], "endPos": coordinate[0][1]};
+        logger.trace({ "startPos": coordinate[0], "endPos": coordinate[1]});
+        result[fragment.getID()]={ "startPos": coordinate[0], "endPos": coordinate[1]};
       }
     }catch(e){ logger.fatal(e); }
     logger.trace(result);
@@ -378,7 +380,7 @@ lasuli.hypertopic = {
         if(!this.topics[topicID]) continue;
         var color = getColor(topicID);
         logger.trace(color);
-        result[fragment.getID()]={ "startPos": coordinate[0][0], "endPos": coordinate[0][1], "color": color};
+        result[fragment.getID()]={ "startPos": coordinate[0], "endPos": coordinate[1], "color": color};
       }catch(e){
         logger.fatal(e);
         logger.error(fragment);

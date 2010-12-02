@@ -74,8 +74,7 @@ lasuli.options = {
     {
       var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
                         .getService(Ci.nsIPromptService);
-      prompts.alert(window, _('Warning'), _('options.dialog.changed'));
-      return false;
+      return prompts.confirm(window, _('Warning'), _('options.dialog.changed'));
     }
   },
 
