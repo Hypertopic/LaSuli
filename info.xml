@@ -2,6 +2,11 @@
 <html lang="en-US" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <h1>LaSuli - What's New</h1>
 <p>&nbsp;</p>
+<h2>8.1.11</h2>
+<ul>
+<li>Improved the algorithm of JSON result in-memory parser.</li>
+<li>Set the single server as default server when saving the configuration. </li>
+</ul>
 <h2>8.1.10</h2>
 <ul>
 <li>Fixed the localization bug.</li>

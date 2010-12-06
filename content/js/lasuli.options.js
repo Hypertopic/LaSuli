@@ -40,7 +40,7 @@ lasuli.options = {
     var logger = Log4Moz.repository.getLogger("lasuli.options.listServers");
     var list = document.getElementById('options-list');
     for(var i=0, node; node = list.childNodes[i]; i++){
-      logger.trace(node.tagName);
+      //logger.trace(node.tagName);
       if(node.tagName == 'listitem'){
         list.removeChild(node);
         i--;
@@ -87,10 +87,15 @@ lasuli.options = {
       if(server.default === true)
         found = true;
 
-    if(!found)
+    if(!found && this.servers.length > 1)
     {
       prompts.alert(window, _('Error'), _('options.error.nodefaultserver'));
       return false;
+    }
+    if(!found && this.servers.length == 1)
+    {
+      this.servers[0].default = true;
+      this.listServers();
     }
     var xhr = new XMLHttpRequest();
     xhr.overrideMimeType('application/json');
@@ -159,10 +164,10 @@ lasuli.options = {
     var logger = Log4Moz.repository.getLogger("lasuli.options.doModify");
     var server = {}, i;
     var obj = this.getSelectedItem();
-    logger.trace(obj.server);
+    //logger.trace(obj.server);
     for(i=0; i < this.servers.length; i++)
     {
-      logger.trace(this.servers[i]);
+      //logger.trace(this.servers[i]);
       if(this.servers[i].user == obj.server.user &&
           this.servers[i].url == obj.server.url)
       {
@@ -192,7 +197,7 @@ lasuli.options = {
           this.changed = true;
           break;
       }
-    logger.trace(this.servers);
+    //logger.trace(this.servers);
     this.listServers();
     this.doSetButtonStatus();
   },

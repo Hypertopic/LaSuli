@@ -36,7 +36,7 @@ lasuli.core = {
       var n = getUUID();
       if(server.default)
         n = "freecoding";
-      logger.trace(server);
+      //logger.trace(server);
       HtServers[n] = new HtMap(server.url, server.user, server.pass);
       if(typeof(HtServers[n].serverType) != "string")
       {

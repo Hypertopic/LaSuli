@@ -29,26 +29,6 @@ function getObject(obj) {
   }
   return JSON.parse(JSON.stringify(self));
 }
-/*
-* Recursively merge properties of two objects
-*/
-function MergeRecursive(obj1, obj2) {
-  for (var p in obj2)
-    try
-    {
-      // Property in destination object set; update its value.
-      if ( obj2[p].constructor==Object )
-        obj1[p] = MergeRecursive(obj1[p], obj2[p]);
-      else
-        obj1[p] = obj2[p];
-    }
-    catch(e)
-    {
-      obj1[p] = obj2[p]; // Property in destination object not set;
-                         //create it and set its value.
-    }
-  return obj1;
-}
 function getUUID() {
   var uuidGenerator =
     Components.classes["@mozilla.org/uuid-generator;1"]

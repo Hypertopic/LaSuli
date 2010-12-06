@@ -3,7 +3,7 @@
          xmlns:NC="http://home.netscape.com/NC-rdf#"
          xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
   <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.1.10">
+                   em:version="0.8.1.11">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$upiS92"
@@ -12,12 +12,12 @@
                    em:maxVersion="3.6.12"
                    em:updateLink="http://lasuli.sourceforge.net/lasuli.xpi"
                    em:updateInfoURL="http://lasuli.sourceforge.net/info.xml"
-                   em:updateHash="sha256:6585099d7934e8150c4994044893db4aad4a529579bed5ac41970508e5292382" />
+                   em:updateHash="sha256:b893c044b26b0f2d0bbf6cff79a7a887427a0be956af257cae7a5ae963fe2ee7" />
   <RDF:Seq RDF:about="rdf:#$qpiS92">
     <RDF:li RDF:resource="rdf:#$rpiS92"/>
   </RDF:Seq>
   <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
-                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAAAFDaxiNUTrw4b06bgX3uc0t3J0rcpJUaxePTAl65xuFMcRv1Zh7l3pv4EQSdxiJKYU78Qaf8Joi4kxFBU48CsUSUM/4VKeLX9VpRktUVtHknSJRM6iJ/UTeagVPMSW0DD+9SWYoGzSZRBg99jh8k0Gvak1PxKtTgumFREgmCpP">
+                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBACexOICmqIh+XyK35mfnHWX8D+gFvn1mbgYDVYBQTE8OF840fZNZh5pOmGai72B7IRNWfEKlivnSDRsDZqwyVTQNtummI+JkFao5SQBul0aaKjdPyTCLtZc25UacM3s49adp3Be1XlwSLhj0kQgLVNGUiavhM54xSHT5ftJCVy/b">
     <em:updates RDF:resource="rdf:#$qpiS92"/>
   </RDF:Description>
 </RDF:RDF>
