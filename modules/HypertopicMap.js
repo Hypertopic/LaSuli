@@ -76,14 +76,16 @@ function HtMap(baseUrl, user, pass) {
   //Overrides the MIME type returned by the hypertopic service.
   this.xhr.overrideMimeType('application/json');
 
+  this.user = user || "";
+  this.pass = pass || "";
+  this.baseUrl = baseUrl; //+ "_design/" + this.serverType + "/_rewrite/";
+
   this.serverType = this.getServerType();
   if(!this.serverType)
     return false;
   //logger.trace(this.serverType);
-  this.baseUrl = baseUrl; //+ "_design/" + this.serverType + "/_rewrite/";
   //logger.trace(this.baseUrl);
-  this.user = user || "";
-  this.pass = pass || "";
+
 
   //Initial the local cache
   HtCaches[baseUrl] = {};
@@ -228,7 +230,12 @@ HtMap.prototype.httpGet = function(query) {
   var logger = Log4Moz.repository.getLogger("HtMap.httpGet");
   var body;
   try{
-    body = this.send("GET", this.baseUrl + query, null);
+    var url = this.baseUrl + query;
+    if(query.indexOf("_") == 0)
+      url = (this.baseUrl.indexOf("_design") > 0) ? this.baseUrl.substr(0,
+                  this.baseUrl.indexOf("_design")) + query : this.baseUrl
+                  + query;
+    body = this.send("GET", url, null);
     if(!body)
       return false;
   }catch(e)
