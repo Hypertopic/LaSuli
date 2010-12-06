@@ -3,21 +3,21 @@
          xmlns:NC="http://home.netscape.com/NC-rdf#"
          xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
   <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.1.3">
+                   em:version="0.8.1.9">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
-  </RDF:Description>
-  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
-                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAGcx34iOxRmcu42yRl6zjwxCLvjydBAN8wKqnH5Rnk121QYuTiYET7HSEPMeP+050vRuN/Hi477LoKG8gCTPagP+DpCevYrUdkCXqoChKFP8FGkYtxQvM4ND5WLQNLrk1ZsgaVKBzo4eMAZAcA4KZgY4p5pQUGdakty1AXk49CHF">
-    <em:updates RDF:resource="rdf:#$qpiS92"/>
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$upiS92"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="3.6.*"
-                   em:maxVersion="4.0.*"
-                   em:updateLink="http://lasuli.couchone.com/download/updates/lasuli.xpi"
-                   em:updateInfoURL="http://lasuli.couchone.com/download/updates/info.xml"
-                   em:updateHash="sha256:b4129c75048a63e8e00b1b41622f384c12ca3a4224eebb3a13aaef1bb5e4b561" />
+                   em:minVersion="3.6.2"
+                   em:maxVersion="3.6.12"
+                   em:updateLink="http://lasuli.sourceforge.net/lasuli.xpi"
+                   em:updateInfoURL="http://lasuli.sourceforge.net/info.xml"
+                   em:updateHash="sha256:3816de1d4730feecb80bf05e6c0c6b924ad6edd343d5740dc03070216d71f793" />
   <RDF:Seq RDF:about="rdf:#$qpiS92">
     <RDF:li RDF:resource="rdf:#$rpiS92"/>
   </RDF:Seq>
+  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
+                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAC6oxGR03PIkWqGUQsbTQJcGCYzjr2FjRzQNJRn7wn3nYSEjQQ5tmh8NRVN5zazWGQjPbGqKdmmIOjt38bd6KZPAm3MmZ9fVBFXQeT3VetX2mOety1dcn9d+DPPBF3bmyb8e3cBq3+AGHPMpVcl+HAOz+GXdThf4mVm8eldSj2Uh">
+    <em:updates RDF:resource="rdf:#$qpiS92"/>
+  </RDF:Description>
 </RDF:RDF>
