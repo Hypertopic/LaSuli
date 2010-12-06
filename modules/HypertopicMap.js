@@ -244,66 +244,33 @@ HtMap.prototype.httpGet = function(query) {
     logger.fatal(e);
     return false;
   }
-
-  //TODO, need to rewrite this part of algorithm
+  logger.trace(body);
   if(body.rows && body.rows.length > 0)
   {
-    var rows = {};
-    //Combine the array according to the index key.
-    for(var i=0, row; row = body.rows[i]; i++)
-    {
-      var _key = JSON.stringify(row.key);
-      if(!rows[_key])
-        rows[_key] = new Array();
-      rows[_key].push(row.value);
-    }
-    //Combine the value according to the value name.
-    for(var _key in rows)
-    {
-      var obj = {};
-      for(var i=0, val; val = rows[_key][i] ; i++)
-      {
-        for(var n in val)
-        {
-          if(!obj[n])
-            obj[n] = new Array();
-          obj[n].push(val[n]);
-        }
-      }
-      rows[_key] = obj;
-    }
+    var rows = body.rows;
     var result = {};
-
-    for(var _key in rows)
+    for(var i=0; i < rows.length; i++)
     {
-      var keys = JSON.parse(_key);
-      var obj = null,tmp,key;
-      if(typeof(keys) == "object")
-        for(var i=keys.length-1; i >= 0; i--)
-        {
-          key = keys[i];
-          if(obj == null)
-          {
-            obj = {};
-            obj[key] = rows[_key];
-            tmp = JSON.parse(JSON.stringify(obj));
-          }
-          else
-          {
-            obj = {};
-            obj[key] = tmp;
-            tmp = JSON.parse(JSON.stringify(obj));
-          }
-        }
-      else
+      var r = rows[i];
+      var keys = (typeof(r.key) == "string") ? [r.key] : r.key;
+      var current = result;
+      for(var k=0; k < keys.length; k++)
       {
-        obj = {};
-        obj[keys] = rows[_key];
+        if(!current[keys[k]])
+          current[keys[k]] = {};
+        current = current[keys[k]];
       }
-      result = MergeRecursive(result, obj);
+      var value = r.value;
+      for(var attribute in value)
+      {
+        if(!current[attribute])
+          current[attribute] = [];
+        current[attribute].push(value[attribute]);
+      }
     }
     body = result;
   }
+  logger.trace(body);
   return body;
 }
 /**
