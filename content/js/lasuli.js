@@ -104,7 +104,7 @@ function _(n,arg)
     return i18nStrings.get(n,arg);
   }catch(e)
   {
-    logger.error(n);
+    logger.fatal(e);
     return n;
   }
 }
