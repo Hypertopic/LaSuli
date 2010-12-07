@@ -143,16 +143,6 @@ lasuli.hypertopic = {
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docUsers");
     var result = new Array();
     //Get users from items.
-    try{
-      for each(var item in this.items){
-        logger.trace(item.Corpus.getObject());
-        var users = item.Corpus.listUsers();
-        logger.trace(users);
-        for each(var user in users)
-          if(result.indexOf(user) < 0)
-            result.push(user);
-      }
-    }catch(e){ logger.fatal(e); }
 
     //Try to get all viewpoint from topics and keywords
     var viewpoints = {};
@@ -657,46 +647,34 @@ lasuli.hypertopic = {
   getViewpointsByUser : function(userID){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getViewpointsByUser");
     logger.trace(userID);
+    var viewpointIDs = new Array();
     var result = new Array();
+    try{
+      for each(var topic in this.docTopics)
+      {
+        logger.debug(topic.getViewpointID());
+        if(viewpointIDs.indexOf(topic.getViewpointID()) < 0)
+        {
+          viewpointIDs.push(topic.getViewpointID());
+          logger.debug(viewpointIDs);
+          var users = topic.Viewpoint.listUsers();
+          logger.debug(users);
+          if(users.indexOf(userID) >= 0)
+            result.push({"id": topic.getViewpointID(), "name": topic.Viewpoint.getName()});
+        }
+      }
+    }catch(e){ logger.fatal(e); }
+    try{
+      for each(var topic in this.docKeywords)
+        if(viewpointIDs.indexOf(topic.getViewpointID()) < 0)
+        {
+          viewpointIDs.push(topic.getViewpointID());
+          var users = topic.Viewpoint.listUsers();
+          if(users.indexOf(userID) >= 0)
+            result.push({"id": topic.getViewpointID(), "name": topic.Viewpoint.getName()});
+        }
+    }catch(e){ logger.fatal(e); }
 
-    for(var k in HtServers)
-      try{
-        var user = HtServers[k].getUser(userID);
-        if(!user) continue;
-        logger.trace(user.getObject());
-        var viewpoints = user.listViewpoints();
-        if(!viewpoints) continue;
-        logger.trace("viewpoints");
-        logger.trace(viewpoints);
-        logger.trace(k);
-        //If this viewpoint is on auto-coding server, should check if the viewpoint existed on freecoding server.
-        if(k == "freecoding")
-          for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++)
-          {
-            this._locations[viewpoint.id] = "freecoding";
-            if(result.indexOf(viewpoint) < 0)
-              result.push(viewpoint);
-          }
-        else
-          for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++)
-          {
-            viewpointName = HtServers[k].getViewpoint().getName();
-            this._locations[viewpoint.id] = k;
-            if(!viewpointName)
-            {
-              viewpointName = HtServers.freecoding.getViewpoint().getName();
-              if(viewpointName)
-                this._locations[viewpoint.id] = "freecoding";
-            }
-            if(!viewpointName){
-              delete this._locations[viewpoint.id];
-              continue;
-            }
-
-            if(result.indexOf(viewpoint) < 0)
-              result.push(viewpoint);
-          }
-      }catch(e){ logger.fatal(e); }
     return result;
   },
   createFragment: function(topicID, text, coordinates){

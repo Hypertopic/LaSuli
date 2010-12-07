@@ -231,7 +231,7 @@ lasuli.core = {
   doOpenViewpointByUser : function(user){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doOpenViewpointByUser");
     var viewpoints = lasuli.hypertopic.getViewpointsByUser(user);
-    //logger.debug(viewpoints);
+    logger.trace(viewpoints);
     //TODO filter not related viewpoints
     dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
   },
