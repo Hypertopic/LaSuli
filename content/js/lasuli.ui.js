@@ -988,6 +988,14 @@ lasuli.ui = {
     });
   },
 
+  doReloadTopicTree: function(topics){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doReloadTopicTree");
+    //logger.trace(topics);
+    //$("#tree").jstree({"json_data" : topics}).jstree('refresh', -1);
+    $("#tree").jstree('destroy');
+    //Sync.sleep(1000);
+    dispatch("lasuli.ui.doShowTopicTree", topics);
+  },
   doCreateTopicTreeItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateTopicTreeItem");
     $("#tree").jstree("create", arg.sourceObj, "inside", {"data": _("no.name"), "attr": {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "rel": "topic"}}, null, true);

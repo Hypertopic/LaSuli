@@ -244,7 +244,10 @@ lasuli.core = {
     //logger.debug(tree);
     dispatch("lasuli.ui.doShowTopicTree", tree);
   },
-
+  doReloadTopicTree: function(viewpointID){
+    if(viewpointID) lasuli.hypertopic.viewpointID = viewpointID;
+    dispatch("lasuli.ui.doReloadTopicTree", lasuli.hypertopic.topicTree);
+  },
   doCreateTopicTreeItem: function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateTopicTreeItem");
     //logger.debug(arg);
@@ -273,7 +276,8 @@ lasuli.core = {
     {
       var result = lasuli.hypertopic.destroyAnalysis(viewpointID, topicID);
       if(result){
-        dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
+        //dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
+        dispatch("lasuli.core.doReloadTopicTree", false );
         dispatch("lasuli.ui.doDestroyAnalysis", arg );
         dispatch("lasuli.contextmenu.doRemoveMenuItem", topicID );
         //lasuli.hypertopic.tags = null;
@@ -292,7 +296,8 @@ lasuli.core = {
       //logger.debug(result);
       if(result)
       {
-        dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
+        //dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
+        dispatch("lasuli.core.doReloadTopicTree", false );
         dispatch("lasuli.ui.doDestroyKeyword", arg);
         //lasuli.hypertopic.users = null;
         //lasuli.hypertopic.tags = null;
