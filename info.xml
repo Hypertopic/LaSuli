@@ -2,6 +2,12 @@
 <html lang="en-US" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <h1>LaSuli - What's New</h1>
 <p>&nbsp;</p>
+<h2>8.1.13</h2>
+<ul>
+  <li>Only list the real analyst on the document panel.</li>
+  <li>By clicking the name of analyst LaSuli only opens related viewpoints.</li>
+  <li>Added checkbox on the left side of topics for deletion.</li>
+</ul>
 <h2>8.1.12</h2>
 <ul>
   <li>Enable logging for every HTTP request.</li>

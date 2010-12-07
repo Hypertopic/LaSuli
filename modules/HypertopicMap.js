@@ -1096,11 +1096,24 @@ HtMapTopic.prototype.rename = function(name) {
 }
 
 HtMapTopic.prototype.destroy = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.destroy");
   var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics) return false;
-  if(!viewpoint.topics || !viewpoint.topics[this.getID()] ) return false;
-  delete viewpoint.topics[this.getID()];
+  var topicID = this.getID();
+  if(!viewpoint.topics || !viewpoint.topics[topicID] ) return false;
+  logger.trace(viewpoint);
+  delete viewpoint.topics[topicID];
+  for each(var topic in viewpoint.topics){
+    if(topic.broader && topic.broader instanceof Array)
+      for(var i=0, t; t = topic.broader[i]; i++)
+        if(t == topicID)
+        {
+          topic.broader.splice(i, 1);
+          i--;
+        }
+  }
+  logger.trace(viewpoint);
 	return this.Viewpoint.htMap.httpPut(viewpoint);
 }
 
