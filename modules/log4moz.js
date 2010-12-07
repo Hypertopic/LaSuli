@@ -639,11 +639,9 @@ function prettyJSON(objectOrString, initialIndent) {
 
 		return _p.join("");
 	}
-	if (typeof objectOrString != 'string') {
-		objectOrString = JSON.stringify(objectOrString);
-	}
 	try{
-	  var ret = prettyPrint(JSON.parse(objectOrString), initialIndent);
+	  objectOrString = (typeof(objectOrString) == 'string') ? JSON.parse(objectOrString) : objectOrString;
+	  var ret = prettyPrint(objectOrString, initialIndent);
 	  return ret;
 	}catch(e){}
 }

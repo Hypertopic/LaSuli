@@ -6,7 +6,22 @@ body
   background-color: #CCCCCC;
   overflow-y:hidden;
 }
-
+span.toolbar
+{
+  padding: 2px 4px 2px 4px;
+  margin-right: -10px;
+  float: right;
+}
+div.topics{
+  margin-top: 30px;
+}
+input.cb-remove-keyword{
+  vertical-align: middle;
+  margin-right: -3px;
+}
+input.cb-analysis-topic{
+  vertical-align: middle;
+}
 #overlay-div
 {
 	background-color: #000000;
@@ -222,7 +237,7 @@ div#create-viewpoint input
 
 .fragment-header span { padding: 3px 10px 3px 10px; margin:10px 0 20px 0}
 
-.fragment-toggle { cursor: pointer; }
+.fragment-toggle { cursor: pointer; vertical-align:middle; }
 
 .edit-itemname-in-place { margin-bottom: 10px; padding: 5px;}
 
