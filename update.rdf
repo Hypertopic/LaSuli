@@ -14,7 +14,7 @@
     <em:updates RDF:resource="rdf:#$qpiS92"/>
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.1.12">
+                   em:version="0.8.1.13">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
   </RDF:Description>
   <RDF:Seq RDF:about="rdf:#$qpiS92">

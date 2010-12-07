@@ -220,7 +220,10 @@ lasuli.ui = {
     		  if($.jstree._focused().data.ui.selected[0])
     		  {
     		    var el = $.jstree._focused().data.ui.selected[0];
-    		    lasuli.ui.jstree_contextmenu.items($(el)).tag.action();
+    		    if($(el).attr("rel") == "keyword")
+    		      lasuli.ui.jstree_contextmenu.items($(el)).untag.action();
+    		    else
+    		      lasuli.ui.jstree_contextmenu.items($(el)).tag.action();
     		  }
     		});
 
@@ -269,7 +272,7 @@ lasuli.ui = {
           $('.tt-modify').button({ disabled: false });
           break;
         case 'keyword':
-          $('.tt-tag').button({ disabled: true });
+          $('.tt-tag').button({ disabled: false, icons: { primary: 'ui-icon-untag' } });
           $('.tt-create').button({ disabled: false });
           $('.tt-delete').button({ disabled: false });
           $('.tt-modify').button({ disabled: false });
@@ -281,7 +284,7 @@ lasuli.ui = {
           $('.tt-modify').button({ disabled: false });
           break;
         default:
-          $('.tt-tag').button({ disabled: false });
+          $('.tt-tag').button({ disabled: false, icons: { primary: 'ui-icon-tag' } });
           $('.tt-create').button({ disabled: false });
           $('.tt-delete').button({ disabled: false });
           $('.tt-modify').button({ disabled: false });
@@ -855,8 +858,8 @@ lasuli.ui = {
       "valid_children" : [ "viewpoint" ],
       "types" : {
         "viewpoint": { "icon" : {  "image" : "css/blitzer/images/viewpoint.png"} },
-        "keyword": { "icon" : {  "image" : "css/blitzer/images/topic_forbidden.png" } },
-        "analysis": { "icon" : {  "image" : "css/blitzer/images/topic_forbidden.png" } },
+        "keyword": { "icon" : {  "image" : "css/blitzer/images/topic_tag.png" } },
+        "analysis": { "icon" : {  "image" : "css/blitzer/images/topic_analysis.png" } },
         "topic": { "icon" : { "image" : "css/blitzer/images/topic_add.png" } }
       }
   },
@@ -879,6 +882,12 @@ lasuli.ui = {
           "separator_after"   : true,
           "icon"              : "css/blitzer/images/menu_tag.png"
         };
+        items.untag = {
+          "label"             : _("topictree.untag"),
+          "action"            : function (obj) { dispatch("lasuli.core.doUnTagTopicTreeItem", arg); },
+          "separator_after"   : true,
+          "icon"              : "css/blitzer/images/menu_untag.png"
+        };
         items.add = {
           "label"             : _("topictree.create"),
           "action"            : function (obj) { dispatch("lasuli.core.doCreateTopicTreeItem", arg); },
@@ -897,16 +906,19 @@ lasuli.ui = {
         switch(topicType) {
           case "viewpoint":
             delete items.tag;
+            delete items.untag;
             delete items.destroy;
             items.edit.label = _('topictree.viewpoint.rename');
             return items;
           case "analysis":
             delete items.tag;
+            delete items.untag;
             return items;
           case "keyword":
             delete items.tag;
             return items;
           case "topic":
+            delete items.untag;
             return items;
         }
       }
@@ -979,6 +991,7 @@ lasuli.ui = {
 
   _initFragmentsContainer : function(topic){
     var logger = Log4Moz.repository.getLogger("lasuli.ui._initFragmentsContainer");
+    if(!topic.color) topic.color = getColor(topic.topicID);
     var html = '<div class="fragments ui-widget" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
        +'<div class="fragment-header" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
        +'<img class="fragment-toggle" src="css/blitzer/images/toggle-close.png" style="vertical-align:middle">'

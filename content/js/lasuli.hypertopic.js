@@ -539,7 +539,7 @@ lasuli.hypertopic = {
     }
     return false;
   },
-  destroyKeyword : function(keyword){
+  destroyKeyword : function(keyword, destroyTopic){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyKeyword");
     if(!this.viewpoint) return false;
     try{
@@ -548,10 +548,17 @@ lasuli.hypertopic = {
         return false;
       else
       {
-        var color = getColor(keyword.topicID);
-        keyword.color = color;
-        //this.docTags = null;
-        return keyword;
+        if(typeof(destroyTopic) == "boolean" && destroyTopic)
+        {
+          topic.destroy();
+          return true;
+        }
+        else
+        {
+          var color = getColor(keyword.topicID);
+          keyword.color = color;
+          return keyword;
+        }
       }
     }catch(e){
       logger.fatal(e);
