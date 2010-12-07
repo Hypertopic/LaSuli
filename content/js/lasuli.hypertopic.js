@@ -420,7 +420,7 @@ lasuli.hypertopic = {
       return this._locations[viewpointID];
     var viewpoint;
     try{
-      viewpoint = HtServers[server].getViewpoint(viewpointID).getRaw();
+      viewpoint = HtServers[server].getViewpoint(viewpointID).getView();
     }catch(e){
       logger.fatal(e);
       logger.error(viewpointID);
@@ -436,7 +436,7 @@ lasuli.hypertopic = {
     {
       server = "freecoding";
       try{
-        viewpoint = HtServers[server].getViewpoint(viewpointID).getRaw();
+        viewpoint = HtServers[server].getViewpoint(viewpointID).getView();
       }catch(e){
         logger.fatal(e);
         logger.error(viewpointID);

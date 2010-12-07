@@ -4,13 +4,13 @@
 <p>&nbsp;</p>
 <h2>8.1.11</h2>
 <ul>
-<li>Improved the algorithm of JSON result in-memory parser.</li>
-<li>Set the single server as default server when saving the configuration. </li>
+  <li>Improved the algorithm of JSON result in-memory parser.</li>
+  <li>Set the single server as default server when saving the configuration. </li>
 </ul>
 <h2>8.1.10</h2>
 <ul>
-<li>Fixed the localization bug.</li>
-<li>Fixed automatic update bug.</li>
+  <li>Fixed the localization bug.</li>
+  <li>Fixed automatic update bug.</li>
 </ul>
 <h2>8.1.2</h2>
 <ul>
