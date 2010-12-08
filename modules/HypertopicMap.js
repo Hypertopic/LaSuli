@@ -73,6 +73,7 @@ function HtMap(baseUrl, user, pass) {
   this.enableCache = true;
 }
 HtMap.prototype.purgeCache = function(){
+  var logger = Log4Moz.repository.getLogger("HtMap.purgeCache");
   HtCaches[this.baseUrl] = {};
 }
 HtMap.prototype.getServerType = function(){
@@ -160,6 +161,8 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
     //PUT it in cache
     if(this.enableCache && httpAction == 'GET')
       HtCaches[this.baseUrl][httpUrl] = JSON.parse(result);
+    if(this.enableCache && httpAction != 'GET')
+      this.purgeCache();
     try{
       return JSON.parse(result);
     }catch(e){ logger.debug(httpUrl); }
@@ -229,7 +232,7 @@ HtMap.prototype.httpGet = function(query) {
     logger.fatal(e);
     return false;
   }
-  logger.trace(body);
+  //logger.trace(body);
   if(body.rows && body.rows.length > 0)
   {
     var rows = body.rows;
@@ -255,7 +258,7 @@ HtMap.prototype.httpGet = function(query) {
     }
     body = result;
   }
-  logger.trace(body);
+  //logger.trace(body);
   return body;
 }
 /**
@@ -554,9 +557,10 @@ HtMapItem.prototype.getID = function() {
 HtMapItem.prototype.getObject = function() { return getObject(this); }
 
 HtMapItem.prototype.getView = function() {
-  var view = this.Corpus.getView();
-  if(!view) return false;
-  return view[this.getID()];
+  var corpusID = this.getCorpusID();
+  var itemID = this.getID();
+  var view = this.Corpus.htMap.httpGet("item/" + corpusID + "/" + itemID);
+  return (!view || typeof(view[corpusID][itemID]) != "object") ? false : view[corpusID][itemID];
 }
 
 HtMapItem.prototype.getRaw = function() {

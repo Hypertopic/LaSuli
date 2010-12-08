@@ -515,7 +515,7 @@ lasuli.core = {
       dispatch("lasuli.ui.doShowFragments", {"topics": topics, "fragments": fragments, "scroll": true});
       //Highlight this fragment
       this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
-      dispatch("lasuli.highlighter.doHighlight", {"fragments": this.fragments[lasuli.hypertopic.currentUrl]});
+      dispatch("lasuli.highlighter.doHighlight", {"fragments": lasuli.hypertopic.coordinates});
     }catch(e){
       logger.fatal(e);
     }
@@ -525,6 +525,7 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyFragment");
     //logger.debug(fragment);
     var result = lasuli.hypertopic.destroyFragment(fragment.fragmentID);
+    this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
     //logger.debug(result);
     if(result)
     {
@@ -538,6 +539,7 @@ lasuli.core = {
     //logger.debug(arg);
 
     var result = lasuli.hypertopic.moveFragment(arg.fragmentID, arg.targetTopicID);
+    this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
     //logger.debug(result);
     if(result){
       dispatch("lasuli.ui.doDropFragmentAccepted", arg );
