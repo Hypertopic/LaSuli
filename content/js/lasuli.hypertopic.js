@@ -83,7 +83,7 @@ lasuli.hypertopic = {
   get items(){
     if(MemCache.items) return MemCache.items;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.items");
-
+    var startTime = new Date().getTime();
     var item, items = {};
     //Load items from all Hypertopic server by using resource URL
     for(var k in HtServers)
@@ -99,6 +99,7 @@ lasuli.hypertopic = {
       }
     }
     MemCache.items = items;
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return items;
   },
   get item(){
@@ -200,36 +201,47 @@ lasuli.hypertopic = {
   get docFragments(){
     if(MemCache.docFragments) return MemCache.docFragments;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docFragments");
-    var startTime = new Date().getTime();
-    var result = {};
+    var startTime, result = {};
     try{
-      for(var k in this.items){
-        var item = this.items[k];
+      var items = this.items;
+      startTime = new Date().getTime();
+      var vpt = 0, hlt=0;
+      var topics = {};
+      for(var k in items){
+        var item = items[k];
+        var startTime2 = new Date().getTime();
         var fragments = item.getHighlights();
+        hlt += ((new Date().getTime()) - startTime2);
         for(var j=0, fragment; fragment = fragments[j]; j++){
           this._locations[fragment.getID()] = k;
           result[fragment.getID()] = fragment;
-          var topic = fragment.getTopic();
-          //Find out which server the viewpoint is located.
-          var server = this.getViewpointLocation(topic.viewpoint, k);
-          if(!server) continue;
-          topic = HtServers[server].getTopic(topic);
-          fragment.topic = topic;
+          var t = fragment.getTopic();
+          var startTime2 = new Date().getTime();
+          if(!(t.id in topics))
+          {
+            //Find out which server the viewpoint is located.
+            var server = this.getViewpointLocation(t.viewpoint, k);
+            if(!server) continue;
+            topics[t.id] = HtServers[server].getTopic(t);
+          }
+          vpt += ((new Date().getTime()) - startTime2);
+          fragment.topic = topics[t.id];
         }
       }
     }catch(e){ logger.fatal(e); }
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms " + vpt + "," + hlt);
     MemCache.docFragments = result;
     return result;
   },
   get docKeywords(){
     if(MemCache.docKeywords) return MemCache.docKeywords;
-    var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docKeywords");
-
+    var startTime;
     var docKeywords = {};
     try{
-      for each(var item in this.items){
+      var items = this.items;
+      startTime = new Date().getTime();
+      for each(var item in items){
         logger.trace(item.getObject());
         var topics = item.getTopics();
         if(topics)

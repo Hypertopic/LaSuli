@@ -655,8 +655,8 @@ var lasuliPrefObserver = {
 }
 
 lasuli.sidebar = {
+  sequence: {},
   init: function(){
-
     this.changeWorker = new Worker("chrome://lasuli/content/js/change_worker.js");
     this.changeWorker.onmessage = function(event) {
       var logger = Log4Moz.repository.getLogger("changeWorker.onmessage");
@@ -664,7 +664,15 @@ lasuli.sidebar = {
       {
         logger.trace(event.data);
         if(HtServers[event.data])
-          HtServers[event.data].purgeCache();
+        {
+          if(lasuli.sidebar.sequence[event.data])
+          {
+            logger.debug("purge cache" + event.data);
+            HtServers[event.data].purgeCache();
+          }
+          else
+            lasuli.sidebar.sequence[event.data] = true;
+        }
       }
     }
   },

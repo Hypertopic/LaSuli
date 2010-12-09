@@ -118,7 +118,10 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
     else
       //Try to load from the cache
       if(typeof( HtCaches[this.baseUrl][httpUrl]) != "undefined")
+      {
+        //logger.debug("Found from cache:" + httpUrl);
         return HtCaches[this.baseUrl][httpUrl];
+      }
   }
   //logger.trace(httpAction + " " + httpUrl);
   //Default HTTP URL is the baseUrl
@@ -144,12 +147,10 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
       httpBody = JSON.stringify(httpBody);
 
     this.xhr.send(httpBody);
-    logger.info(httpAction + " " + httpUrl);
-    logger.info("Status code:" + this.xhr.status);
     if(httpBody != "")
-      logger.info(httpBody);
+      logger.trace(httpBody);
     var endTime = new Date().getTime();
-    logger.info("Execution time: " + (endTime - startTime) + "ms");
+    logger.info("Execution time: " + (endTime - startTime) + "ms\n" + httpAction + " " + httpUrl + "\nStatus Code:" + this.xhr.status);
     //If the response status code is not start with "2",
     //there must be something wrong.
     if((this.xhr.status + "").substr(0,1) != '2')
@@ -240,7 +241,7 @@ HtMap.prototype.httpGet = function(query) {
     logger.fatal(e);
     return false;
   }
-  //logger.trace(body);
+
   if(body.rows && body.rows.length > 0)
   {
     var rows = body.rows;
@@ -266,6 +267,7 @@ HtMap.prototype.httpGet = function(query) {
     }
     body = result;
   }
+
   //logger.trace(body);
   return body;
 }
@@ -728,35 +730,19 @@ HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
 }
 
 HtMapItem.prototype.getHighlights = function() {
-  var logger = Log4Moz.repository.getLogger("HtMapItem.getHighlights");
 	var result = new Array();
 	var view = this.getView();
-	logger.trace(view);
 	if(!view.highlight || view.highlight.length == 0) return result;
 	for(var i=0, highlight; highlight = view.highlight[i]; i++)
-	{
-	  if(!highlight.coordinates) continue;
-	  logger.trace(highlight);
-	  result.push(this.getHighlight(highlight.id));
-	}
-
+	  result.push(new HtMapHighlight(highlight.id, this));
 	return result;
 }
 
 HtMapItem.prototype.getHighlight = function(highlightID) {
-  var logger = Log4Moz.repository.getLogger("HtMapItem.getHighlight");
-  logger.trace(highlightID);
-  logger.trace(this);
-  logger.trace(this.getID());
-  var highlight = new HtMapHighlight(highlightID, this);
-  logger.trace(highlight);
-  return highlight;
+  return new HtMapHighlight(highlightID, this);
 }
 
 function HtMapHighlight(highlightID, item) {
-  var logger = Log4Moz.repository.getLogger("HtMapHighlight");
-  logger.trace(highlightID);
-  logger.trace(item);
   this.id = highlightID;
   this.Item = item;
 }
