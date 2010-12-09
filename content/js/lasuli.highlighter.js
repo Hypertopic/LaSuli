@@ -85,28 +85,28 @@ lasuli.highlighter = {
   {
     var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlight");
-    logger.trace(arg);
+    //logger.trace(arg);
     var fragments = arg.fragments;
-    logger.trace(fragments);
+    //logger.trace(fragments);
     this.fragments = fragments;
 
     var m_document;
     if(!arg.domWindow){
       m_document = this.getContentDocument();
       if(m_document.readyState != 'complete'){
-        logger.trace("not loaded yet");
+        //logger.trace("not loaded yet");
         return false;
       }
     }
     else{
-      logger.trace("with domWindow");
+      //logger.trace("with domWindow");
       m_document = arg.domWindow.document;
     }
-    logger.trace("clearDocument");
-    logger.trace(m_document.location.href);
+    //logger.trace("clearDocument");
+    //logger.trace(m_document.location.href);
     this.clearDocument(m_document);
 
-    logger.trace(fragments);
+    //logger.trace(fragments);
 
     var coordinates = [];
     for each(var fragment in fragments)
@@ -114,12 +114,12 @@ lasuli.highlighter = {
       coordinates.push(fragment.startPos);
       coordinates.push(fragment.endPos);
     }
-    logger.trace("doHighlight::coordinates");
-    logger.trace(coordinates);
+    //logger.trace("doHighlight::coordinates");
+    //logger.trace(coordinates);
 
     coordinates = coordinates.unique();
     coordinates.sort(function(a,b){return a - b});
-    logger.trace(coordinates);
+    //logger.trace(coordinates);
 
     if(coordinates.length == 0) return;
 

@@ -205,18 +205,15 @@ lasuli.hypertopic = {
     try{
       var items = this.items;
       startTime = new Date().getTime();
-      var vpt = 0, hlt=0;
       var topics = {};
       for(var k in items){
         var item = items[k];
         var startTime2 = new Date().getTime();
         var fragments = item.getHighlights();
-        hlt += ((new Date().getTime()) - startTime2);
         for(var j=0, fragment; fragment = fragments[j]; j++){
           this._locations[fragment.getID()] = k;
           result[fragment.getID()] = fragment;
           var t = fragment.getTopic();
-          var startTime2 = new Date().getTime();
           if(!(t.id in topics))
           {
             //Find out which server the viewpoint is located.
@@ -224,12 +221,11 @@ lasuli.hypertopic = {
             if(!server) continue;
             topics[t.id] = HtServers[server].getTopic(t);
           }
-          vpt += ((new Date().getTime()) - startTime2);
           fragment.topic = topics[t.id];
         }
       }
     }catch(e){ logger.fatal(e); }
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms " + vpt + "," + hlt);
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms ");
     MemCache.docFragments = result;
     return result;
   },
@@ -276,7 +272,6 @@ lasuli.hypertopic = {
       var startTime = new Date().getTime();
       for each(var fragment in docFragments){
         var topic = fragment.topic;
-        logger.trace(topic);
         var topicID = topic.getID();
         if(topicID in docTopics)
           docTopics[topicID].count++;
@@ -287,7 +282,7 @@ lasuli.hypertopic = {
         }
       }
     }catch(e){ logger.fatal(e); }
-    logger.trace(docTopics);
+    //logger.trace(docTopics);
     MemCache.docTopics = docTopics;
     logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return docTopics;
