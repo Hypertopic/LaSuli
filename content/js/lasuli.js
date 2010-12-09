@@ -116,7 +116,7 @@ function getColor(id)
   else
     return "#" + MD5(id).substr(-6);
 }
-
+function _p(v){ dispatch("lasuli.ui.doUpdateProgressBar", v); }
 /**
 *
 *  MD5 (Message-Digest Algorithm)

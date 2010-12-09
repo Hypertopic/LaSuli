@@ -158,14 +158,22 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
       throw Error(httpAction + " " + httpUrl + "\nResponse: " +this.xhr.status);
     }
     result = this.xhr.responseText;
-    //PUT it in cache
-    if(this.enableCache && httpAction == 'GET')
-      HtCaches[this.baseUrl][httpUrl] = JSON.parse(result);
+
+    //Clear cache
     if(this.enableCache && httpAction != 'GET')
       this.purgeCache();
+
     try{
-      return JSON.parse(result);
-    }catch(e){ logger.debug(httpUrl); }
+      if(typeof(result) == "string" && result.length > 0)
+      {
+        if(this.enableCache && httpAction == 'GET')
+          HtCaches[this.baseUrl][httpUrl] = JSON.parse(result);
+        return JSON.parse(result);
+      }
+    }catch(e){
+      logger.fatal(e);
+      logger.debug(result);
+    }
     return true;
   }
   catch(e)
@@ -557,10 +565,13 @@ HtMapItem.prototype.getID = function() {
 HtMapItem.prototype.getObject = function() { return getObject(this); }
 
 HtMapItem.prototype.getView = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getView");
   var corpusID = this.getCorpusID();
   var itemID = this.getID();
   var view = this.Corpus.htMap.httpGet("item/" + corpusID + "/" + itemID);
-  return (!view || typeof(view[corpusID][itemID]) != "object") ? false : view[corpusID][itemID];
+  //logger.debug("item/" + corpusID + "/" + itemID);
+  //logger.debug(view);
+  return (!view || typeof(view[corpusID]) != "object" || typeof(view[corpusID][itemID]) != "object") ? false : view[corpusID][itemID];
 }
 
 HtMapItem.prototype.getRaw = function() {
@@ -595,7 +606,7 @@ HtMapItem.prototype.getAttributes = function() {
   var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
   var item = this.getView();
   if(!item) return false;
-  logger.debug(item);
+  logger.trace(item);
   var reserved = {"highlight": null, "resource": null, "thumbnail": null,
     "topic": null, "corpus": null, "speeches": null, "name": null };
   var result = new Array();

@@ -1,5 +1,6 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Sync.js");
+
 lasuli.ui = {
   initTabs : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs");
@@ -36,9 +37,13 @@ lasuli.ui = {
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
         logger.trace(viewpointID);
+        _p(30);
         dispatch("lasuli.ui.doClearViewpointPanel", viewpointID);
+        _p(50);
         dispatch("lasuli.core.doLoadKeywords", viewpointID);
+        _p(70);
         dispatch("lasuli.core.doLoadFragments", viewpointID);
+        _p(100);
       }
       else
         dispatch('lasuli.contextmenu.doHide', null);
@@ -168,13 +173,17 @@ lasuli.ui = {
       $(this).parent().hide().prev().show();
       var viewpointDiv = $(this).parents('div');
       var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
-
+      var num = viewpointDiv.find("input:checked").length;
+      if(num == 0) num = 1;
+      _p([0,num]);
+      var i=0;
       viewpointDiv.find("input.cb-remove-keyword").each(function(){
         if($(this).attr("checked"))
         {
           var topicID = $(this).next("a").attr("uri");
           var name = $(this).next("a").html();
           dispatch("lasuli.core.doDestroyKeyword", {"topicID":topicID, "viewpointID": viewpointID, "name": name});
+          _p([i++,num]);
         }
         $(this).hide().removeAttr("checked");
       });
@@ -188,8 +197,9 @@ lasuli.ui = {
         }
         var el = $(this).parent().data("img");
         $(this).replaceWith(el);
+        _p([i++,num]);
       });
-
+      _p([num,num]);
     });
 
     //Mouse over the tag shows the trash icon
@@ -1290,9 +1300,34 @@ lasuli.ui = {
     var topicID = (topic.topicID) ? topic.topicID : null;
     var fragment = { "viewpointID": viewpointID, "topicID": topicID, "startPos": startPos, "endPos": endPos, "text": strContent };
     dispatch("lasuli.core.doCreateFragment", fragment);
+  },
+
+  doUpdateProgressBar: function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.ui.doUpdateProgressBar");
+    var t,v;
+    if(typeof(arg) == "object")
+    {
+      t = arg[1];
+      v = arg[0];
+      v = (v/t) * 100;
+    }
+    else
+    {
+      t = 100;
+      v = arg;
+    }
+    if(v < 100)
+    {
+      $('div#overlay-div').removeClass('hide').css("opacity", 0.2);
+      $('div#progressbar').show().progressbar({ value: v }).horizentalCenter();
+    }
+    else
+    {
+      $('div#overlay-div').addClass('hide').css("opacity", 0.5);
+      $('div#progressbar').hide().destroy();
+    }
   }
 }
-
 
 $(window).bind("load", function(){
   var logger = Log4Moz.repository.getLogger("lasuli.ui.load");

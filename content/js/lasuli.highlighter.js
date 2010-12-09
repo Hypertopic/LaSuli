@@ -83,6 +83,7 @@ lasuli.highlighter = {
 
   doHighlight: function(arg)
   {
+    var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlight");
     logger.trace(arg);
     var fragments = arg.fragments;
@@ -206,6 +207,9 @@ lasuli.highlighter = {
     //var_dump("[highlighter.js] doHighlight::nodeList", nodeList.length, 4);
     for(var i=0, nl; nl = nodeList[i]; i++)
       nl.originalNode.parentNode.replaceChild(nl.newNode, nl.originalNode);
+
+    var endTime = new Date().getTime();
+    logger.debug("Execution time: " + (endTime - startTime) + "ms");
   },
 
   doClear: function()

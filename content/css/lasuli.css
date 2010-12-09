@@ -250,3 +250,19 @@ div.ui-tabs-panel {
   padding-top:5px;
   padding-bottom: 5px;
 }
+
+.ui-progressbar-value{
+  background-image: url(blitzer/images/pbar-ani.gif);
+}
+
+div#progressbar{
+  position: fixed;
+  background-color: #BBBBBB;
+  top: auto;
+  bottom: 12px;
+  margin: 0;
+  height:12px;
+  min-width: 120px;
+  width: 90%;
+  z-index:999999;
+}

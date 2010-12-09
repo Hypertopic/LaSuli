@@ -2,6 +2,8 @@ include("resource://lasuli/modules/HypertopicMap.js");
 var MemCache = {};
 
 lasuli.hypertopic = {
+  _locations : {},
+
   get currentUrl(){
     return this._currentUrl;
   },
@@ -9,7 +11,7 @@ lasuli.hypertopic = {
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.currentUrl");
     logger.trace(url);
     this._currentUrl = url;
-    this._locations = {};
+    //this._locations = {};
     this._viewpointID = null;
     //logger.debug(MemCache);
     MemCache = {};
@@ -157,20 +159,21 @@ lasuli.hypertopic = {
   get docUsers(){
     if(MemCache.docUsers) return MemCache.docUsers;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docUsers");
-
     var result = new Array();
-    //Get users from items.
-
     //Try to get all viewpoint from topics and keywords
     var viewpoints = {};
+    var startTime = new Date().getTime();
     try{
-      for each(var topic in this.docTopics)
+      var docTopics = this.docTopics;
+      var docKeywords = this.docKeywords;
+      startTime = new Date().getTime();
+      for each(var topic in docTopics)
       {
         var viewpointID = topic.getViewpointID();
         if(!(viewpointID in viewpoints) && topic.Viewpoint)
           viewpoints[viewpointID] = topic.Viewpoint;
       }
-      for each(var topic in this.docKeywords)
+      for each(var topic in docKeywords)
       {
         var viewpointID = topic.getViewpointID();
         if(!(viewpointID in viewpoints) && topic.Viewpoint)
@@ -178,7 +181,6 @@ lasuli.hypertopic = {
       }
       logger.trace(viewpoints);
     }catch(e){ logger.fatal(e); }
-
     //Get all users from the viewpoints
     try{
       for each(var viewpoint in viewpoints)
@@ -192,47 +194,37 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e); }
     logger.trace(result);
     MemCache.docUsers = result;
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return result;
   },
   get docFragments(){
     if(MemCache.docFragments) return MemCache.docFragments;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docFragments");
-
+    var startTime = new Date().getTime();
     var result = {};
     try{
       for(var k in this.items){
         var item = this.items[k];
-        logger.trace(item.getObject());
         var fragments = item.getHighlights();
-        logger.trace("fragments");
-        logger.trace(fragments);
         for(var j=0, fragment; fragment = fragments[j]; j++){
-          logger.trace(fragment.getObject());
           this._locations[fragment.getID()] = k;
           result[fragment.getID()] = fragment;
-
           var topic = fragment.getTopic();
-          logger.trace(topic);
-          var viewpointID = topic.viewpoint;
-          logger.trace("viewpointID");
-          logger.trace(viewpointID);
           //Find out which server the viewpoint is located.
-          var server = this.getViewpointLocation(viewpointID, k);
-          logger.trace(server);
+          var server = this.getViewpointLocation(topic.viewpoint, k);
           if(!server) continue;
-          var topicID = (topic.id) ? topic.id : topic.topic;
-          topic = HtServers[server].getTopic({"viewpoint": topic.viewpoint, "id": topicID});
-          logger.trace(topic);
+          topic = HtServers[server].getTopic(topic);
           fragment.topic = topic;
         }
       }
     }catch(e){ logger.fatal(e); }
-    logger.trace(result);
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     MemCache.docFragments = result;
     return result;
   },
   get docKeywords(){
     if(MemCache.docKeywords) return MemCache.docKeywords;
+    var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docKeywords");
 
     var docKeywords = {};
@@ -259,15 +251,18 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e); }
     logger.trace(docKeywords);
     MemCache.docKeywords = docKeywords;
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return docKeywords;
   },
   get docTopics(){
     if(MemCache.docTopics) return MemCache.docTopics;
+    var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTopics");
-
     var docTopics = {};
     try{
-      for each(var fragment in this.docFragments){
+      var docFragments = this.docFragments;
+      var startTime = new Date().getTime();
+      for each(var fragment in docFragments){
         var topic = fragment.topic;
         logger.trace(topic);
         var topicID = topic.getID();
@@ -282,10 +277,12 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e); }
     logger.trace(docTopics);
     MemCache.docTopics = docTopics;
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return docTopics;
   },
   get docTags(){
     if(MemCache.docTags) return MemCache.docTags;
+    var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTags");
 
     var result = {};
@@ -315,10 +312,12 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e); }
     logger.trace(result);
     MemCache.docTags = result;
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return result;
   },
   get docCoordinates(){
     if(MemCache.docCoordinates) return MemCache.docCoordinates;
+    var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docCoordinates");
 
     var result = {};
@@ -331,6 +330,7 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e); }
     logger.trace(result);
     MemCache.docCoordinates = result;
+    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return result;
   },
   get topics(){
@@ -713,13 +713,13 @@ lasuli.hypertopic = {
     try{
       for each(var topic in this.docTopics)
       {
-        logger.debug(topic.getViewpointID());
+        logger.trace(topic.getViewpointID());
         if(viewpointIDs.indexOf(topic.getViewpointID()) < 0)
         {
           viewpointIDs.push(topic.getViewpointID());
-          logger.debug(viewpointIDs);
+          logger.trace(viewpointIDs);
           var users = topic.Viewpoint.listUsers();
-          logger.debug(users);
+          logger.trace(users);
           if(users.indexOf(userID) >= 0)
             result.push({"id": topic.getViewpointID(), "name": topic.Viewpoint.getName()});
         }
