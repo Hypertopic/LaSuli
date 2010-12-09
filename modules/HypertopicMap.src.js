@@ -16,7 +16,7 @@ var HtServers = {};
 var HtCaches = {};
 
 function getObject(obj) {
-  //var logger = Log4Moz.repository.getLogger("getObject");
+  var logger = Log4Moz.repository.getLogger("getObject");
   var self = JSON.parse(JSON.stringify(obj));
   for(var k in self)
   {
@@ -73,7 +73,7 @@ function HtMap(baseUrl, user, pass) {
   this.enableCache = true;
 }
 HtMap.prototype.purgeCache = function(){
-  //var logger = Log4Moz.repository.getLogger("HtMap.purgeCache");
+  var logger = Log4Moz.repository.getLogger("HtMap.purgeCache");
   HtCaches[this.baseUrl] = {};
 }
 HtMap.prototype.getServerType = function(){
@@ -328,19 +328,19 @@ HtMap.prototype.getUser = function(userID) {
 }
 
 HtMap.prototype.getCorpus = function(corpusID) {
-  ////var logger = Log4Moz.repository.getLogger("HtMap.getCorpus");
+  //var logger = Log4Moz.repository.getLogger("HtMap.getCorpus");
   //logger.trace(corpusID);
   return new HtMapCorpus(corpusID, this);
 }
 
 HtMap.prototype.getItem = function(obj) {
-  //var logger = Log4Moz.repository.getLogger("HtMap.getItem");
+  var logger = Log4Moz.repository.getLogger("HtMap.getItem");
   //logger.trace(obj);
   if(typeof(obj) == "string")
   {
     var item = this.httpGet("item/?resource=" + encodeURIComponent(obj));
 
-    //logger.trace(item);
+    logger.trace(item);
     if(!item || !item[obj] || !item[obj].item || !(item[obj].item.length > 0))
       return false;
     obj = item[obj].item[0];
@@ -361,23 +361,23 @@ HtMap.prototype.getViewpoint = function(viewpointID) {
 }
 
 HtMap.prototype.getTopic = function(topic) {
-  //var logger = Log4Moz.repository.getLogger("HtMap.getTopic");
+  var logger = Log4Moz.repository.getLogger("HtMap.getTopic");
   var viewpoint = this.getViewpoint(topic.viewpoint);
   //logger.trace(viewpoint);
   return viewpoint.getTopic(topic);
 }
 
 HtMap.prototype.getHighlight = function(highlight) {
-  //var logger = Log4Moz.repository.getLogger("HtMap.getHighlight");
-  //logger.trace(highlight);
+  var logger = Log4Moz.repository.getLogger("HtMap.getHighlight");
+  logger.trace(highlight);
   var corpus = this.getCorpus(highlight.corpus);
   if(!corpus) return false;
-  //logger.trace(corpus);
+  logger.trace(corpus);
   var item = corpus.getItem(highlight.item);
   if(!item) return false;
-  //logger.trace(item);
-  //logger.trace(highlight.id);
-  //logger.trace(item.getHighlight(highlight.id));
+  logger.trace(item);
+  logger.trace(highlight.id);
+  logger.trace(item.getHighlight(highlight.id));
   return item.getHighlight(highlight.id);
 }
 
@@ -423,7 +423,7 @@ HtMapUser.prototype.listViewpoints = function() {
 }
 
 HtMapUser.prototype.createCorpus = function(name) {
-  //var logger = Log4Moz.repository.getLogger("HtMapUser.createCorpus");
+  var logger = Log4Moz.repository.getLogger("HtMapUser.createCorpus");
   var corpus = {};
   corpus.corpus_name = name;
   corpus.users = new Array(this.getID());
@@ -436,7 +436,7 @@ HtMapUser.prototype.createCorpus = function(name) {
 }
 
 HtMapUser.prototype.createViewpoint = function(name) {
-  //var logger = Log4Moz.repository.getLogger("HtMapUser.createViewpoint");
+  var logger = Log4Moz.repository.getLogger("HtMapUser.createViewpoint");
   var viewpoint = {};
   viewpoint.viewpoint_name = name;
   viewpoint.users = new Array(this.getID());
@@ -501,7 +501,7 @@ HtMapCorpus.prototype.listUsers = function() {
  * @return whole items contained in the corpus
  */
 HtMapCorpus.prototype.getItems = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapCorpus.getItems");
+  var logger = Log4Moz.repository.getLogger("HtMapCorpus.getItems");
   var view = this.getView();
   if(!view) return false;
   //logger.trace(view);
@@ -532,7 +532,7 @@ HtMapCorpus.prototype.getName = function() {
  * Destroy the nodes of the corpus and of all its documents.
  */
 HtMapCorpus.prototype.destroy = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapUser.destroy");
+  var logger = Log4Moz.repository.getLogger("HtMapUser.destroy");
   //logger.trace(this.getID());
 	var items = this.getItems();
 	if(!items) return true;
@@ -575,7 +575,7 @@ HtMapItem.prototype.getID = function() {
 HtMapItem.prototype.getObject = function() { return getObject(this); }
 
 HtMapItem.prototype.getView = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapItem.getView");
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getView");
   var corpusID = this.getCorpusID();
   var itemID = this.getID();
   var view = this.Corpus.htMap.httpGet("item/" + corpusID + "/" + itemID);
@@ -606,17 +606,17 @@ HtMapItem.prototype.destroy = function() {
 }
 
 HtMapItem.prototype.getResource = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapItem.getResource");
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getResource");
 	var view = this.getView();
   if(!view) return false;
 	return (!view || !view.resource) ? false : view.resource[0];
 }
 
 HtMapItem.prototype.getAttributes = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getAttributes");
   var item = this.getView();
   if(!item) return false;
-  //logger.trace(item);
+  logger.trace(item);
   var reserved = {"highlight": null, "resource": null, "thumbnail": null,
     "topic": null, "corpus": null, "speeches": null, "name": null };
   var result = new Array();
@@ -627,7 +627,7 @@ HtMapItem.prototype.getAttributes = function() {
 }
 
 HtMapItem.prototype.getTopics = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapItem.getTopics");
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getTopics");
   var view = this.getView();
   if(!view) return false;
   //logger.trace(view);
@@ -701,7 +701,7 @@ HtMapItem.prototype.untag = function(topic) {
 }
 
 HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
-  //var logger = Log4Moz.repository.getLogger("HtMapItem.createHighlight");
+  var logger = Log4Moz.repository.getLogger("HtMapItem.createHighlight");
   //logger.trace(this.Corpus.htMap.serverType);
   var obj;
   if(this.Corpus.htMap.serverType  == "argos")
@@ -800,7 +800,7 @@ HtMapHighlight.prototype.getCoordinates = function() {
 }
 
 HtMapHighlight.prototype.destroy = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapHighlight.destroy");
+  var logger = Log4Moz.repository.getLogger("HtMapHighlight.destroy");
   //logger.trace(this.Item.Corpus.htMap.serverType);
   var obj;
   if(this.Item.Corpus.htMap.serverType == "argos")
@@ -811,7 +811,7 @@ HtMapHighlight.prototype.destroy = function() {
   if(!obj) return false;
   if(!obj.highlights && !obj.highlights[this.getID()]) return true;
   delete obj.highlights[this.getID()];
-  //logger.trace(obj);
+  logger.trace(obj);
   return this.Item.Corpus.htMap.httpPut(obj);
 }
 
@@ -883,10 +883,10 @@ HtMapViewpoint.prototype.getUpperTopics = function() {
 }
 
 HtMapViewpoint.prototype.getTopics = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getTopics");
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getTopics");
   var result = new Array();
   var view = this.getView();
-  //logger.trace(view);
+  logger.trace(view);
   if(!view) return false;
   for(var k in view)
     if(!this.htMap.isReserved(k))
@@ -911,19 +911,19 @@ HtMapViewpoint.prototype.getItems = function() {
 }
 
 HtMapViewpoint.prototype.getHighlights = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getHighlights");
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getHighlights");
   var result = new Array();
   var topics = this.getTopics();
   var highlightIDs = {};
   for(var i=0, topic; topic = topics[i]; i++)
   {
-    //logger.trace(topic);
+    logger.trace(topic);
     var highlights = topic.getHighlights(false);
-    //logger.trace(highlights);
+    logger.trace(highlights);
     for(var j=0, highlight; highlight = highlights[j]; j++)
       if(!(highlight.id in highlightIDs))
       {
-        //logger.trace(highlight);
+        logger.trace(highlight);
         highlightIDs[highlight.id] = {};
         result.push(highlight);
       }
@@ -947,7 +947,7 @@ HtMapViewpoint.prototype.rename = function(name) {
 }
 
 HtMapViewpoint.prototype.createTopic = function(broaderTopics, name) {
-  //var logger = Log4Moz.repository.getLogger("HtMapViewpoint.createTopic");
+  var logger = Log4Moz.repository.getLogger("HtMapViewpoint.createTopic");
   var topicID = getUUID();
 
   var viewpoint = this.getRaw();
@@ -1046,7 +1046,7 @@ HtMapTopic.prototype.getBroader = function() {
  * Precondition: narrower topics graph must be acyclic.
  */
 HtMapTopic.prototype.getItems = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapTopic.getItems");
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.getItems");
 	var result = new Array();
   var topic = this.getView();
   if(!topic) return false;
@@ -1086,15 +1086,15 @@ HtMapTopic.prototype.getItems = function() {
 }
 
 HtMapTopic.prototype.getHighlights = function(recursion) {
-  //var logger = Log4Moz.repository.getLogger("HtMapTopic.getHighlights");
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.getHighlights");
 	var result = new Array();
   var topic = this.getView();
   if(!topic) return false;
-  //logger.trace(topic.highlight);
+  logger.trace(topic.highlight);
   if(topic.highlight instanceof Array)
   	for(var i=0, highlight; highlight = topic.highlight[i]; i++) {
-  	  //logger.trace(this.Viewpoint.htMap.baseUrl);
-  	  //logger.trace(this.Viewpoint.htMap.getHighlight(highlight));
+  	  logger.trace(this.Viewpoint.htMap.baseUrl);
+  	  logger.trace(this.Viewpoint.htMap.getHighlight(highlight));
   		result.push(
   			this.Viewpoint.htMap.getHighlight(highlight)
   		);
@@ -1123,13 +1123,13 @@ HtMapTopic.prototype.rename = function(name) {
 }
 
 HtMapTopic.prototype.destroy = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapTopic.destroy");
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.destroy");
   var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
   if(!viewpoint) return false;
   if(!viewpoint.topics) return false;
   var topicID = this.getID();
   if(!viewpoint.topics || !viewpoint.topics[topicID] ) return false;
-  //logger.trace(viewpoint);
+  logger.trace(viewpoint);
   delete viewpoint.topics[topicID];
   for each(var topic in viewpoint.topics){
     if(topic.broader && topic.broader instanceof Array)
@@ -1140,12 +1140,12 @@ HtMapTopic.prototype.destroy = function() {
           i--;
         }
   }
-  //logger.trace(viewpoint);
+  logger.trace(viewpoint);
 	return this.Viewpoint.htMap.httpPut(viewpoint);
 }
 
 HtMapTopic.prototype.moveTopics = function(narrowerTopics) {
-  //var logger = Log4Moz.repository.getLogger("HtMapTopic.moveTopics");
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.moveTopics");
   //logger.trace(narrowerTopics);
   //logger.trace(this.getID());
   var viewpoint = this.Viewpoint.htMap.httpGet(this.Viewpoint.getID());
