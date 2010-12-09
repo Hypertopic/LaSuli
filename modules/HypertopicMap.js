@@ -131,7 +131,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
   var startTime = new Date().getTime();
   try{
     var auth = "Basic " + base64_encode(this.user + ':' + this.pass);
-    //logger.debug(auth);
+    //logger.trace(auth);
     this.xhr.open(httpAction, httpUrl, false, this.user, this.pass);
     //If there is a request body, set the content-type to json
     if(httpBody && httpBody != '')
@@ -353,6 +353,8 @@ HtMap.prototype.getItem = function(obj) {
 }
 
 HtMap.prototype.getViewpoint = function(viewpointID) {
+  //var logger = Log4Moz.repository.getLogger("HtMap.getViewpoint");
+  //logger.debug(viewpointID);
   return new HtMapViewpoint(viewpointID, this);
 }
 
@@ -364,10 +366,16 @@ HtMap.prototype.getTopic = function(topic) {
 }
 
 HtMap.prototype.getHighlight = function(highlight) {
+  var logger = Log4Moz.repository.getLogger("HtMap.getHighlight");
+  logger.trace(highlight);
   var corpus = this.getCorpus(highlight.corpus);
   if(!corpus) return false;
+  logger.trace(corpus);
   var item = corpus.getItem(highlight.item);
   if(!item) return false;
+  logger.trace(item);
+  logger.trace(highlight.id);
+  logger.trace(item.getHighlight(highlight.id));
   return item.getHighlight(highlight.id);
 }
 
@@ -736,10 +744,19 @@ HtMapItem.prototype.getHighlights = function() {
 }
 
 HtMapItem.prototype.getHighlight = function(highlightID) {
-  return new HtMapHighlight(highlightID, this);
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getHighlight");
+  logger.trace(highlightID);
+  logger.trace(this);
+  logger.trace(this.getID());
+  var highlight = new HtMapHighlight(highlightID, this);
+  logger.trace(highlight);
+  return highlight;
 }
 
 function HtMapHighlight(highlightID, item) {
+  var logger = Log4Moz.repository.getLogger("HtMapHighlight");
+  logger.trace(highlightID);
+  logger.trace(item);
   this.id = highlightID;
   this.Item = item;
 }
@@ -883,13 +900,14 @@ HtMapViewpoint.prototype.getTopics = function() {
   var logger = Log4Moz.repository.getLogger("HtMapViewpoint.getTopics");
   var result = new Array();
   var view = this.getView();
-  //logger.trace(view);
+  logger.trace(view);
   if(!view) return false;
-  for(var key in view)
-    if(!this.htMap.isReserved(key))
+  for(var k in view)
+    if(!this.htMap.isReserved(k))
     {
-      //logger.trace(key);
-      result.push(this.getTopic(key));
+      //logger.trace(k);
+      //logger.trace(this.getTopic(k));
+      result.push(this.getTopic(k));
     }
   return result;
 }
@@ -913,12 +931,13 @@ HtMapViewpoint.prototype.getHighlights = function() {
   var highlightIDs = {};
   for(var i=0, topic; topic = topics[i]; i++)
   {
-    //logger.trace(topic);
-    var highlights = topic.getHighlights();
-    //logger.trace(highlights);
+    logger.trace(topic);
+    var highlights = topic.getHighlights(false);
+    logger.trace(highlights);
     for(var j=0, highlight; highlight = highlights[j]; j++)
       if(!(highlight.id in highlightIDs))
       {
+        logger.trace(highlight);
         highlightIDs[highlight.id] = {};
         result.push(highlight);
       }
@@ -1080,21 +1099,28 @@ HtMapTopic.prototype.getItems = function() {
 	return result;
 }
 
-HtMapTopic.prototype.getHighlights = function() {
+HtMapTopic.prototype.getHighlights = function(recursion) {
+  var logger = Log4Moz.repository.getLogger("HtMapTopic.getHighlights");
 	var result = new Array();
   var topic = this.getView();
   if(!topic) return false;
+  logger.trace(topic.highlight);
+  if(topic.highlight instanceof Array)
+  	for(var i=0, highlight; highlight = topic.highlight[i]; i++) {
+  	  logger.trace(this.Viewpoint.htMap.baseUrl);
+  	  logger.trace(this.Viewpoint.htMap.getHighlight(highlight));
+  		result.push(
+  			this.Viewpoint.htMap.getHighlight(highlight)
+  		);
+  	}
+	logger.trace(result);
+	if(!recursion) return result;
 
-	for each (var highlight in topic.highlight) {
-		result.push(
-			this.Viewpoint.htMap.getHighlight(highlight)
-		);
-	}
 	var narrower = topic.narrower;
   for each(var t in narrower)
   {
     var topic = this.Viewpoint.getTopic(t);
-    var highlights = topic.getHighlights();
+    var highlights = topic.getHighlights(true);
     if(!highlights) continue;
     for(var i=0, highlight; highlight = highlights[i]; i++)
       result.push(highlight);

@@ -640,7 +640,7 @@ function prettyJSON(objectOrString, initialIndent) {
 		return _p.join("");
 	}
 	try{
-	  objectOrString = (typeof(objectOrString) == 'string') ? JSON.parse(objectOrString) : objectOrString;
+	  objectOrString = (typeof(objectOrString) == 'string') ? JSON.parse(objectOrString) : JSON.parse(JSON.stringify(objectOrString));
 	  var ret = prettyPrint(objectOrString, initialIndent);
 	  return ret;
 	}catch(e){}

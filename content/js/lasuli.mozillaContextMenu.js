@@ -59,10 +59,10 @@ lasuli.contextmenu = {
   },
   doHide: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.contextmenu.doHide");
-    logger.trace("disable");
+    //logger.trace("disable");
     var cm = this.getContextMenu();
     for (var i = 0, node; node = cm.childNodes[i]; i++){
-      logger.trace(node.getAttribute("id"));
+      //logger.trace(node.getAttribute("id"));
       if(node.getAttribute("id") == 'lasuliContextMenu')
         cm.removeChild(node);
     }
@@ -74,14 +74,14 @@ lasuli.contextmenu = {
     this.doHide();
 
     this.topics = this._appendDefaultTopic(topics);
-    logger.trace(this.topics);
+    //logger.trace(this.topics);
     var cm;
     try{
       cm = this.getContextMenu();
     }catch(e){
       logger.fatal(e);
     }
-    logger.trace("show menu");
+    //logger.trace("show menu");
     var menu = this.mainWindow.document.createElement('menu');
     menu.setAttribute('id', 'lasuliContextMenu');
     menu.setAttribute('label', _("lasuli.contextMenu"));
@@ -91,14 +91,14 @@ lasuli.contextmenu = {
     menu.appendChild(menupopup);
     for each(var topic in this.topics)
     {
-      logger.trace(topic);
+      //logger.trace(topic);
       var menuitem = this._createItem(topic);
       menupopup.appendChild(menuitem);
     }
-    logger.trace("appendChild");
+    //logger.trace("appendChild");
 
     cm.appendChild(menu);
-    logger.trace("this.cacm.appendChild");
+    //logger.trace("this.cacm.appendChild");
     if(this.topics['new'])
       delete this.topcis['new'];
   },

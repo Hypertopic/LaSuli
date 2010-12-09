@@ -593,14 +593,17 @@ lasuli.core = {
   doDestroyFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyFragment");
     //logger.debug(fragment);
+    _p(30);
     var result = lasuli.hypertopic.destroyFragment(fragment.fragmentID);
+    _p(60);
     this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
-    //logger.debug(result);
+    _p(80);
     if(result)
     {
       dispatch("lasuli.ui.doRemoveFragment", fragment.fragmentID );
       dispatch("lasuli.highlighter.doRemoveFragment", fragment.fragmentID );
     }
+    _p(100);
   },
 
   doMoveFragment : function(arg){
