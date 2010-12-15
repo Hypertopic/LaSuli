@@ -5,7 +5,7 @@
   <RDF:Description RDF:about="rdf:#$ll2uD1"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                    em:minVersion="3.6.2"
-                   em:maxVersion="3.6.12" />
+                   em:maxVersion="3.6.13" />
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:creator="Chao Zhou; http://zhou.fr"
                    em:contributor="Aurelien Benel; Christophe Lejeune"
@@ -16,7 +16,7 @@
                    em:name="LaSuli Sidebar"
                    em:updateURL="http://lasuli.sourceforge.net/update.rdf"
                    em:optionsURL="chrome://lasuli/content/options.xul"
-                   em:version="0.8.1.18"
+                   em:version="0.8.1.20"
                    em:updateKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCsQ2jxFSc3B+s7KW3QGRB/f432KQy1aCdpK8K+EMvdaKdA92qsGt6k8m8/MRD85tMfv+TPkyHuOJ2jWowVY2sNE7VIL9TScNtgPVUfKP2/MA1BFb8imAXSuk++H1Kn8QaQBIUNmNhLykPkdmtFWU4XXap0OAhJoU0p5B1tztjgUQIDAQAB">
     <em:targetApplication RDF:resource="rdf:#$ll2uD1"/>
   </RDF:Description>
