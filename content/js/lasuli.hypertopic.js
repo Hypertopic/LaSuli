@@ -10,17 +10,13 @@ lasuli.hypertopic = {
   set currentUrl(url){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.currentUrl");
     logger.trace(url);
-    this._currentUrl = url;
-    //this._locations = {};
-    this._viewpointID = null;
-    //logger.debug(MemCache);
     MemCache = {};
+    this._currentUrl = url;
+    this._viewpointID = null;
     if(url == "about:blank") return false;
   },
   get viewpoint(){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.viewpoint");
     var k = (this._locations[this.viewpointID]) ? this._locations[this.viewpointID] : "freecoding";
-    logger.trace(k);
     return HtServers[k].getViewpoint(this.viewpointID);
   },
   get viewpointID(){
@@ -59,17 +55,23 @@ lasuli.hypertopic = {
       return null;
   },
   get corpus(){
+    if(MemCache.corpus) return MemCache.corpus;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.corpus");
     var result = null;
-    var corpora;
+    var corpora,
+        user = this.user;
     try{
-      corpora = this.user.listCorpora();
+      logger.debug("user.listCorpora");
+      corpora = user.listCorpora();
     }catch(e){ logger.fatal(e); }
 
     if(!corpora || corpora.length == 0){
       try{
-        var corpusName = _("default.corpus.name", [this.user.getID()])
-        var corpus = this.user.createCorpus(corpusName);
+        logger.debug("try to create a new corpus");
+        var corpusName = _("default.corpus.name", [user.getID()]);
+
+        var corpus = user.createCorpus(corpusName);
+        logger.debug("created a corpus");
         if(corpus)
           result = corpus;
       }catch(e){ logger.fatal(e); }
@@ -78,6 +80,7 @@ lasuli.hypertopic = {
       try{
         result = HtServers.freecoding.getCorpus(corpora[0].id);
       }catch(e){ logger.fatal(e); }
+    MemCache.corpus = result;
     return result;
   },
   get items(){
@@ -115,11 +118,17 @@ lasuli.hypertopic = {
   },
   set itemName(name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.itemName");
-    MemCache.items = false;
     try{
       if(!this.item)
+      {
         this.createItem(name);
-      return this.item.rename(name);
+        return true;
+      }
+      else
+      {
+        MemCache.items = false;
+        return this.item.rename(name);
+      }
     }catch(e){
       logger.fatal(e);
       logger.error(name);
@@ -527,15 +536,15 @@ lasuli.hypertopic = {
     MemCache.items = false;
     name = name || _("no.name");
     try{
-      logger.trace(this.corpus);
+      //logger.trace(this.corpus);
       var item = this.corpus.createItem(name);
       if(item)
       {
         item.describe("resource", this.currentUrl);
-        logger.trace(item.getObject());
+        //logger.trace(item.getObject());
         return true;
       }
-      logger.error(item);
+      //logger.error(item);
       return false;
     }catch(e){ logger.fatal(e); }
     return true;

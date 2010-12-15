@@ -51,28 +51,20 @@ lasuli.core = {
 
   //Auto register all observers
   register: function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.register");
-    logger.trace("start to register");
     for(var func in this)
-      if(func.substr(0, 2) == "do")
+      if(func.substr(0, 2) == "do" && typeof(lasuli.core[func]) == "function")
         Observers.add("lasuli.core." + func, lasuli.core[func], lasuli.core);
   },
   unregister: function(){
     for(var func in this)
-      if(func.substr(0, 2) == "do")
+      if(func.substr(0, 2) == "do" && typeof(lasuli.core[func]) == "function")
         Observers.remove("lasuli.core." + func, lasuli.core[func], lasuli.core);
   },
 
   doPrefChange : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doPrefChange");
-    logger.level = Log4Moz.Level["Debug"];
-    //reInitial HypertopicMap
     lasuli.core.loadSetting();
     if(lasuli.core.isSidebarOpen())
-    {
-      //logger.debug("sidebar reload");
       document.getElementById("sidebar").contentWindow.location.reload();
-    }
   },
 
   // When tabWatcher find a new location is input, trigger this function
@@ -631,25 +623,20 @@ lasuli.core = {
 
 var lasuliPrefObserver = {
   register: function() {
-    this.logger = Log4Moz.repository.getLogger("LaSuli.Core.lasuliPrefObserver");
-    this.logger.level = Log4Moz.Level["Debug"];
     var prefService = Cc["@mozilla.org/preferences-service;1"]
                                 .getService(Ci.nsIPrefService);
     this._branch = prefService.getBranch("extensions.lasuli.");
     this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
     this._branch.addObserver("", this, false);
-    //this.logger.debug('register preference observer');
   },
 
   unregister: function() {
     if (!this._branch) return;
     this._branch.removeObserver("", this);
-    //this.logger.debug('unregister preference observer');
   },
 
   observe: function(aSubject, aTopic, aData) {
     if(aTopic != "nsPref:changed") return;
-    this.logger.debug("extensions.lasuli." + aData + " changed!");
     lasuli.core.doPrefChange();
   }
 }

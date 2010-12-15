@@ -12,7 +12,7 @@ function fetch(){
       //dump(seq);
       if(seq < 0)
       {
-        changeWorker.timeoutID = setTimeout("fetch()", 5000);
+        changeWorker.timeoutID = setTimeout("fetch()", 2000);
         return false;
       }
       changeWorker.sequences[server] = seq;
@@ -20,15 +20,18 @@ function fetch(){
     changeUrl += "?since=" + changeWorker.sequences[server];
 
     var req = new XMLHttpRequest();
-    req.open("GET", changeUrl, true);
+    //dump("\n" + changeUrl);
+    req.open("GET", changeUrl, false);
     req.onload = function()
     {
       var seq = -1;
       try{
         var result = JSON.parse(req.responseText.trim());
+        //dump("\nserver:" + server);
+        //dump("\nold seq:" + changeWorker.sequences[server]);
+        //dump("\nlast_seq:" + result.last_seq);
         if(!changeWorker.sequences[server] || changeWorker.sequences[server] < result.last_seq)
         {
-          dump(server);
           changeWorker.sequences[server] = result.last_seq;
           postMessage(server);
         }
@@ -36,7 +39,7 @@ function fetch(){
     }
     req.send(null);
   }
-  changeWorker.timeoutID = setTimeout("fetch()", 5000);
+  changeWorker.timeoutID = setTimeout("fetch()", 20000);
 }
 
 function getLastSeq(url){
