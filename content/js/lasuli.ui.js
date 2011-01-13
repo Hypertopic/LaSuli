@@ -1238,16 +1238,15 @@ lasuli.ui = {
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
   },
 
-  doHighlightMenuClick: function(topic){
-
+  doHighlightMenuClick: function(topicBase64Encoded){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
-    try{ topic = JSON.parse(topic); }catch(e){}
-    //logger.trace(topic);
+    try{ topic = JSON.parse(Base64.decode(topicBase64Encoded)); }catch(e){}
+    logger.debug(topic);
     var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
     var win = wm.getMostRecentWindow("navigator:browser");
     var content = win.getBrowser().contentWindow;
     var selection = content.getSelection();
-    //logger.trace("selection:" + selection);
+    //logger.debug("selection:" + selection);
     var strContent = selection + "";
     strContent = strContent.trim();
     if(strContent == ""){
@@ -1266,7 +1265,7 @@ lasuli.ui = {
     var win = wm.getMostRecentWindow("navigator:browser");
     var contentDocument = win.getBrowser().contentDocument;
     var treewalker;
-    //logger.trace('start to get treewalker');
+    //logger.debug('start to get treewalker');
     try{
       treewalker = contentDocument.createTreeWalker(contentDocument.body,
       NodeFilter.SHOW_TEXT,
@@ -1287,38 +1286,35 @@ lasuli.ui = {
       false);
     }catch(e){
       logger.fatal(e);
-      //TODO error message?
       return false;
     }
-    //logger.trace('start to get position');
+    //logger.debug('start to get position');
     var curPos = 0;
     var startPos,endPos;
-    //logger.trace(startContainer.data);
-    //logger.trace(typeof(endContainer));
-    //logger.trace(endContainer.tagName);
-    //logger.trace(endContainer.textContent);
-    //logger.trace(startContainer.isSameNode(endContainer));
+    //logger.debug(startContainer.data);
+    //logger.debug(typeof(endContainer));
+    //logger.debug(endContainer.tagName);
+    //logger.debug(endContainer.textContent);
+    //logger.debug(startContainer.isSameNode(endContainer));
     while(treewalker.nextNode())
     {
         var node = treewalker.currentNode;
-        //logger.trace(node.textContent);
+        //logger.debug(node.textContent);
 
         if(node.isSameNode(startContainer)){
           startPos = curPos + startOffset;
-          //logger.trace("start:" + startPos);
+          //logger.debug("start:" + startPos);
+          //logger.debug("strContent.length:" + strContent.length);
           endPos = startPos + strContent.length;
-
+          //logger.debug("endPos:" + endPos);
           break;
         }
-        /*if(node.isSameNode(endContainer)){
-          endPos = curPos + endOffset;
-          //logger.trace("end:" + startPos);
-        }*/
+        //logger.debug("in loop startPos:" + startPos + ", endPost:" + endPos);
         curPos += node.data.length;
     }
-    if(!startPos || !endPos) return false;
-    //logger.trace(new Array(startPos, endPos));
-    //logger.trace(strContent);
+    //logger.debug("startPos:" + startPos + ", endPost:" + endPos);
+    if(typeof startPos != "number" || typeof endPos != "number") return false;
+    //logger.debug(strContent);
     var viewpointID;
     if(topic.viewpointID)
       viewpointID = topic.viewpointID;
@@ -1327,6 +1323,7 @@ lasuli.ui = {
 
     var topicID = (topic.topicID) ? topic.topicID : null;
     var fragment = { "viewpointID": viewpointID, "topicID": topicID, "startPos": startPos, "endPos": endPos, "text": strContent };
+    //logger.debug(fragment);
     dispatch("lasuli.core.doCreateFragment", fragment);
   },
 

@@ -99,7 +99,7 @@ lasuli.highlighter = {
       }
     }
     else{
-      //logger.trace("with domWindow");
+      //logger.debug("with domWindow");
       m_document = arg.domWindow.document;
     }
     //logger.trace("clearDocument");

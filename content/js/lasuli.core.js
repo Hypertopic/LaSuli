@@ -129,10 +129,16 @@ lasuli.core = {
     if(nodes.length > 0) return false;
     if(this.fragments[url]){
       var fragments = this.fragments[url];
-      //TODO find out why cannot pass dom windows as a parameter
-      //dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
-      dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
-      //logger.debug("finish highlighter");
+      if(typeof domWindow == "undefined")
+      {
+        dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
+        logger.debug("undefined dom window");
+      }
+      else
+      {
+        dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
+        logger.debug(domWindow.document.location.href);
+      }
     }
   },
 
@@ -553,6 +559,7 @@ lasuli.core = {
 
   doCreateFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
+    logger.debug(fragment);
     _p(30);
     try{
       var result = lasuli.hypertopic.createFragment(fragment.topicID, fragment.text, [fragment.startPos, fragment.endPos]);

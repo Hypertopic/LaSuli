@@ -22,7 +22,7 @@ function onOK()
 
   var server  = window.arguments[0];
   server.url = baseUrl;
-  server.user = user;
+  server.user = user.toLowerCase();
   server.pass = pass;
 	return true;
 }
@@ -31,7 +31,7 @@ function onLoad()
 {
   var server  = window.arguments[0];
   document.getElementById('txtBaseUrl').value = (server && server.url) ? server.url : '';
-  document.getElementById('txtUser').value = (server && server.user) ? server.user : '';
+  document.getElementById('txtUser').value = (server && server.user) ? server.user.toLowerCase() : '';
   document.getElementById('txtPass').value = (server && server.pass) ? server.pass : '';
   var title = (server && server.url) ? _('options.dialog.modify.title') : _('options.dialog.add.title');
   document.getElementById('lasuli-options-dialog').setAttribute('title', title);
