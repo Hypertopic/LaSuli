@@ -8,12 +8,12 @@
                    em:maxVersion="3.6.13"
                    em:updateLink="http://lasuli.sourceforge.net/lasuli.xpi"
                    em:updateInfoURL="http://lasuli.sourceforge.net/info.xml"
-                   em:updateHash="sha256:bbb64d5d0e1bd595a3e2ed897ab8f98991a7cced0359f0e8f3b8e195c73a8ce9" />
+                   em:updateHash="sha256:649cf591c92d7c131b78e2653fff3da9409f654cec509a085b23097495368e47" />
   <RDF:Seq RDF:about="rdf:#$qpiS92">
     <RDF:li RDF:resource="rdf:#$rpiS92"/>
   </RDF:Seq>
   <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.1.24">
+                   em:version="0.8.1.25">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
   </RDF:Description>
   <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
