@@ -35,15 +35,15 @@ lasuli.tabWatcher =
   },
 
   onLocationChange: function(aProgress, aRequest, aURI){
-    var logger = Log4Moz.repository.getLogger("lasuli.tabWatcher.onLocationChange");
+    //var logger = Log4Moz.repository.getLogger("lasuli.tabWatcher.onLocationChange");
     var strURI = "";
     if(aURI!= null && typeof(aURI.spec) == "string")
       strURI = aURI.spec;
-    //logger.trace(strURI);
-    if(strURI.indexOf("#") > 0)
+    //logger.debug(strURI);
+    /*if(strURI.indexOf("#") > 0)
       strURI = strURI.substring(0, strURI.indexOf('#'));
     logger.trace(strURI);
-
+    */
     Observers.notify("lasuli.core.doLocationChange", strURI);
     return 0;
   },

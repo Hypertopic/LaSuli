@@ -89,6 +89,7 @@ lasuli.highlighter = {
     var fragments = arg.fragments;
     //logger.trace(fragments);
     this.fragments = fragments;
+    var isAnchor = (arg.isAnchor) ? true : false;
 
     var m_document;
     if(!arg.domWindow){
@@ -103,8 +104,12 @@ lasuli.highlighter = {
       m_document = arg.domWindow.document;
     }
     //logger.trace("clearDocument");
-    //logger.trace(m_document.location.href);
-    this.clearDocument(m_document);
+    //logger.debug(m_document.location.href);
+    //logger.debug(m_document.location.hash);
+    if(isAnchor)
+      this.doRemoveFragment('lasuli_anchor_id');
+    else
+      this.clearDocument(m_document);
 
     //logger.trace(fragments);
 
@@ -245,6 +250,25 @@ lasuli.highlighter = {
     if(nodes.length == 0)
       return;
 
+    if(fragmentID == "lasuli_anchor_id")
+    {
+      for(var i=0, node; node = nodes[i]; i++){
+        node.removeAttribute("style");
+        var classes = node.getAttribute("class");
+        classes = classes.split(" ");
+        for(var j=0, classN; classN= classes[j]; j++)
+        {
+          classN = classN.substr(1);
+          if(classN == fragmentID)
+          {
+            classes.splice(j, 1);
+            j--;
+          }
+        }
+        node.setAttribute("class", classes.join(' '));
+      }
+      return false;
+    }
     for(var i=0, node; node = nodes[i]; i++){
       var classes = node.getAttribute("class");
       var bgColor = null;
@@ -291,6 +315,42 @@ lasuli.highlighter = {
       else
         node.removeAttribute("style");
     }
+  },
+
+  doHighlightAnchor: function(UrlHash){
+    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlightAnchor");
+    //logger.debug(UrlHash);
+    var m_document = this.getContentDocument();
+    if(m_document.readyState != 'complete') return false;
+    var hashFragment = UrlHash || m_document.location.hash;
+    //logger.debug(hashFragment);
+    if(typeof hashFragment != 'string') return false;
+    var coordinates = hashFragment.substr(1).split('+');
+    if(coordinates.length != 2) return false;
+    var startPos, endPos;
+    try{
+      startPos = parseInt(coordinates[0]);
+      endPos =parseInt(coordinates[1]);
+      if(typeof startPos == "number" && typeof endPos == "number"
+           && startPos >=0 && endPos >=0 && startPos != endPos)
+      {
+        if(startPos > endPos)
+        {
+          var tmp = startPos;
+          startPos = endPos;
+          endPos = tmp;
+        }
+      }
+      else
+        return false;
+    }catch(e){
+      logger.fatal(e);
+      return false;
+    }
+    var fragments = {"lasuli_anchor_id": {"startPos": startPos, "endPos": endPos, "color": "#FF8000"}};
+    //logger.debug(fragments);
+    this.doHighlight({"fragments": fragments, "isAnchor": true});
+    this.doScrollTo('lasuli_anchor_id');
   },
 
   //Auto register all observers

@@ -72,7 +72,6 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLocationChange");
     //logger.debug("URL:" + url);
     if(!url){
-      //logger.debug("URL is NULL");
       var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                    .getInterface(Components.interfaces.nsIWebNavigation)
                    .QueryInterface(Components.interfaces.nsIDocShellTreeItem)
@@ -80,10 +79,14 @@ lasuli.core = {
                    .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                    .getInterface(Components.interfaces.nsIDOMWindow);
       url = mainWindow.content.location.href;
-      //logger.debug(url);
-      url = (url.indexOf('#') > 0) ? url.substr(0, url.indexOf('#')) : url;
       lasuli.hypertopic.currentUrl = "about:blank";
     }
+    if(url.indexOf('#') > 0)
+    {
+      dispatch("lasuli.highlighter.doHighlightAnchor", url.substr(url.indexOf('#')));
+      url = url.substr(0, url.indexOf('#'));
+    }
+
     //Check the sidebar status
     //logger.debug(url);
     if(url && url != "about:blank")
@@ -127,18 +130,17 @@ lasuli.core = {
     var nodes = domWindow.document.querySelectorAll("span." + lasuli._class);
     //logger.debug(nodes.length);
     if(nodes.length > 0) return false;
+    var hashValue = domWindow.document.location.hash;
+    logger.debug(typeof hashValue);
     if(this.fragments[url]){
       var fragments = this.fragments[url];
       if(typeof domWindow == "undefined")
-      {
         dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
-        logger.debug("undefined dom window");
-      }
       else
-      {
         dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
-        logger.debug(domWindow.document.location.href);
-      }
+      Sync.sleep(1000);
+      if(typeof hashValue == "string")
+        dispatch("lasuli.highlighter.doHighlightAnchor", hashValue);
     }
   },
 
@@ -163,6 +165,8 @@ lasuli.core = {
     var fragments = lasuli.hypertopic.docCoordinates;
     this.fragments[lasuli.hypertopic.currentUrl] = fragments;
     dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
+    Sync.sleep(1000);
+    dispatch("lasuli.highlighter.doHighlightAnchor", null);
     _p([10,10]);
   },
 
