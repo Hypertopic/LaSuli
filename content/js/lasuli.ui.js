@@ -79,6 +79,7 @@ lasuli.ui = {
     $('#tab-document-title').html(_('document'));
     $('#span-viewpoint-list').html(_('viewpoints'));
     $('#config').bind('click', lasuli.ui.initConfigPanel);
+    $('#config-panel button').button();
   },
 
 	initConfigPanel: function(){

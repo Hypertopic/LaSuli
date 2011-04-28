@@ -290,3 +290,17 @@ input.cb-fragment {
   overflow: hidden;
   cursor: pointer;
 }
+
+#config-panel{
+	background-color: #FFFFFF;
+  border-radius: 4px 4px 4px 4px;
+  box-shadow: 4px 2px 2px #AAAAAA;
+  margin: 4px;
+  min-height: 100px;
+  padding: 10px;
+}
+
+:-moz-placeholder {
+  font-style: italic;
+  color: #AAA;
+}
