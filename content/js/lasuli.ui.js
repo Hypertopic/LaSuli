@@ -58,7 +58,7 @@ lasuli.ui = {
         dispatch("lasuli.core.doListViewpoints", null);
         dispatch('lasuli.highlighter.doClear', null);
       }
-      $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 32);
+      $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 56);
     });
 
     $('#tabs span.ui-icon-close').die().live('click', function() {
@@ -70,7 +70,7 @@ lasuli.ui = {
     $(window).bind('resize', function() {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.window.resize");
       //logger.debug($('.toolbar').innerWidth());
-      $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 32);
+      $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 56);
       //$('.toolbar').width( $('#tabs').innerWidth() - 10 );
     }).trigger('resize');
 
@@ -78,8 +78,15 @@ lasuli.ui = {
     $('#h3-actors').html(_('users'));
     $('#tab-document-title').html(_('document'));
     $('#span-viewpoint-list').html(_('viewpoints'));
+    $('#config').bind('click', lasuli.ui.initConfigPanel);
   },
 
+	initConfigPanel: function(){
+		$('#tabs').slideToggle({duration: 500, easing: 'easeInSine', complete: function(){
+			$('#config-panel').slideToggle({duration: 500, easing: 'easeInSine'});
+			}
+		});
+	},
   initDocumentPanel : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.initDocumentPanel");
     //logger.trace("initDocumentPanel");
@@ -1344,7 +1351,7 @@ lasuli.ui = {
     if(v < 100)
     {
       $('div#overlay-div').removeClass('hide').css("opacity", 0.2);
-      $('div#progressbar').show().progressbar({ value: v }).horizentalCenter();
+      $('div#progressbar').show().progressbar({ value: v });
     }
     else
     {

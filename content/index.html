@@ -8,7 +8,7 @@
 		<link type="text/css" href="css/lasuli.css" rel="stylesheet" />
 		<link type="text/css" href="css/ui.jqgrid.css" rel="stylesheet" />
 
-		<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-1.5.2.min.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
 
 		<link type="text/css" href="css/jquery.contextMenu.css" rel="stylesheet" />
@@ -21,7 +21,7 @@
 		<script type="text/javascript" src="js/lasuli.ui.js"></script>
 		<script language="javascript">
 		  $(function(){
-		    //$(document).bind("dblclick", function() { self.location.reload(); } );
+		    $(document).bind("dblclick", function() { self.location.reload(); } );
 		  });
 		</script>
 	</head>
@@ -100,9 +100,16 @@
 	</div>
 </div>
 
+<div id="config-panel" class="hide">
+asdfasd
+</div>
 <!-- status bar //-->
 <div id="overlay-div" class="hide"></div>
-<div id="progressbar" class="hide"></div>
+<div id="status-bar">
+	<div id="progressbar" class="hide"></div>
+	<span id="config">you cannot see me....</span>
+</div>
+
 <!--<input type="button" onclick="Observers.notify('lasuli.contextmenu.doShow', null);" value="enable">
 <input type="button" onclick="Observers.notify('lasuli.contextmenu.doHide', null);" value="disable"> //-->
 </body>

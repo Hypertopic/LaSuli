@@ -41,7 +41,7 @@ input.cb-analysis-topic{
   position: fixed;
   background-color: #BBBBBB;
   width: 100%;
-  height: 30px;
+  height: 24px;
   top: auto;
   right: 0;
   bottom: 0;
@@ -67,9 +67,10 @@ div#create-viewpoint input
 #tabs {
   margin-top: 0px;
   margin-right: 2px;
-  margin-bottom: auto;
   margin-left: 2px;
+  margin-bottom: auto;
 }
+
 #tabs li .ui-icon-close { float: left; margin: 4px 2px 0 0; cursor: pointer; }
 #tabs li .ui-icon-tabplus { float: left; margin: 6px 2px 0 6px; cursor: pointer; padding: 1px 2px;}
 .ui-icon-tabplus {background-image: url(images/plus.png); }
@@ -257,16 +258,35 @@ div.ui-tabs-panel {
 
 div#progressbar{
   position: fixed;
-  background-color: #BBBBBB;
+  background-color: #F00;
   top: auto;
-  bottom: 12px;
+  bottom: 5px;
+  left: 5px;
+  right: auto;
   margin: 0;
   height:12px;
-  min-width: 120px;
-  width: 90%;
+  min-width: 40px;
+  width: -moz-calc(100% - 40px);
   z-index:999999;
 }
 input.cb-fragment {
   margin-left: -14px;
   margin-right: 2px;
+}
+
+#config{
+	position: fixed;
+  top: auto;
+  bottom: 6px;
+  left: auto;
+  right: 4px;
+  margin: 0;
+  height:16px;
+  width: 16px;
+  z-index:999999;
+  background-image: url(blitzer/images/config.png);
+  display: block;
+  text-indent: -99999px;
+  overflow: hidden;
+  cursor: pointer;
 }
