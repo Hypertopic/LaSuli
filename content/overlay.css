@@ -1,0 +1,15 @@
+#lasuli-selector-button{
+  list-style-image: url("chrome://lasuli/content/lasuli_16x16.png");
+  -moz-image-region: rect(0, 16px, 16px, 0px);
+}
+
+#lasuli-selector-button[buttonover="true"],
+#lasuli-selector-button:hover{
+  -moz-image-region: rect(16px, 16px, 32px, 0px);
+}
+
+#lasuli-selector-button[buttondown="true"],
+#lasuli-selector-button[open="true"],
+#lasuli-selector-button:hover:active{
+  -moz-image-region: rect(48px, 16px, 64px, 0px);
+}
