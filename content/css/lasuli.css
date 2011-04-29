@@ -304,3 +304,14 @@ input.cb-fragment {
   font-style: italic;
   color: #AAA;
 }
+
+#config-panel input{
+	border-radius: 6px;
+	border: 1px solid #EEEEEE;
+	color: #333333;
+}
+
+#config-panel fieldset{
+	border-radius: 6px;
+	margin-bottom: 6px;
+}

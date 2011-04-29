@@ -103,21 +103,22 @@
 <div id="config-panel" class="hide">
 	<h3>Configuration</h3>
 	<form>
-	<fieldset>
+	<fieldset id="default-server">
 		<legend>Service Hypertopic (par défaut)</legend>
 		<p>
-		<label>URL : <input type="text" class="config-input text ui-widget-content ui-corner-all" type="url" placeholder="http://argos2.hypertopic.org" size="29" required/></label>
+		<label>URL : <input type="text" class="url" type="url" placeholder="http://argos2.hypertopic.org" size="29" required/></label>
 		</p>
 		<p>
-		<label>Utilisateur : <input type="text" class="config-input text ui-widget-content ui-corner-all" size="25" /></label>
+		<label>Utilisateur : <input type="text" class="user" size="25" /></label>
 		</p>
 		<p>
-		<label>Mot de passe : <input type="password" class="config-input text ui-widget-content ui-corner-all" size="23" /></label>
+		<label>Mot de passe : <input type="password" class="pass" size="23" /></label>
 		</p>
 	</fieldset>
-	<p align="right">
-		<button class="add">Ajouter</button>
-		<button class="ok">Okay</button>
+	
+	<p id="config-toolbar" align="right">
+		<button class="add" type="button">Ajouter</button>
+		<button class="ok" type="button">Okay</button>
 	</p>
 	</form>
 </div>
