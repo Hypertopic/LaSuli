@@ -1,5 +1,5 @@
 #lasuli-selector-button{
-  list-style-image: url("chrome://lasuli/content/lasuli_16x16.png");
+  list-style-image: url("chrome://lasuli/content/css/blitzer/images/lasuli_16x16.png");
   -moz-image-region: rect(0, 16px, 16px, 0px);
 }
 

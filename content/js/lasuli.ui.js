@@ -60,6 +60,7 @@ lasuli.ui = {
         dispatch('lasuli.highlighter.doClear', null);
       }
       $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 56);
+      $("#config-panel").height($(window).height() - 56);
     });
 
     $('#tabs span.ui-icon-close').die().live('click', function() {
@@ -72,7 +73,7 @@ lasuli.ui = {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.window.resize");
       //logger.debug($('.toolbar').innerWidth());
       $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 56);
-      //$('.toolbar').width( $('#tabs').innerWidth() - 10 );
+      $("#config-panel").height($(window).height() - 56);
     }).trigger('resize');
 
     $('#h3-related-topics').html(_('topics'));
@@ -80,7 +81,7 @@ lasuli.ui = {
     $('#tab-document-title').html(_('document'));
     $('#span-viewpoint-list').html(_('viewpoints'));
     $('#config').bind('click', lasuli.ui.initConfigPanel);
-    $('#config-panel button.ok').button({ icons: { primary: "ui-icon-check" }});
+    $('#config-panel button.ok').button({ icons: { primary: "ui-icon-check" }}).bind('click', lasuli.ui.doSaveConfiguration);
     $('#config-panel button.add').button({ icons: { primary: "ui-icon-plusthick" }}).bind('click', lasuli.ui.doAddServerField);
     $('#config-panel button.delete').live('click', lasuli.ui.doRemoveServerField);
   },
@@ -766,6 +767,44 @@ lasuli.ui = {
 	
 	doRemoveServerField : function(){
 		$(this).parents('fieldset').hide().remove();
+	},
+	
+	doSaveConfiguration : function(){
+		var servers = [];
+		var defaultServer = false;
+		$('#config-panel').find('fieldset').each(function(){
+			var server = {};
+			server.url = $(this).find('input.url').val();
+			server.user = $(this).find('input.user').val();
+			server.pass = $(this).find('input.pass').val();
+			
+			if($(this).attr('id') == 'default-server')
+			{
+				if(server.url != ''){
+					server.default = true;
+					defaultServer = true;
+					servers.push(server);
+				}
+			}
+			else
+				if(server.url != '')
+					servers.push(server);
+				else
+					$(this).remove();
+		});
+		
+		if(!defaultServer)
+		{
+	    dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('options.error.nodefaultserver')});
+	    return false;
+		}
+
+		Preferences.set("extensions.lasuli.setting",JSON.stringify(servers));
+		self.location.reload();
+	},
+	
+	doOpenConfigPanel : function(){
+		this.initConfigPanel();
 	},
 	
   doShowItemName : function(itemName){

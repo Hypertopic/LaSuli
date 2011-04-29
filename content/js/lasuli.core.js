@@ -41,7 +41,7 @@ lasuli.core = {
       if(typeof(HtServers[n].serverType) != "string")
       {
         prompts.alert(window, _('Error'), _('options.error.servernotaccessible',[server.url]));
-        this.closeSideBar();
+        dispatch("lasuli.ui.doOpenConfigPanel", '');
         return false;
       }
     }
@@ -59,12 +59,6 @@ lasuli.core = {
     for(var func in this)
       if(func.substr(0, 2) == "do" && typeof(lasuli.core[func]) == "function")
         Observers.remove("lasuli.core." + func, lasuli.core[func], lasuli.core);
-  },
-
-  doPrefChange : function(){
-    lasuli.core.loadSetting();
-    if(lasuli.core.isSidebarOpen())
-      document.getElementById("sidebar").contentWindow.location.reload();
   },
 
   // When tabWatcher find a new location is input, trigger this function
@@ -632,26 +626,6 @@ lasuli.core = {
   }
 }
 
-var lasuliPrefObserver = {
-  register: function() {
-    var prefService = Cc["@mozilla.org/preferences-service;1"]
-                                .getService(Ci.nsIPrefService);
-    this._branch = prefService.getBranch("extensions.lasuli.");
-    this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
-    this._branch.addObserver("", this, false);
-  },
-
-  unregister: function() {
-    if (!this._branch) return;
-    this._branch.removeObserver("", this);
-  },
-
-  observe: function(aSubject, aTopic, aData) {
-    if(aTopic != "nsPref:changed") return;
-    lasuli.core.doPrefChange();
-  }
-}
-
 lasuli.sidebar = {
   sequence: {},
   init: function(){
@@ -678,14 +652,12 @@ lasuli.sidebar = {
     var logger = Log4Moz.repository.getLogger("lasuli.sidebar.onSidebarOpened");
     //logger.debug("opening LaSuli sidebar");
     lasuli.core.register();
-    lasuliPrefObserver.register();
     lasuli.core.loadSetting();
     this.changeWorker.postMessage(HtServers);
   },
   onSidebarClosed: function(){
     var logger = Log4Moz.repository.getLogger("lasuli.sidebar.onSidebarClosed");
     //logger.debug("closing LaSuli sidebar");
-    lasuliPrefObserver.unregister();
     lasuli.core.unregister();
     this.changeWorker.postMessage('shutdown');
   }
