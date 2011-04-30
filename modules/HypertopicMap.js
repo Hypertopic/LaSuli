@@ -139,7 +139,8 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
     //If there is a request body, set the content-type to json
     if(httpBody && httpBody != '')
       this.xhr.setRequestHeader('Content-Type', 'application/json');
-
+		
+		this.xhr.setRequestHeader('Accept', 'application/json');
     this.xhr.setRequestHeader('Authorization', auth);
 
     //If the request body is an object, serialize it to json
@@ -734,7 +735,7 @@ HtMapItem.prototype.getHighlights = function() {
 	var view = this.getView();
 	for (var k in view) {
 	  if(!view.hasOwnProperty(k)) continue;
-	  if (!this.htMap.isReserved(k) && typeof view[k] == "object" 
+	  if (!this.Corpus.htMap.isReserved(k) && typeof view[k] == "object" 
 		  && view[k].hasOwnProperty("coordinates")) 
 		  result.push(new HtMapHighlight(k, this));
 	}
