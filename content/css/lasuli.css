@@ -316,3 +316,11 @@ input.cb-fragment {
 	border-radius: 6px;
 	margin-bottom: 6px;
 }
+
+.lock-button .lock{
+	background-image: url(blitzer/images/lock.png);
+  display: block;
+  text-indent: -99999px;
+  overflow: hidden;
+  cursor: pointer;
+}
