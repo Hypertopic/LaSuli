@@ -298,9 +298,48 @@ input.cb-fragment {
   margin: 4px;
   min-height: 100px;
   padding: 10px;
+  overflow: auto;
 }
 
 :-moz-placeholder {
   font-style: italic;
   color: #AAA;
+}
+
+#config-panel input{
+	border-radius: 6px;
+	border: 1px solid #EEEEEE;
+	color: #333333;
+}
+
+#config-panel fieldset{
+	border-radius: 6px;
+	margin-bottom: 6px;
+}
+
+.tree-panel {
+	margin: 4px;
+	width: -moz-calc(100% - 16px);
+	padding: 4px;
+	border-radius: 6px;
+	background-color: #FFF;
+}
+.tree-viewpoint-panel span{
+	background-image: url(blitzer/images/lock.png);
+  display: block;
+  text-indent: -99999px;
+  overflow: hidden;
+  cursor: pointer;
+  width:16px;
+  height: 16px;
+  float:right;
+  margin: 3px 3px 0px 0px;
+}
+.tree-viewpoint-panel input{
+	border-radius: 3px;
+	padding: 4px;
+	border: 1px solid #EEEEEE;
+	color: #333333;
+	width: -moz-calc(100% - 40px);
+	margin-left: 6px;
 }

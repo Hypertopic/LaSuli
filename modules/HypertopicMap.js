@@ -139,7 +139,8 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
     //If there is a request body, set the content-type to json
     if(httpBody && httpBody != '')
       this.xhr.setRequestHeader('Content-Type', 'application/json');
-
+		
+		this.xhr.setRequestHeader('Accept', 'application/json');
     this.xhr.setRequestHeader('Authorization', auth);
 
     //If the request body is an object, serialize it to json
@@ -732,9 +733,12 @@ HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
 HtMapItem.prototype.getHighlights = function() {
 	var result = new Array();
 	var view = this.getView();
-	if(!view.highlight || view.highlight.length == 0) return result;
-	for(var i=0, highlight; highlight = view.highlight[i]; i++)
-	  result.push(new HtMapHighlight(highlight.id, this));
+	for (var k in view) {
+	  if(!view.hasOwnProperty(k)) continue;
+	  if (!this.Corpus.htMap.isReserved(k) && typeof view[k] == "object" 
+		  && view[k].hasOwnProperty("coordinates")) 
+		  result.push(new HtMapHighlight(k, this));
+	}
 	return result;
 }
 
