@@ -77,14 +77,9 @@ HtMap.prototype.purgeCache = function(){
   HtCaches[this.baseUrl] = {};
 }
 HtMap.prototype.getServerType = function(){
-  var result = this.httpGet('_all_docs?startkey="_design/"&endkey="_design0"');
-  for(var doc in result)
-  {
-    if(doc.indexOf("argos") != -1)
-      return "argos";
-    if(doc.indexOf("cassandre") != -1)
-      return "cassandre";
-  }
+  var result = this.httpGet('/');
+  if(typeof result['service'] == 'string')
+    return result['service'].toLowerCase();
   return false;
 }
 HtMap.prototype.getLastSeq = function(){
