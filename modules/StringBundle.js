@@ -126,8 +126,11 @@ StringBundle.prototype = {
    * @returns {String} the value of the string
    */
   get: function(key, args) {
-    if (args)
+    if (args){
+      if(!Array.isArray(args))
+        args = new Array(args);
       return this.stringBundle.formatStringFromName(key, args, args.length);
+    }
     else
       return this.stringBundle.GetStringFromName(key);
   },

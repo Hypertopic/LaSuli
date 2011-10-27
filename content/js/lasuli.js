@@ -100,12 +100,13 @@ function _(n,arg)
   var logger = Log4Moz.repository.getLogger("i18n");
   var i18nStrings = new StringBundle("chrome://lasuli/locale/lasuli.properties");
   try{
-    //logger.debug("get string:" + n + ", return:" + i18nStrings.get(n,arg));
     return i18nStrings.get(n,arg);
   }catch(e)
   {
-    logger.fatal(e);
-    return n;
+    logger.fatal(n);
+    logger.fatal(JSON.stringify(arg));
+    logger.fatal(i18nStrings.get(n));
+    logger.fatal(e.message);
   }
 }
 

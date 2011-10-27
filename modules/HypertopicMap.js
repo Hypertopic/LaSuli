@@ -77,7 +77,9 @@ HtMap.prototype.purgeCache = function(){
   HtCaches[this.baseUrl] = {};
 }
 HtMap.prototype.getServerType = function(){
-  var result = this.httpGet('/');
+  //var logger = Log4Moz.repository.getLogger("HtMap.getServerType");
+  //var result = this.httpGet('/');
+  logger.debug(result);
   if(typeof result['service'] == 'string')
     return result['service'].toLowerCase();
   return false;

@@ -33,6 +33,17 @@ function getColorOverlay(a,b)
   return "#" + R + G + B;
 }
 
+function alpha(color, alpha){
+  try{
+    R = parseInt(color.substring(1,3),16);
+    G = parseInt(color.substring(3,5),16);
+    B = parseInt(color.substring(5,7),16);
+    if(typeof alpha == 'undefined')
+      alpha = 0.5;
+    return 'rgba(' + R + ',' + G + ',' + B + ',' + alpha + ')';
+  }catch(e){ logger.fatal(e); }
+}
+
 lasuli.highlighter = {
   // Get TreeWalker Object
   getTreeWalker : function(m_document)
@@ -196,7 +207,7 @@ lasuli.highlighter = {
         if(bgColor)
         {
           needToBeReplaced = true;
-          aNode.setAttribute("style", "background-color: "+ bgColor);
+          aNode.setAttribute("style", "background-color: "+ alpha(bgColor));
           aNode.setAttribute("id", lasuli._htClass + xPos[i]);
         }
 
@@ -281,7 +292,7 @@ lasuli.highlighter = {
       }
       logger.trace(bgColor);
       if(bgColor)
-        node.setAttribute("style", "background-color: "+ bgColor);
+        node.setAttribute("style", "background-color: "+ alpha(bgColor));
       else
         node.removeAttribute("style");
     }
@@ -311,7 +322,7 @@ lasuli.highlighter = {
 
       //logger.trace(bgColor);
       if(bgColor)
-        node.setAttribute("style", "background-color: "+ bgColor);
+        node.setAttribute("style", "background-color: "+ alpha(bgColor));
       else
         node.removeAttribute("style");
     }
