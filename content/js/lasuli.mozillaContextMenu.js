@@ -35,7 +35,7 @@ lasuli.contextmenu = {
     menu.setAttribute('topicID', topicID);
     menu.setAttribute('viewpointID', viewpointID);
     if(topic.color)
-      menu.setAttribute('style','-moz-appearance: none !important; background-color: ' + topic.color + ' !important;');
+      menu.setAttribute('style','-moz-appearance: none !important; background-color: ' + alpha(topic.color) + ' !important;');
     return menu;
   },
 

@@ -50,7 +50,8 @@ function HtMap(baseUrl, user, pass) {
   }
   //If the baseUrl is not end with "/" append slash to the end.
   this.baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
-
+  logger.trace(this.baseUrl);
+  
   //Create the XMLHttpRequest object for HTTP requests
   this.xhr = new XMLHttpRequest();
   //Overrides the MIME type returned by the hypertopic service.
@@ -59,26 +60,28 @@ function HtMap(baseUrl, user, pass) {
   this.user = user || "";
   this.pass = pass || "";
   this.baseUrl = baseUrl; //+ "_design/" + this.serverType + "/_rewrite/";
-
+  logger.trace(this.user);
+  logger.trace(this.pass);
+  
   this.serverType = this.getServerType();
   if(!this.serverType)
     return false;
-  //logger.trace(this.serverType);
-  //logger.trace(this.baseUrl);
+  logger.trace(this.serverType);
+  logger.trace(this.baseUrl);
 
 
   //Initial the local cache
   HtCaches[baseUrl] = {};
   //Set to false to disable cache for debuging
-  this.enableCache = true;
+  this.enableCache = false;
 }
 HtMap.prototype.purgeCache = function(){
   //var logger = Log4Moz.repository.getLogger("HtMap.purgeCache");
   HtCaches[this.baseUrl] = {};
 }
 HtMap.prototype.getServerType = function(){
-  //var logger = Log4Moz.repository.getLogger("HtMap.getServerType");
-  //var result = this.httpGet('/');
+  var logger = Log4Moz.repository.getLogger("HtMap.getServerType");
+  var result = this.httpGet('/');
   logger.debug(result);
   if(typeof result['service'] == 'string')
     return result['service'].toLowerCase();
@@ -120,13 +123,16 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
         return HtCaches[this.baseUrl][httpUrl];
       }
   }
-  //logger.trace(httpAction + " " + httpUrl);
+  
   //Default HTTP URL is the baseUrl
   httpUrl = (httpUrl) ? httpUrl : this.baseUrl;
   //Uncomment the following line to disable cache
 
   httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object")
                                   ? JSON.stringify(httpBody) : httpBody);
+  logger.info(httpAction + " " + httpUrl);
+  logger.info(httpBody);
+  
   var result = null;
   var startTime = new Date().getTime();
   try{
@@ -157,7 +163,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
       throw Error(httpAction + " " + httpUrl + "\nResponse: " +this.xhr.status);
     }
     result = this.xhr.responseText;
-
+    logger.info(result);
     //Clear cache
     if(this.enableCache && httpAction != 'GET')
       this.purgeCache();
@@ -530,7 +536,7 @@ HtMapCorpus.prototype.getName = function() {
  * Destroy the nodes of the corpus and of all its documents.
  */
 HtMapCorpus.prototype.destroy = function() {
-  //var logger = Log4Moz.repository.getLogger("HtMapUser.destroy");
+  //var logger = Log4Moz.repository.getLogger("HtMapCorpus.destroy");
   //logger.trace(this.getID());
 	var items = this.getItems();
 	if(!items) return true;
@@ -728,14 +734,19 @@ HtMapItem.prototype.createHighlight = function(topic, text, coordinates) {
 }
 
 HtMapItem.prototype.getHighlights = function() {
+  var logger = Log4Moz.repository.getLogger("HtMapItem.getHighlights");
 	var result = new Array();
 	var view = this.getView();
-	for (var k in view) {
+	logger.debug(view);
+	if(!view.highlight || view.highlight.length == 0) return result;
+    for(var i=0, highlight; highlight = view.highlight[i]; i++)
+      result.push(new HtMapHighlight(highlight.id, this));
+	/*for (var k in view) {
 	  if(!view.hasOwnProperty(k)) continue;
 	  if (!this.Corpus.htMap.isReserved(k) && typeof view[k] == "object" 
 		  && view[k].hasOwnProperty("coordinates")) 
 		  result.push(new HtMapHighlight(k, this));
-	}
+	}*/
 	return result;
 }
 

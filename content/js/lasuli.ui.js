@@ -9,7 +9,7 @@ lasuli.ui = {
       tabTemplate: '<li><a href="#{href}" class="tab-viewpoint">#{label}</a> <span class="ui-icon ui-icon-close">Remove Tab</span></li>',
       selected:0,
       add: function(event, ui) {
-        logger.trace(ui.tab.href);
+        //logger.trace(ui.tab.href);
         var viewpointPanelHtml = '<span class="ui-widget-header ui-corner-all toolbar"><button class="modify">' + _("modify") + '</button>'
                                + '<span class="buttonset hide"><button class="okay">' + _("delete") + '</button><button class="cancel">' + _("Cancel") + '</button></span></span>'
                                + '<div class="topics" ><p class="h3-title"><span>' + _("Index") + '</span>'
@@ -24,7 +24,7 @@ lasuli.ui = {
       },
       remove: function(event, ui)
       {
-        logger.trace(ui);
+        //logger.trace(ui);
         if($('#' + ui.panel.id))
           $('#' + ui.panel.id).remove();
       }
@@ -37,7 +37,7 @@ lasuli.ui = {
       if($(ui.tab).hasClass("tab-viewpoint"))
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
-        logger.trace(viewpointID);
+        //logger.trace(viewpointID);
         _p(30);
         dispatch("lasuli.ui.doClearViewpointPanel", viewpointID);
         _p(50);
@@ -938,7 +938,7 @@ lasuli.ui = {
 
   doClearDocumentPanel : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doClearDocumentPanel");
-    logger.trace("clear the document panel");
+    //logger.trace("clear the document panel");
     // Clear the document name
     $("#h3-entity-name").html(_("no.name"));
     // Clear the attribute grid
@@ -974,7 +974,7 @@ lasuli.ui = {
       //If this viewpoint tab is already created.
       if($("div#"+viewpoint.id).length > 0) continue;
       //Create the tab for this viewpoint
-      logger.trace("adding viewpoint:" + viewpoint.id + ", " + viewpoint.name);
+      //logger.trace("adding viewpoint:" + viewpoint.id + ", " + viewpoint.name);
       tabIndex = $tabs.tabs('length')-1;
       $tabs.tabs('add', '#' + viewpoint.id, viewpoint.name, tabIndex);
     }
@@ -1005,7 +1005,7 @@ lasuli.ui = {
     {
       if(!viewpointID) viewpointID = topic.viewpointID;
       var el = 'div#' + topic.viewpointID + ' ul.topics-ul li a[uri="' + topic.topicID + '"]';
-      logger.trace(el);
+      //logger.trace(el);
       if($(el).length > 0)
         continue;
       html += '<li class="topic"><input type="checkbox" class="cb-remove-keyword hide"><a uri="' + topic.topicID + '">' + topic.name + '</a></li>';
@@ -1089,14 +1089,63 @@ lasuli.ui = {
         }
       }
   },
-
+  
+  jstree_dnd : {
+    "drop_check": function(data){
+      var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_dnd.drop_target");
+      logger.debug(data);
+    }
+  },
+  
+  jstree_crrm : {
+    "move" : {
+      /*"check_move" : function (m) {
+        var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_crrm.move.check_move");
+        var p = this._get_parent(m.o);
+        logger.debug(m.o.attr('topicID'));
+        logger.debug(m.o.attr('name'));
+        logger.debug(m.np.attr('topicID'));
+        logger.debug(m.np.attr('name'));
+      }*/
+    }
+  },
+  jstree_move : function (e, data) {
+    data.rslt.o.each(function (i) {
+      var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_move");
+      logger.debug($(this).attr("viewpointID"));
+      logger.debug($(this).attr("topicID"));
+      logger.debug($(this).attr("name"));
+      logger.debug($(this).attr("rel"));
+      logger.debug(data.rslt.np.attr("topicID"));
+      logger.debug(data.rslt.np.attr("name"));
+      logger.debug(data.rslt.np.attr("rel"));
+      
+      if($(this).attr("rel") == 'viewpoint'){
+        $.jstree.rollback(data.rlbk);
+        return false;
+      }
+        
+      var arg = {
+        "viewpointID": $(this).attr("viewpointID"), 
+        "topicID": $(this).attr("topicID"), 
+        "broaderTopicID": data.rslt.np.attr("topicID"), 
+        "rlbk": data.rlbk,
+        "rslt": data.rslt};
+      dispatch("lasuli.core.doMoveTopicTreeItem", arg);
+      //$.jstree.rollback(data.rlbk);
+      //data.inst.refresh(data.inst._get_parent(data.rslt.oc));
+    });
+  },
+  
   doShowTopicTree : function(topics){
     $.jstree._themes = 'chrome://lasuli/content/css/jsTree/themes/';
     $("#tree").jstree({
       "json_data" : topics,
       "types" : lasuli.ui.jstree_types,
       "contextmenu": lasuli.ui.jstree_contextmenu,
-      "plugins" : [ "themes", "json_data", "ui", "crrm", "contextmenu", "types" ]
+      "dnd" : lasuli.ui.jstree_dnd,
+      "crrm" : lasuli.ui.jstree_crrm,
+      "plugins" : [ "themes", "json_data", "ui", "crrm", "dnd", "contextmenu", "types", "sort" ]
     }).bind("rename.jstree", function (e, data) {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.rename");
       var sourceObj   = data.rslt.obj;
@@ -1111,9 +1160,14 @@ lasuli.ui = {
       var arg = {"viewpointID": viewpointID, "topicID": topicID, "topicType": topicType, "name": name, "newName": newName, "sourceObj": sourceObj};
 
       dispatch("lasuli.core.doRenameTopicTreeItem", arg);
-    });
+    }).bind("move_node.jstree", lasuli.ui.jstree_move);
   },
-
+  doRefreshTopicTree: function(data){
+    data.inst.refresh(data.inst._get_parent(data.rslt.oc));
+  },
+  doRollbackTopicTree: function(data){
+    $.jstree.rollback(data.rlbk);
+  },
   doReloadTopicTree: function(topics){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doReloadTopicTree");
     //logger.trace(topics);
@@ -1169,7 +1223,7 @@ lasuli.ui = {
     var html = '<div class="fragments ui-widget" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
        +'<div class="fragment-header" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
        +'<img class="fragment-toggle" src="css/blitzer/images/toggle-close.png">'
-       +'<span class="ui-corner-right" style="background-color:'+ topic.color + '">'
+       +'<span class="ui-corner-right" style="background-color:'+ alpha(topic.color) + '">'
        + topic.name + '</span></div><ul>'
        + '</ul></div>';
     $('div#' + topic.viewpointID).find(".fragments-container").append(html);
@@ -1226,7 +1280,7 @@ lasuli.ui = {
 
   doMakeFragmentsDroppable : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doMakeFragmentsDroppable");
-    logger.trace('doMakeFragmentsDroppable');
+    //logger.trace('doMakeFragmentsDroppable');
     $(".fragments").droppable({
       accept: '.fragment',
       drop: function(event, ui)
@@ -1465,4 +1519,5 @@ $(window).bind("unload", function(){
   dispatch('lasuli.contextmenu.doHide', null);
   dispatch('lasuli.highlighter.doClear', null);
   dispatch('lasuli.sidebar.onSidebarClosed', null);
+
 });

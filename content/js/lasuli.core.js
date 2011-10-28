@@ -29,14 +29,15 @@ lasuli.core = {
     var servers = Preferences.get("extensions.lasuli.setting", JSON.stringify(new Array()));
     if(typeof(servers) == "string")
       servers = JSON.parse(servers);
-
+    logger.trace(servers);
+    
     HtServers = {};
     for(var i=0, server; server = servers[i]; i++)
     {
       var n = getUUID();
       if(server.default)
         n = "freecoding";
-      //logger.trace(server);
+      logger.trace(server);
       HtServers[n] = new HtMap(server.url, server.user, server.pass);
       if(typeof(HtServers[n].serverType) != "string")
       {
@@ -45,7 +46,7 @@ lasuli.core = {
         return false;
       }
     }
-
+    logger.trace(HtServers);
     return true;
   },
 
@@ -157,6 +158,7 @@ lasuli.core = {
     _p([8,10]);
     // Highlight all fragments
     var fragments = lasuli.hypertopic.docCoordinates;
+    logger.info(fragments);
     this.fragments[lasuli.hypertopic.currentUrl] = fragments;
     dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
     Sync.sleep(1000);
@@ -341,7 +343,18 @@ lasuli.core = {
       return;
     }
   },
-
+  
+  doMoveTopicTreeItem : function(arg){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doMoveTopicTreeItem");
+    var topicID = arg.topicID;
+    var viewpointID = arg.viewpointID;
+    var broaderTopicID = arg.broaderTopicID;
+    var data = arg.data;
+    if(lasuli.hypertopic.moveTopic(viewpointID, topicID, broaderTopicID))
+      dispatch("lasuli.ui.doRefreshTopicTree", data);
+    else
+      dispatch("lasuli.ui.doRollbackTopicTree", data);
+  },
   doRenameTopicTreeItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameTopicTreeItem");
     //logger.debug(arg);
