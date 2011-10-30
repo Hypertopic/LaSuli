@@ -1,7 +1,6 @@
 content   lasuli                content/
-skin      lasuli   classic/1.0  skin/
 resource  lasuli                ./
 locale    lasuli   en-US        locale/en-US/
-locale    lasuli   fr-FR        locale/fr-FR/
 
 overlay chrome://browser/content/browser.xul chrome://lasuli/content/overlay.xul
+

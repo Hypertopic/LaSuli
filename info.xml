@@ -2,6 +2,13 @@
 <html lang="en-US" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
 <h1>LaSuli - What's New</h1>
 <p>&nbsp;</p>
+<h2>8.2.2</h2>
+<ul>
+  <li>Support topics drag and drop in topic tree.</li>
+  <li>Topics are sorted alphabetically in topic tree.</li>
+  <li>Support Firefox 9.0.</li>
+  <li>Fixed bug #8, #14, #15.</li>
+</ul>
 <h2>8.1.14</h2>
 <ul>
   <li>Refresh the topic tree when a topic removed.</li>
