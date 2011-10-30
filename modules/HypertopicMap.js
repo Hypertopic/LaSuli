@@ -11,6 +11,7 @@ include("resource://lasuli/modules/XMLHttpRequest.js");
 include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
 include("resource://lasuli/modules/Base64.js");
+include("resource://lasuli/modules/Preferences.js");
 
 var HtServers = {};
 var HtCaches = {};
@@ -73,7 +74,8 @@ function HtMap(baseUrl, user, pass) {
   //Initial the local cache
   HtCaches[baseUrl] = {};
   //Set to false to disable cache for debuging
-  this.enableCache = false;
+  this.enableCache = Preferences.get("extensions.lasuli.cache", true);
+  logger.trace(this.enableCache);
 }
 HtMap.prototype.purgeCache = function(){
   //var logger = Log4Moz.repository.getLogger("HtMap.purgeCache");
