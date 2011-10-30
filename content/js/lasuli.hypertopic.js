@@ -197,6 +197,8 @@ lasuli.hypertopic = {
       try{
         var item = this.items[k];
         result = item.getAttributes();
+        logger.debug(item);
+        logger.debug(result);
       if(result)
         attributes[k] = result;
       }catch(e){
@@ -212,9 +214,12 @@ lasuli.hypertopic = {
       {
         if(!result[attribute.name])
           result[attribute.name] = new Array();
-        result[attribute.name].push(attribute.value);
+        var strValue = attribute.value + "";
+        var idx = result[attribute.name].indexOf(strValue);
+        if(idx == -1)
+          result[attribute.name].push(strValue);
       }
-    //logger.trace(result);
+    logger.debug(result);
     MemCache.attributes = result;
     return result;
   },
