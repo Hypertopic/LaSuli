@@ -1,5 +1,6 @@
 include("resource://lasuli/modules/HypertopicMap.js");
 var MemCache = {};
+var noCache = true; //set to true for debug
 
 lasuli.hypertopic = {
   _locations : {},
@@ -30,7 +31,7 @@ lasuli.hypertopic = {
     MemCache.keywords = false;
   },
   get users(){
-    if(MemCache.users) return MemCache.users;
+    if(!noCache && MemCache.users) return MemCache.users;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.users");
     var result = {};
     logger.trace(HtServers);
@@ -57,9 +58,54 @@ lasuli.hypertopic = {
       return null;
   },
   get corpus(){
-    if(MemCache.corpus) return MemCache.corpus;
+    if(!noCache && MemCache.corpus) return MemCache.corpus;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.corpus");
-    var result = null;
+    var result = null, corpusID;
+    
+    logger.debug("get corpus");
+    //First try to locate the corpus on Cassandre.
+    for(var k in this.items) {
+      var server = HtServers[k];
+      logger.debug(k);
+      if(server.serverType != 'cassandre')
+        continue;
+      
+      corpusID = this.items[k].getCorpusID();
+      logger.debug(corpusID);
+      logger.debug("corpus found on cassandre server");
+      break;
+    }
+    
+    if(!corpusID)
+      for(var k in this.items) {
+        var server = HtServers[k];
+        logger.debug(k);
+        if(server.serverType != 'argos')
+          continue;
+        
+        corpusID = this.items[k].getCorpusID();
+        logger.debug("corpus found on argos server");
+        break;
+      }
+      
+    if(corpusID) {
+      var corpus = HtServers.freecoding.getCorpus(corpusID);
+      
+      if(corpus.getView() === false) {
+        logger.debug(corpusID);
+        logger.debug("corpus doesn't exist!");
+        var ret = corpus.createWithID(corpusID, corpusID);
+        logger.debug(ret);
+        if(!ret) {
+          logger.fatal('unable to create a corpus with a specific ID:' + corpusID);
+          return false;
+        }
+        return ret;
+      }
+      return corpus;
+    }
+    
+    logger.debug("none corpus was found! Need to use user's corpus!");
     var corpora,
         user = this.user;
     try{
@@ -87,7 +133,7 @@ lasuli.hypertopic = {
     return result;
   },
   get items(){
-    if(MemCache.items) return MemCache.items;
+    if(!noCache && MemCache.items) return MemCache.items;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.items");
     var startTime = new Date().getTime();
     var item, items = {};
@@ -104,8 +150,9 @@ lasuli.hypertopic = {
         logger.error(this.currentUrl);
       }
     }
+    logger.trace(items);
     MemCache.items = items;
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return items;
   },
   get item(){
@@ -141,7 +188,7 @@ lasuli.hypertopic = {
     }
   },
   get attributes(){
-    if(MemCache.attributes) return MemCache.attributes;
+    if(!noCache && MemCache.attributes) return MemCache.attributes;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.attributes");
 
     var result,attributes = {};
@@ -172,7 +219,7 @@ lasuli.hypertopic = {
     return result;
   },
   get docUsers(){
-    if(MemCache.docUsers) return MemCache.docUsers;
+    if(!noCache && MemCache.docUsers) return MemCache.docUsers;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docUsers");
     var result = new Array();
     //Try to get all viewpoint from topics and keywords
@@ -209,11 +256,11 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e.message); }
     //logger.trace(result);
     MemCache.docUsers = result;
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return result;
   },
   get docFragments(){
-    if(MemCache.docFragments) return MemCache.docFragments;
+    if(!noCache && MemCache.docFragments) return MemCache.docFragments;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docFragments");
     var startTime, result = {};
     try{
@@ -241,12 +288,12 @@ lasuli.hypertopic = {
         }
       }
     }catch(e){ logger.fatal(e.message); }
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms ");
+    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms ");
     MemCache.docFragments = result;
     return result;
   },
   get docKeywords(){
-    if(MemCache.docKeywords) return MemCache.docKeywords;
+    if(!noCache && MemCache.docKeywords) return MemCache.docKeywords;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docKeywords");
     var startTime;
     var docKeywords = {};
@@ -275,11 +322,11 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e.message); }
     //logger.trace(docKeywords);
     MemCache.docKeywords = docKeywords;
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return docKeywords;
   },
   get docTopics(){
-    if(MemCache.docTopics) return MemCache.docTopics;
+    if(!noCache && MemCache.docTopics) return MemCache.docTopics;
     var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTopics");
     var docTopics = {};
@@ -300,11 +347,11 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e.message); }
     //logger.trace(docTopics);
     MemCache.docTopics = docTopics;
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return docTopics;
   },
   get docTags(){
-    if(MemCache.docTags) return MemCache.docTags;
+    if(!noCache && MemCache.docTags) return MemCache.docTags;
     var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTags");
 
@@ -335,11 +382,11 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e.message); }
     //logger.trace(result);
     MemCache.docTags = result;
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return result;
   },
   get docCoordinates(){
-    if(MemCache.docCoordinates) return MemCache.docCoordinates;
+    if(!noCache && MemCache.docCoordinates) return MemCache.docCoordinates;
     var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docCoordinates");
 
@@ -353,11 +400,11 @@ lasuli.hypertopic = {
     }catch(e){ logger.fatal(e.message); }
     //logger.trace(result);
     MemCache.docCoordinates = result;
-    logger.debug("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return result;
   },
   get topics(){
-    if(MemCache.topics) return MemCache.topics;
+    if(!noCache && MemCache.topics) return MemCache.topics;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.topics");
     var topics, result = {};
     try{
@@ -383,7 +430,7 @@ lasuli.hypertopic = {
     return result;
   },
   get keywords(){
-    if(MemCache.keywords) return MemCache.keywords;
+    if(!noCache && MemCache.keywords) return MemCache.keywords;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.keywords");
 
     var result = {};
@@ -405,7 +452,7 @@ lasuli.hypertopic = {
     return result;
   },
   get fragments(){
-    if(MemCache.fragments) return MemCache.fragments;
+    if(!noCache && MemCache.fragments) return MemCache.fragments;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.fragments");
     var result = {};
     for each(var fragment in this.docFragments)
@@ -422,7 +469,7 @@ lasuli.hypertopic = {
     return result;
   },
   get coordinates(){
-    if(MemCache.coordinates) return MemCache.coordinates;
+    if(!noCache && MemCache.coordinates) return MemCache.coordinates;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.coordinates");
     var coordinate, topicID, result = {};
 
@@ -444,7 +491,7 @@ lasuli.hypertopic = {
     return result;
   },
   get viewpoints(){
-    if(MemCache.viewpoints) return MemCache.viewpoints;
+    if(!noCache && MemCache.viewpoints) return MemCache.viewpoints;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.viewpoints");
 
     var result = {};

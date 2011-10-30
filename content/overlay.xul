@@ -19,7 +19,7 @@
   <keyset id="mainKeyset">
     <key id="key_openLaSuliSidebar" command="viewLaSuliSidebar"
          key="L"
-         modifiers="shift control" />
+         modifiers="accel shift" />
   </keyset>
   <popup id="contentAreaContextMenu"></popup>
 

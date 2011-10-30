@@ -130,8 +130,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
 
   httpBody = (!httpBody) ? "" : ((typeof(httpBody) == "object")
                                   ? JSON.stringify(httpBody) : httpBody);
-  logger.info(httpAction + " " + httpUrl);
-  logger.info(httpBody);
+  logger.trace(httpAction + " " + httpUrl);
   
   var result = null;
   var startTime = new Date().getTime();
@@ -154,7 +153,8 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
     if(httpBody != "")
       logger.trace(httpBody);
     var endTime = new Date().getTime();
-    logger.info("Execution time: " + (endTime - startTime) + "ms\n" + httpAction + " " + httpUrl + "\nStatus Code:" + this.xhr.status);
+    logger.trace("Status Code:" + this.xhr.status);
+    logger.trace("Execution time: " + (endTime - startTime) + "ms");
     //If the response status code is not start with "2",
     //there must be something wrong.
     if((this.xhr.status + "").substr(0,1) != '2')
@@ -163,7 +163,8 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
       throw Error(httpAction + " " + httpUrl + "\nResponse: " +this.xhr.status);
     }
     result = this.xhr.responseText;
-    logger.info(result);
+    if(typeof(result) == "string" && result.length > 0)
+      logger.trace(result);
     //Clear cache
     if(this.enableCache && httpAction != 'GET')
       this.purgeCache();
@@ -176,8 +177,8 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
         return JSON.parse(result);
       }
     }catch(e){
-      logger.fatal(e);
-      logger.debug(result);
+      logger.fatal(e.message);
+      logger.fatal(result);
     }
     return true;
   }
@@ -186,7 +187,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
     logger.fatal("Ajax Error, xhr.status: " + this.xhr.status + " "
       + this.xhr.statusText + ". \nRequest:\n" + httpAction + " "
       + httpUrl + "\n" + httpBody);
-    logger.fatal(e);
+    logger.fatal(e.message);
     return false;
   }
 }
@@ -332,26 +333,26 @@ HtMap.prototype.getUser = function(userID) {
 }
 
 HtMap.prototype.getCorpus = function(corpusID) {
-  ////var logger = Log4Moz.repository.getLogger("HtMap.getCorpus");
+  //var logger = Log4Moz.repository.getLogger("HtMap.getCorpus");
   //logger.trace(corpusID);
   return new HtMapCorpus(corpusID, this);
 }
 
 HtMap.prototype.getItem = function(obj) {
-  //var logger = Log4Moz.repository.getLogger("HtMap.getItem");
-  //logger.trace(obj);
+  var logger = Log4Moz.repository.getLogger("HtMap.getItem");
+  logger.trace(obj);
   if(typeof(obj) == "string")
   {
     var item = this.httpGet("item/?resource=" + encodeURIComponent(obj));
 
-    //logger.trace(item);
+    logger.trace(item);
     if(!item || !item[obj] || !item[obj].item || !(item[obj].item.length > 0))
       return false;
     obj = item[obj].item[0];
-    //logger.trace(obj);
+    logger.trace(obj);
   }
-  //logger.trace(obj.corpus);
-  //logger.trace(obj.id);
+  logger.trace(obj.corpus);
+  logger.trace(obj.id);
   var corpus = 	this.getCorpus(obj.corpus);
   //logger.trace(corpus.getObject());
   //logger.trace(corpus.getItem(obj.id).getObject());
@@ -471,7 +472,14 @@ HtMapCorpus.prototype.getView = function() {
 HtMapCorpus.prototype.getRaw = function() {
   return this.htMap.httpGet(this.getID());
 }
-
+HtMapCorpus.prototype.createWithID = function(corpusID, name) {
+  var corpus = {};
+  corpus._id = corpusID;
+  corpus.corpus_name = name || corpusID;
+  var ret = this.htMap.httpPost(corpus);
+  if(!ret) return false;
+  return this.htMap.getCorpus(ret._id);
+}
 HtMapCorpus.prototype.register = function(user) {
   var userID = (typeof(user) == "object") ? user.getID() : user;
   var corpus = this.htMap.httpGet(this.getID());
