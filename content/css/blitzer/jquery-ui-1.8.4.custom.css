@@ -186,7 +186,6 @@
 .ui-icon-locked { background-position: -192px -96px; }
 .ui-icon-unlocked { background-position: -208px -96px; }
 .ui-icon-bookmark { background-position: -224px -96px; }
-.ui-icon-tag { background-position: -240px -96px; }
 .ui-icon-home { background-position: 0 -112px; }
 .ui-icon-flag { background-position: -16px -112px; }
 .ui-icon-calendar { background-position: -32px -112px; }
@@ -275,8 +274,10 @@
 .ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
 .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
 .ui-icon-untag { background-position: -96px -224px; }
-
-
+.ui-icon-stopic { background-position: -112px -224px; }
+.ui-icon-ptopic { background-position: -128px -224px; }
+.ui-icon-rename { background-position: -144px -224px; }
+.ui-icon-tag { background-position: -160px -224px; }
 /* Misc visuals
 ----------------------------------*/
 

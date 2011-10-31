@@ -183,7 +183,7 @@ lasuli.highlighter = {
       nl.originalNode.parentNode.replaceChild(nl.newNode, nl.originalNode);
 
     var endTime = new Date().getTime();
-    logger.debug("Execution time: " + (endTime - startTime) + "ms");
+    logger.trace("Execution time: " + (endTime - startTime) + "ms");
   },
 
   doClear: function()

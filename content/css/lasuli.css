@@ -247,11 +247,32 @@ div.ui-tabs-panel {
   overflow-y: auto;
 }
 
-.tt-tag, .tt-create, .tt-modify, .tt-delete{
+.tt-stopic, .tt-ptopic, .tt-rename, .tt-trash, .tt-tag{
   padding-top:5px;
   padding-bottom: 5px;
 }
-
+.viewpoint-header{
+  float:left;
+  display: inline-block;
+  width: 100%;
+}
+.topic-tree{
+  float:left;
+  width: 100%;
+  padding-bottom: 5px;
+}
+.tree-toolbar{
+  float:right;
+  margin-top: 10px;
+}
+.viewpoint-name{
+  float:left;
+}
+.viewpoint-modify{
+  float:right;
+  margin-right: -10px;
+  margin-top: 3px;
+}
 .ui-progressbar-value{
   background-image: url(blitzer/images/pbar-ani.gif);
 }
@@ -343,3 +364,8 @@ input.cb-fragment {
 	width: -moz-calc(100% - 40px);
 	margin-left: 6px;
 }
+
+#tree a { white-space:normal !important; height: auto; padding:1px 2px; } 
+#tree li > ins { vertical-align:top; }
+#tree .jstree-hovered, #tree .jstree-clicked { border:0; }
+#tree {background-color: #FFF !important;}

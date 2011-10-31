@@ -158,7 +158,7 @@ lasuli.core = {
     _p([8,10]);
     // Highlight all fragments
     var fragments = lasuli.hypertopic.docCoordinates;
-    logger.info(fragments);
+    logger.trace(fragments);
     this.fragments[lasuli.hypertopic.currentUrl] = fragments;
     dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
     Sync.sleep(1000);
@@ -273,26 +273,34 @@ lasuli.core = {
     if(viewpointID) lasuli.hypertopic.viewpointID = viewpointID;
     dispatch("lasuli.ui.doReloadTopicTree", lasuli.hypertopic.topicTree);
   },
-  doCreateTopicTreeItem: function(arg){
+  doCreateTopicTreeItem: function(args){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateTopicTreeItem");
+    for(var i=0, arg; arg = args[i]; i++){
     //logger.debug(arg);
-    _p(30);
-    var topic = lasuli.hypertopic.createAnalysis(arg.viewpointID, arg.topicID, _("no.name"));
-    _p(60);
-    //logger.debug(topic);
-    if(topic)
-    {
-      dispatch("lasuli.ui.doCreateTopicTreeItem", {"viewpointID": arg.viewpointID, "topicID": topic.topicID, "sourceObj":arg.sourceObj});
-      _p(70);
-      //append to analysis
-      dispatch("lasuli.ui.doCreateAnalysis", topic);
-      _p(80);
-      //add menu item to context menu
-      dispatch("lasuli.contextmenu.doAddMenuItem", topic );
-      _p(90);
+      _p(30 * (i/args.length));
+      var topic = lasuli.hypertopic.createAnalysis(arg.viewpointID, arg.topicID, _("no.name"));
+      var forceReload = false;
+      if(arg.topicID == null)
+        forceReload = true;
+      _p(60 * (i/args.length));
+      logger.debug(topic);
+      if(topic)
+      {
+        if(forceReload)
+          dispatch("lasuli.core.doReloadTopicTree", false );
+        else
+          dispatch("lasuli.ui.doCreateTopicTreeItem", {"viewpointID": arg.viewpointID, "topicID": topic.topicID, "sourceObj":arg.sourceObj});
+        _p(70 * (i/args.length));
+        //append to analysis
+        dispatch("lasuli.ui.doCreateAnalysis", topic);
+        _p(80 * (i/args.length));
+        //add menu item to context menu
+        dispatch("lasuli.contextmenu.doAddMenuItem", topic );
+        _p(90 * (i/args.length));
+      }
+      else
+        dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.create.topic.failed')});
     }
-    else
-      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.create.topic.failed')});
     _p(100);
   },
 

@@ -199,8 +199,8 @@ lasuli.hypertopic = {
       try{
         var item = this.items[k];
         result = item.getAttributes();
-        logger.debug(item);
-        logger.debug(result);
+        logger.trace(item);
+        logger.trace(result);
       if(result)
         attributes[k] = result;
       }catch(e){
@@ -221,7 +221,7 @@ lasuli.hypertopic = {
         if(idx == -1)
           result[attribute.name].push(strValue);
       }
-    logger.debug(result);
+    logger.trace(result);
     MemCache.attributes = result;
     return result;
   },
@@ -274,12 +274,12 @@ lasuli.hypertopic = {
       var items = this.items;
       startTime = new Date().getTime();
       var topics = {};
-      logger.info(items);
+      logger.trace(items);
       for(var k in items){
         var item = items[k];
         var startTime2 = new Date().getTime();
         var fragments = item.getHighlights();
-        logger.info(fragments);
+        logger.trace(fragments);
         for(var j=0, fragment; fragment = fragments[j]; j++){
           this._locations[fragment.getID()] = k;
           result[fragment.getID()] = fragment;
@@ -928,9 +928,28 @@ lasuli.hypertopic = {
         var topicType = this.getTopicType(this.viewpointID, t.getID());
         obj.attr = {"viewpointID": this.viewpointID, "topicID": t.getID(), "name": obj.data + "", "rel": topicType};
         obj.children = this.getNarrowers(t);
+        obj.children = obj.children.concat(this.getFragments(t));
         topics.push(obj);
       }catch(e){logger.fatal(e.message); }
     return topics;
+  },
+  getFragments : function(topic){
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getFragments");
+    var fragments = new Array();
+    for each(var fragment in this.docFragments)
+      if(topic.getID() == fragment.topic.getID())
+        try{
+          logger.debug(topic.getID());
+          logger.debug(fragment.getText());
+          var obj = {};
+          obj.data = fragment.getText() || "";
+          obj.attr = {"fragmentID": fragment.getID, "fragment": fragment, "name": obj.data + "", "rel": 'fragment'};
+          fragments.push(obj);
+        }catch(e){
+          logger.fatal(e.message);
+          logger.error(fragment.getObject());
+        }
+    return fragments;
   },
   getTopicType : function(viewpointID, topicID){
     if(topicID in this.docKeywords) return 'keyword';
@@ -946,19 +965,19 @@ lasuli.hypertopic = {
     //logger.trace('put viewpoint as the root topic');
 
     topics.data = new Array();
-    var root = {};
+    /* var root = {};
     try{
       root.data = this.viewpoint.getName();
       root.attr = {"viewpointID": this.viewpointID, "name": root.data + "", "rel": "viewpoint"};
       root.children = new Array();
       root.state = 'open';
-    }catch(e){ logger.fatal(e.message); }
+    }catch(e){ logger.fatal(e.message); }*/
 
     try{
       var upper = this.viewpoint.getUpperTopics();
       if(!upper) {
         //logger.trace('has no topic');
-        topics.data.push(root);
+        //topics.data.push(root);
         //logger.trace(topics);
         return topics;
       }
@@ -970,10 +989,12 @@ lasuli.hypertopic = {
         var topicType = this.getTopicType(this.viewpointID, topic.getID());
         obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.getID(), "name": obj.data + "", "rel": topicType};
         obj.children = this.getNarrowers(topic);
-        root.children.push(obj);
+        obj.children = obj.children.concat(this.getFragments(topic));
+        topics.data.push(obj);
       }
     }catch(e){logger.fatal(e.message); }
-    topics.data.push(root);
+    //topics.data.push(root);
+    //logger.debug(topics);
     return topics;
   }
 }

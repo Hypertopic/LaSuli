@@ -84,7 +84,7 @@ HtMap.prototype.purgeCache = function(){
 HtMap.prototype.getServerType = function(){
   var logger = Log4Moz.repository.getLogger("HtMap.getServerType");
   var result = this.httpGet('/');
-  logger.debug(result);
+  logger.trace(result);
   if(typeof result['service'] == 'string')
     return result['service'].toLowerCase();
   return false;
@@ -747,7 +747,7 @@ HtMapItem.prototype.getHighlights = function() {
   var logger = Log4Moz.repository.getLogger("HtMapItem.getHighlights");
 	var result = new Array();
 	var view = this.getView();
-	logger.debug(view);
+	logger.trace(view);
 	if(!view.highlight || view.highlight.length == 0) return result;
     for(var i=0, highlight; highlight = view.highlight[i]; i++)
       result.push(new HtMapHighlight(highlight.id, this));
