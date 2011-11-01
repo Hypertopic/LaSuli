@@ -135,8 +135,8 @@ lasuli.hypertopic = {
     return result;
   },
   get items(){
-    if(enableCache && MemCache.items) return MemCache.items;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.items");
+    if(enableCache && MemCache.items) return MemCache.items;
     var startTime = new Date().getTime();
     var item, items = {};
     //Load items from all Hypertopic server by using resource URL
@@ -152,7 +152,6 @@ lasuli.hypertopic = {
         logger.error(this.currentUrl);
       }
     }
-    logger.trace(items);
     MemCache.items = items;
     logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return items;
@@ -160,9 +159,11 @@ lasuli.hypertopic = {
   get item(){
     //Get item from freecoding server
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.item");
-    if(!this.items || !this.items["freecoding"])
+    var items = this.items;
+    logger.debug(items);
+    if(!items || !items["freecoding"])
       return null;
-    return this.items["freecoding"];
+    return items["freecoding"];
   },
   get itemName(){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.itemName");
@@ -594,19 +595,21 @@ lasuli.hypertopic = {
   },
   createItem : function(name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createItem");
-    MemCache.items = false;
+    //MemCache.items = false;
     name = name || _("no.name");
     //logger.trace('item name: ' + name);
     try{
-      //logger.trace(this.corpus);
+      logger.debug(this.corpus);
       var item = this.corpus.createItem(name);
       if(item)
       {
         item.describe("resource", this.currentUrl);
-        //logger.trace(item.getObject());
+        logger.debug(item.getObject());
+        MemCache.items = false;
+        logger.debug(this.items);
         return true;
       }
-      logger.error(item);
+      logger.debug(item);
       return false;
     }catch(e){ logger.fatal(e.message); }
     return true;
@@ -644,8 +647,11 @@ lasuli.hypertopic = {
   createKeyword : function(viewpointID, topicID, name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createKeyword");
     MemCache = {};
-    if(!this.item)
-      this.createItem(name);
+    if(!this.item) {
+      var result = this.createItem(name);
+      if(!result) return false;
+    }
+    logger.debug(this.item);
     try{
       var topic = this.viewpoint.getTopic(topicID);
       var result = this.item.tag(topic);
