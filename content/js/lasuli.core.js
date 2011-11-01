@@ -65,7 +65,7 @@ lasuli.core = {
   // When tabWatcher find a new location is input, trigger this function
   doLocationChange: function(url){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLocationChange");
-    //logger.debug("URL:" + url);
+    logger.trace("URL:" + url);
     if(!url){
       var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                    .getInterface(Components.interfaces.nsIWebNavigation)
@@ -83,7 +83,7 @@ lasuli.core = {
     }
 
     //Check the sidebar status
-    //logger.debug(url);
+    logger.trace(url);
     if(url && url != "about:blank")
       dispatch("lasuli.ui.doUnBlockUI", null);
     else{
@@ -126,7 +126,7 @@ lasuli.core = {
     //logger.debug(nodes.length);
     if(nodes.length > 0) return false;
     var hashValue = domWindow.document.location.hash;
-    logger.debug(typeof hashValue);
+    //logger.debug(typeof hashValue);
     if(this.fragments[url]){
       var fragments = this.fragments[url];
       if(typeof domWindow == "undefined")
@@ -283,7 +283,7 @@ lasuli.core = {
       if(arg.topicID == null)
         forceReload = true;
       _p(60 * (i/args.length));
-      logger.debug(topic);
+      //logger.debug(topic);
       if(topic)
       {
         if(forceReload)
@@ -303,20 +303,44 @@ lasuli.core = {
     }
     _p(100);
   },
-
+  
+  doCreateGeneralTopicTreeItem : function(args){
+    var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateParentTopicTreeItem");
+    _p(10);
+    var topics = new Array();
+    for(var i=0, arg; arg = args[i]; i++)
+    {
+      topics.push(arg.topicID);
+    }
+    var topic = lasuli.hypertopic.createGeneralTopic(topics);
+    if(topic)
+    {
+      dispatch("lasuli.core.doReloadTopicTree", false );
+      _p(70);
+      //append to analysis
+      dispatch("lasuli.ui.doCreateAnalysis", topic);
+      _p(80);
+      //add menu item to context menu
+      dispatch("lasuli.contextmenu.doAddMenuItem", topic );
+      _p(90);
+    }
+    else
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.create.topic.failed')});
+    _p(100);
+  },
   doDestroyTopicTreeItem: function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doDestroyTopicTreeItem");
     //logger.debug(arg);
     var topicID = arg.topicID;
     var viewpointID = arg.viewpointID;
     _p(30);
-    if(arg.topicType && (arg.topicType == "analysis" || arg.topicType == "topic"))
+    if(arg.nodeType && (arg.nodeType == "analysis" || arg.nodeType == "topic"))
     {
       var result = lasuli.hypertopic.destroyAnalysis(viewpointID, topicID);
       _p(50);
       if(result){
-        //dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
-        dispatch("lasuli.core.doReloadTopicTree", false );
+        dispatch("lasuli.ui.doReloadTopicTree", false );
+        //dispatch("lasuli.core.doReloadTopicTree", false );
         _p(70);
         dispatch("lasuli.ui.doDestroyAnalysis", arg );
         _p(80);
@@ -332,15 +356,15 @@ lasuli.core = {
       _p(100);
       return;
     }
-    if(arg.topicType && arg.topicType == "keyword")
+    if(arg.nodeType && arg.nodeType == "keyword")
     {
       var result = lasuli.hypertopic.destroyKeyword(arg, true);
       _p(50);
       //logger.debug(result);
       if(result)
       {
-        //dispatch("lasuli.ui.doDestroyTopicTreeItem", arg );
-        dispatch("lasuli.core.doReloadTopicTree", false );
+        dispatch("lasuli.ui.doReloadTopicTree", false );
+        //dispatch("lasuli.core.doReloadTopicTree", false );
         _p(80);
         dispatch("lasuli.ui.doDestroyKeyword", arg);
         _p(100);
@@ -350,6 +374,7 @@ lasuli.core = {
       _p(100);
       return;
     }
+    _p(100);
   },
   
   doMoveTopicTreeItem : function(arg){
@@ -371,7 +396,7 @@ lasuli.core = {
     var viewpointID = arg.viewpointID;
 
     _p(30);
-    if(arg.topicType && arg.topicType == "viewpoint")
+    /*if(arg.topicType && arg.topicType == "viewpoint")
     {
       if(lasuli.hypertopic.renameViewpoint(viewpointID, arg.newName))
       {
@@ -386,11 +411,12 @@ lasuli.core = {
       dispatch("lasuli.ui.doRenameTopicTreeItem", arg);
       _p(100);
       return;
-    }
+    }*/
 
     if(arg.topicType && (arg.topicType == "analysis" || arg.topicType == "topic"))
     {
       var result =lasuli.hypertopic.renameAnalysis(arg.viewpointID, arg.topicID, arg.name, arg.newName);
+      //logger.debug(result);
       _p(60);
       if(result){
         dispatch("lasuli.contextmenu.doUpdateMenuItem", {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "name": arg.newName});
@@ -578,7 +604,7 @@ lasuli.core = {
 
   doCreateFragment : function(fragment){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doCreateFragment");
-    logger.debug(fragment);
+    //logger.debug(fragment);
     _p(30);
     try{
       var result = lasuli.hypertopic.createFragment(fragment.topicID, fragment.text, [fragment.startPos, fragment.endPos]);
@@ -621,6 +647,8 @@ lasuli.core = {
       dispatch("lasuli.ui.doRemoveFragment", fragment.fragmentID );
       dispatch("lasuli.highlighter.doRemoveFragment", fragment.fragmentID );
     }
+    if(fragment.sourceObj)
+      dispatch("lasuli.ui.doDestroyTopicTreeItem", fragment);
     _p(100);
   },
 
@@ -660,7 +688,7 @@ lasuli.sidebar = {
         {
           if(lasuli.sidebar.sequence[event.data])
           {
-            logger.debug("purge cache" + event.data);
+            //logger.debug("purge cache" + event.data);
             HtServers[event.data].purgeCache();
           }
           else

@@ -264,6 +264,7 @@ div.ui-tabs-panel {
 .tree-toolbar{
   float:right;
   margin-top: 10px;
+  margin-right: -10px;
 }
 .viewpoint-name{
   float:left;

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Hypertopic JavaScript Library</title>
+  
+  	<link type="text/css" href="css/blitzer/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+  	<link type="text/css" href="css/lasuli.css" rel="stylesheet" />
+  	<link type="text/css" href="css/ui.jqgrid.css" rel="stylesheet" />
+  
+  	<script type="text/javascript" src="js/jquery-1.6.3.min.js"></script>
+  	<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
+  
+  	<link type="text/css" href="css/jquery.contextMenu.css" rel="stylesheet" />
+  	<script type="text/javascript" src="js/jquery.contextMenu.js"></script>
+  	<script type="text/javascript" src="js/jquery.tinysort.js"></script>
+  	<script type="text/javascript" src="js/jquery.easing.1.3.js"></script>
+    <script type="text/javascript" src="js/jquery.jstree.js"></script>
+  
+  	<script type="text/javascript" src="js/lasuli.js"></script>
+  	<script type="text/javascript" src="js/lasuli.ui.js"></script>
+  
+    <script type="text/javascript" src="js/jquery.jsonview.js"></script>
+    
+    <link type="text/css" rel="stylesheet" href="css/jquery.jsonview.css">
+  
+    <style type="text/css" media="screen">
+      body{background:#f5f9f5; overflow:auto; margin-left: 15px;}
+      .jsonview{
+          border:1px solid #787;overflow:auto; width: 80%;
+          -moz-border-radius:8px;-webkit-border-radius:8px;border-radius:8px;padding:10px;bottom:10%;
+          -moz-box-shadow:3px 3px 6px #ccc;-webkit-box-shadow:3px 3px 6px #ccc;box-shadow:3px 3px 6px #ccc;
+          background:#fff;
+          margin: 0px 5px 5px 5px;
+      }
+    </style>
+  
+    <script language="javascript">
+    include("resource://lasuli/modules/Observers.js");
+    include("resource://lasuli/modules/Preferences.js");
+    include("resource://lasuli/modules/log4moz.js");
+    include("resource://lasuli/modules/HypertopicMap.js");
+    var map, user, corpus, item, highlight, viewpoint, topic, childTopic, otherTopic;
+    function intersect_safe(a, b)
+    {
+      var ai=0, bi=0;
+      var result = new Array();
+
+      while( ai < a.length && bi < b.length )
+      {
+         if      (a[ai] < b[bi] ){ ai++; }
+         else if (a[ai] > b[bi] ){ bi++; }
+         else /* they're equal */
+         {
+           result.push(a[ai]);
+           ai++;
+           bi++;
+         }
+      }
+
+      return result;
+    }
+    function test(){
+      map = new HtMap('http://couchdb:5984/argos/_design/argos/_rewrite/', 'chao','zhou');
+      var viewpoint = map.getViewpoint("791404ab141f8400dd60cd479a0164f9");
+      var topics = new Array("f13b5fd505f088458d3482144084b0ef", "c929d6d361ca85428469ac889b0a407a", "e6dfdc8bb76e374e9833c348ebcb1b38");//, "4bfbb6aa39c1a84eb6ceba9cd7127896", "4bdd3de598e2644a9cfc214ea0783b15");
+      var parent = viewpoint.createGeneralTopic(topics);
+      json(parent);
+      /*var t1 = {"viewpoint": "791404ab141f8400dd60cd479a0164f9", "id": "f13b5fd505f088458d3482144084b0ef"};
+      var t2 = {"viewpoint": "791404ab141f8400dd60cd479a0164f9", "id": "c929d6d361ca85428469ac889b0a407a"};
+      var topic1 = map.getTopic(t1);
+      json(topic1.getBroaders());
+      var topic2 = map.getTopic(t2);
+      json(topic2.getBroaders());
+      json(intersect_safe(topic1.getBroaders(), topic2.getBroaders()));
+      //item = map.getItem('http://cassandre/text/d0');
+      //json(item.getView());
+      /*
+      user = map.getUser("me");
+      corpus = user.createCorpus("my corpus");
+      item = corpus.createItem("my item");
+      item.describe("foo", "bar");
+      item.describe("resource", "http://acme.com/foo");
+      viewpoint = user.createViewpoint("my viewpoint");
+        topic = viewpoint.createTopic();
+        childTopic = viewpoint.createTopic(topic);
+        otherTopic = viewpoint.createTopic();
+        highlight = item.createHighlight(
+            childTopic, "FOO", new Array(1024, 1096)
+        );
+        item.tag(childTopic);
+        h3("User");
+      json(user.getObject());
+      h3("Corpus");
+      json(corpus.getRaw());
+      h3("Item");
+        json(item.getRaw());
+        h3("Viewpoint");
+        json(viewpoint.getRaw());
+        json(viewpoint.getView());
+      //return false;
+  
+      item.describe("foo", "bar2");
+  
+      h3("item.getAttributes()");
+      json(item.getAttributes());
+      item.undescribe("foo", "bar");
+      json(item.getAttributes());
+  
+      h3("item.getTopics()");
+      json(item.getTopics());
+  
+      h3("item.getResource()");
+      json(item.getResource());
+  
+      h3("Item.getHighlights");
+        json(item.getHighlights());
+  
+      h3("topic.getHighlights");
+        json(topic.getHighlights());
+  
+  
+        h3("viewpoint.getHighlights");
+        json(viewpoint.getHighlights());
+  
+      var userHim = map.getUser("him");
+      corpus.register(userHim);
+      h3("Corpus");
+      json(corpus.getObject());
+      h3("Corpus.listUsers()");
+      json(corpus.listUsers());
+  
+      corpus.unregister(user);
+      json(corpus.listUsers());
+      corpus.rename("new name");
+      h3("corpus rename");
+      json(corpus.getName());
+  
+      h3("highlight.getText");
+      json(highlight.getText());
+  
+      h3("item.getName");
+      json(item.getName());
+  
+      h3("corpus.getItems()");
+      json(corpus.getItems());
+  
+      h3("childTopic.getItems()");
+      json(viewpoint.getView());
+      json(childTopic);
+      json(childTopic.getItems());
+  
+      h3("viewpoint.getItems()");
+      json(viewpoint.getItems());
+  
+      item.untag(childTopic);
+      h3("Item.untag");
+        json(item.getRaw());
+  
+  
+  
+      h3("topic.getName");
+      json(topic.getName());
+  
+      topic.rename("a topic");
+      json(topic.getName());
+  
+      h3("topic.getNarrower()");
+      json(viewpoint.getRaw());
+      json(topic.getNarrower());
+  
+      h3("topic.moveTopics");
+      json(childTopic);
+      json(otherTopic);
+      json(viewpoint.getRaw());
+      otherTopic.moveTopics(childTopic);
+        var broader = childTopic.getBroader();
+        json(viewpoint.getRaw());
+        json(broader);
+  
+      h3("topic.linkTopics");
+      json(viewpoint.getRaw());
+        otherTopic.linkTopics(childTopic);
+        var broader = childTopic.getBroader();
+        json(viewpoint.getRaw());
+      json(otherTopic);
+        json(broader);
+  
+      h3("topic.unlink");
+      json(viewpoint.getRaw());
+      childTopic.unlink();
+        var broader = childTopic.getBroader();
+      json(viewpoint.getRaw());
+      json(childTopic);
+        json(broader);
+  
+      h3("viewpoint.getUpperTopics()");
+      json(viewpoint.getUpperTopics());
+  
+  
+  
+      h3("topic.destroy()");
+      json(topic.destroy());
+  
+      h3("viewpoint.destroy()");
+      json(viewpoint.destroy());
+      /*h3("htMapUser.createViewpoint('test viewpoint')");
+      json(htMapUser.createViewpoint('test viewpoint'));
+      h3("htMapUser.listCorpora()");
+      json(htMapUser.listCorpora());
+      h3("htMapUser.listViewpoints()");
+      json(htMapUser.listViewpoints());*/
+      $('div.lvl-0').children('ul').children('li').children('dl').children('dt').children('a.property-toggle-button').each(
+        function(){
+          if(!$(this).parent('property-name').hasClass('closed-string'))
+            $(this).click();
+        }
+      );
+    }
+    function json(obj)
+    {
+      var div;
+      if(typeof(obj) == "string")
+        try{
+          obj = JSON.parse(obj);
+          div = $('<div class="jsonview"></div>').jsonView(obj);
+        }catch(e){
+          div = $('<div class="jsonview"></div>').html(obj);
+        }
+      else
+      {
+        div = $('<div class="jsonview"></div>').jsonView(obj);
+      }
+      $('#result').append(div);
+    }
+    function h3(str)
+    {
+      var div = $('<h3></h3>').html(str);
+      $('#result').append(div);
+    }
+  
+  </script>
+  </head>
+<body id="result" onLoad="test();">
+<!--<input type="button" onclick="Observers.notify('lasuli.contextmenu.doHide', null);" value="disable"> //-->
+</body>
+</html>
