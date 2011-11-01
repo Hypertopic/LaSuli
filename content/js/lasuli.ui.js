@@ -188,11 +188,11 @@ lasuli.ui = {
         $('#btn-create-viewpoint').trigger('click');
     });
 
-		$('#viewpoints-ul li').die().live('mouseover', function(){
+		$('#viewpoints-ul li').live('mouseover', function(){
       $(this).find("img").stop().animate({opacity: 1}, 250);
       return false;
     });
-    $('#viewpoints-ul li').die().live('mouseout', function(){
+    $('#viewpoints-ul li').live('mouseout', function(){
       $(this).find("img").stop().animate({opacity: 0}, 250);
       return false;
     });
