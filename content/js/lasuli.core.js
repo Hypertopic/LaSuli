@@ -654,14 +654,16 @@ lasuli.core = {
 
   doMoveFragment : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doMoveFragment");
-    //logger.debug(arg);
+    logger.debug(arg);
     _p(30);
     var result = lasuli.hypertopic.moveFragment(arg.fragmentID, arg.targetTopicID);
     _p(60);
     this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
     _p(70);
-    //logger.debug(result);
+    logger.debug(result);
     if(result){
+      if(arg.rslt)
+        dispatch("lasuli.ui.doRefreshTopicTree", arg);
       dispatch("lasuli.ui.doDropFragmentAccepted", arg );
       //logger.debug(lasuli.hypertopic.topics[arg.targetTopicID]);
       var color = getColor(arg.targetTopicID);
@@ -669,7 +671,10 @@ lasuli.core = {
     }
     else{
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('analysis.fragment.move.failed')});
-      dispatch("lasuli.ui.doDropFragmentDenied", arg );
+      if(arg.rlbk)
+        dispatch("lasuli.ui.doRollbackTopicTree", arg);
+      else
+        dispatch("lasuli.ui.doDropFragmentDenied", arg );
     }
     _p(100);
   }

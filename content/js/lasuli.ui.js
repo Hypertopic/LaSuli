@@ -1103,8 +1103,17 @@ lasuli.ui = {
       logger.debug(data.rslt.np.attr("name"));
       logger.debug(data.rslt.np.attr("rel"));*/
       
-      if($(this).attr("rel") == 'viewpoint'){
-        $.jstree.rollback(data.rlbk);
+      if($(this).attr("rel") == 'fragment'){
+        dispatch("lasuli.core.doMoveFragment", 
+          {
+            "fragmentID": $(this).attr("fragmentID"), 
+            "sourceTopicID": $(this).attr("topicID"), 
+            "targetTopicID": data.rslt.np.attr("topicID"), 
+            "rlbk": data.rlbk,
+            "rslt": data.rslt,
+            "viewpointID": $(this).attr("viewpointID")
+          } 
+        );
         return false;
       }
         
