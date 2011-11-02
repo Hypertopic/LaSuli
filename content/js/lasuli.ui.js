@@ -11,10 +11,9 @@ lasuli.ui = {
       add: function(event, ui) {
         logger.trace(ui);
         var viewpointPanelHtml = '<div class="viewpoint-header"><p class="h3-title viewpoint-name"><span>ViewpointName</span></p><button class="viewpoint-modify">' + _("view")  + '</button></div>'
-                               + '<div class="viewpoint-content"><div class="topics" ><p class="h3-title"><span>' + _("Index") + '</span>'
-                          		 + '<img class="add-topic-img" src="css/blitzer/images/add.png"></p><ul class="topics-ul"></ul></div>'
-                          		 + '<div class="fragments-container"><p class="h3-title"><span>' + _("Analysis") + '</span>'
-                          		 + '<img class="add-analyses-img" src="css/blitzer/images/add.png"></p></div></div>'
+                               + '<div class="viewpoint-content"><div class="topics" ><p class="h3-title"><span>' + _("Index") + '</span></p>'
+                          		 + '<ul class="topics-ul"></ul></div>'
+                          		 + '<div class="fragments-container"><p class="h3-title"><span>' + _("Analysis") + '</span></p></div></div>'
                           		 + '<div class="topic-tree hide"></div>';
         $(ui.panel).append(viewpointPanelHtml);
         
@@ -25,6 +24,8 @@ lasuli.ui = {
           btn.button("option", "disabled", true);
           if($(this).button("option", "label") == _('modify'))
           {
+            dispatch("lasuli.ui.doUpdateViewpointName", null);
+            dispatch("lasuli.ui.doHideEmptyAnalysis", null);
             content.slideDown({duration: 500, easing: 'easeInBounce', 
               complete: function() {
                 $(this).next().slideUp({duration: 400, easing: 'easeOutBounce', complete: function(){
@@ -38,6 +39,7 @@ lasuli.ui = {
           }
           else
           {
+            dispatch("lasuli.ui.doShowViewpointInput", null);
             dispatch("lasuli.ui.doShowTreePanel", null);
             content.slideUp({duration: 100, easing: 'easeInOutBack', 
               complete: function() {
@@ -223,94 +225,11 @@ lasuli.ui = {
   initViewpointPanel : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.initViewpointPanel");
 
-    //init toolbar
-    $('.toolbar button.modify').die().live('click', function(){
-      $(this).hide().next().show();
-      var viewpointDiv = $(this).parents('div');
-      viewpointDiv.find("input.cb-remove-keyword").show();
-      viewpointDiv.find("img.fragment-toggle").each(function(){
-        var el = $(this);
-        $(this).parent().data("img", el);
-        $(this).replaceWith("<input type='checkbox' class='cb-analysis-topic'>");
-      });
-      viewpointDiv.find("li.fragment span.ui-icon").each(function(){
-        var el = $(this);
-        $(this).parent().data("span", el);
-        $(this).replaceWith("<input type='checkbox' class='cb-fragment'>");
-      });
-      return false;
-    });
-    $('.toolbar button.cancel').die().live('click', function(){
-      $(this).parent().hide().prev().show();
-      var viewpointDiv = $(this).parents('div');
-      viewpointDiv.find("input.cb-remove-keyword").hide().removeAttr("checked");
-      viewpointDiv.find("input.cb-analysis-topic").each(function(){
-        var el = $(this).parent().data("img");
-        $(this).replaceWith(el);
-      });
-      viewpointDiv.find("input.cb-fragment").each(function(){
-        var el = $(this).parent().data("span");
-        $(this).replaceWith(el);
-      });
-      return false;
-    });
-    $('.toolbar button.okay').die().live('click', function(){
-      $(this).parent().hide().prev().show();
-      var viewpointDiv = $(this).parents('div');
-      var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
-      var num = viewpointDiv.find("input:checked").length;
-      if(num == 0) num = 1;
-      _p([0,num]);
-      var i=0;
-      viewpointDiv.find("input.cb-remove-keyword").each(function(){
-        if($(this).attr("checked"))
-        {
-          var topicID = $(this).next("a").attr("uri");
-          var name = $(this).next("a").html();
-          dispatch("lasuli.core.doDestroyKeyword", {"topicID":topicID, "viewpointID": viewpointID, "name": name});
-          _p([i++,num]);
-        }
-        $(this).hide().removeAttr("checked");
-      });
-
-      viewpointDiv.find("input.cb-fragment").each(function(){
-        if($(this).attr("checked"))
-        {
-          var fragmentID = $(this).parent().attr("fragmentID");
-          var viewpointID = $(this).parent().attr("viewpointID");
-          var topicID = $(this).parent().attr("topicID");
-          var itemID = $(this).parent().attr("itemID");
-          dispatch("lasuli.core.doDestroyFragment", {"fragmentID": fragmentID, "viewpointID": viewpointID, "topicID": topicID});
-        }
-        var el = $(this).parent().data("span");
-        $(this).replaceWith(el);
-        _p([i++,num]);
-      });
-
-      viewpointDiv.find("input.cb-analysis-topic").each(function(){
-        if($(this).attr("checked"))
-        {
-          var topicID = $(this).parent().attr("topicID");
-          var name = $(this).next().text();
-          dispatch("lasuli.core.doDestroyAnalysis", {"viewpointID":viewpointID, "topicID": topicID, "name": name});
-        }
-        var el = $(this).parent().data("img");
-        $(this).replaceWith(el);
-        _p([i++,num]);
-      });
-
-      _p([num,num]);
-      return false;
-    });
-    //Click the analysis topic will check all fragments
-    $('input.cb-analysis-topic').live('click', function(){
-      $(this).parent().next().find("li input.cb-fragment").attr("checked", true);
-    });
     //Mouse over the tag shows the trash icon
-    $(".topic").die().live("mouseover", function(){
+    $(".topic").live("mouseover", function(){
       $(this).find("img").removeClass("hide");
       return false;
-    }).die().live("mouseout", function(){
+    }).live("mouseout", function(){
       $(this).find("img").addClass("hide");
       return false;
     });
@@ -395,12 +314,6 @@ lasuli.ui = {
       return false;
     });
 
-    //Add analysis topic
-    $('.add-analyses-img').die().live("click", function(){
-      var viewpointID = $(this).parents("div.ui-tabs-panel").attr("id");
-      dispatch("lasuli.core.doCreateAnalysis", viewpointID);
-      return false;
-    });
 
     //Edit analysis topic
     $('.fragment-header span').die().live('click', function(event){
@@ -649,12 +562,14 @@ lasuli.ui = {
       return false;
     });
   },
+  
   //Auto register all observers
   register: function(){
     for(var func in this)
       if(func.substr(0, 2) == "do" && typeof(lasuli.ui[func]) == "function")
         Observers.add("lasuli.ui." + func, lasuli.ui[func], lasuli.ui);
   },
+  
   unregister: function(){
     for(var func in this)
       if(func.substr(0, 2) == "do" && typeof(lasuli.ui[func]) == "function")
@@ -721,6 +636,51 @@ lasuli.ui = {
 	
 	doOpenConfigPanel : function(){
 		this.initConfigPanel();
+	},
+	
+	doHideEmptyAnalysis : function(viewpointID){
+	  var logger = Log4Moz.repository.getLogger("lasuli.ui.doHideEmptyAnalysis");
+	  viewpointID = viewpointID || $('div#tabs li.ui-tabs-selected a').attr('href').substr(1);
+	  logger.trace(viewpointID);
+    var viewpointDiv = $('div#' + viewpointID);
+    logger.trace(viewpointDiv.html());
+    var fragmentDivs = viewpointDiv.find('.fragments');
+    logger.trace(fragmentDivs.length);
+    if(fragmentDivs.length == 0 ) return false;
+    fragmentDivs.each(function(){
+      logger.trace($(this).html());
+      if($(this).find('li').length > 0)
+        $(this).show();
+      else
+        $(this).hide();
+    });
+	},
+	
+	doShowViewpointInput : function(viewpointID){
+	  var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpointInput");
+    viewpointID = viewpointID || $('div#tabs li.ui-tabs-selected a').attr('href').substr(1);
+    var viewpointDiv = $('div#' + viewpointID);
+    var originalHtml = viewpointDiv.find('p.viewpoint-name').html();
+    var viewpointName = viewpointDiv.find('p.viewpoint-name span').html();
+    var input = $('<input type="text" class="edit-viewpoint-name-in-place">')
+                .val(viewpointName)
+                .attr("viewpointName", viewpointName)
+                .data("html", originalHtml);
+    viewpointDiv.find('p.viewpoint-name span').replaceWith(input);
+	},
+	
+	doUpdateViewpointName : function(viewpointID){
+	  var logger = Log4Moz.repository.getLogger("lasuli.ui.doUpdateViewpointName");
+    viewpointID = viewpointID || $('div#tabs li.ui-tabs-selected a').attr('href').substr(1);
+    var viewpointDiv = $('div#' + viewpointID);
+    var input = viewpointDiv.find('input.edit-viewpoint-name-in-place');
+    var newName = input.val(),
+        oldName = input.attr("viewpointName"),
+        originalHtml = input.data('html');
+    viewpointDiv.find('p.viewpoint-name input').replaceWith(originalHtml);
+    if(input.val() == input.attr("viewpointName"))
+      return false;
+    dispatch("lasuli.core.doRenameViewpoint", {"viewpointID": viewpointID, "newName": newName});
 	},
 	
   doShowItemName : function(itemName){
@@ -948,7 +908,7 @@ lasuli.ui = {
 		
     dispatch("lasuli.core.doLoadTopicTree", viewpointID);
   },
-  
+
   doShowTopicTree : function(topics){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTopicTree");
     $.jstree._themes = 'chrome://lasuli/content/css/jsTree/themes/';
@@ -958,19 +918,18 @@ lasuli.ui = {
       "dnd" : lasuli.ui.jstree_dnd,
       "ui" : lasuli.ui.jstree_ui,
       "sort" : lasuli.ui.jstree_sort,
-      "plugins" : [ "themes", "json_data", "ui", "crrm", "dnd", "contextmenu", "types", "sort" ]
+      "plugins" : [ "themes", "json_data", "ui", "crrm", "dnd", "contextmenu", "types", "sort", "cookies" ]
     })
     .bind("rename.jstree", lasuli.ui.jstree_rename)
     .bind("move_node.jstree", lasuli.ui.jstree_move)
     .bind("select_node.jstree", lasuli.ui.jstree_selected)
   },
-  
+
   doClearViewpointPanel : function(viewpointID){
     $("div#" + viewpointID).find("ul.topics-ul li").hide().remove();
     $("div#" + viewpointID).find("div.fragments").hide().remove();
     $("div#" + viewpointID).find("button.cancel").click();
   },
-
 
   doShowKeywords : function(keywords){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowKeywords");
@@ -994,7 +953,7 @@ lasuli.ui = {
       $('#' + viewpointID).find(".topics-ul").append(html);
     }
   },
-  
+
   button : {
     stopic : function(){
       var logger = Log4Moz.repository.getLogger("lasuli.ui.button.stopic");
@@ -1081,7 +1040,7 @@ lasuli.ui = {
       );
     }
   },
-  
+
   jstree_types : {
       "valid_children" : [ "viewpoint" ],
       "types" : {
@@ -1107,7 +1066,7 @@ lasuli.ui = {
         dispatch("lasuli.core.doMoveFragment", 
           {
             "fragmentID": $(this).attr("fragmentID"), 
-            "sourceTopicID": $(this).attr("topicID"), 
+            "sourceTopicID": data.rslt.op.attr("topicID"), 
             "targetTopicID": data.rslt.np.attr("topicID"), 
             "rlbk": data.rlbk,
             "rslt": data.rslt,
@@ -1128,7 +1087,7 @@ lasuli.ui = {
       //data.inst.refresh(data.inst._get_parent(data.rslt.oc));
     });
   },
-  
+
   jstree_selected : function (e, data) {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_selected");
     $('.tt-stopic').button({ disabled: false });
@@ -1155,7 +1114,7 @@ lasuli.ui = {
       }
     );
   },
-  
+
   jstree_rename: function (e, data) {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_rename");
     var sourceObj   = data.rslt.obj;
@@ -1171,38 +1130,47 @@ lasuli.ui = {
 
     dispatch("lasuli.core.doRenameTopicTreeItem", arg);
   },
-  
+
   jstree_sort: function(a, b){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_sort");
     try{
-      if(a.attr("rel") != b.attr("rel"))
-        return a.attr("rel") > b.attr("rel") ? 1 : -1;
+      //logger.debug($(a).attr("rel"));
+      //logger.debug($(b).attr("rel"));
+      
+      if($(a).attr("rel") != $(b).attr("rel") 
+        && ($(a).attr("rel") == "fragment" || $(b).attr("rel") == "fragment"))
+        return $(a).attr("rel") > $(b).attr("rel") ? 1 : -1;
     }catch(e){
-      logger.fatal(a);
+      //logger.fatal(a);
       logger.fatal(e.message);
     }
     return this.get_text(a) > this.get_text(b) ? 1 : -1;
   },
-  
+
   jstree_ui : {
     "select_limit" : -1,
     "select_multiple_modifier" : "meta"
   },
-  
+
   doRefreshTopicTree: function(data){
     data.inst.refresh(data.inst._get_parent(data.rslt.oc));
   },
+
   doRollbackTopicTree: function(data){
     $.jstree.rollback(data.rlbk);
   },
+  
   doReloadTopicTree: function(topics){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doReloadTopicTree");
     //logger.trace(topics);
+    //this.doShowTopicTree(topics);
+    //$("#tree").jstree('refresh');
     //$("#tree").jstree({"json_data" : topics}).jstree('refresh', -1);
     $("#tree").jstree('destroy');
     //Sync.sleep(1000);
     dispatch("lasuli.ui.doShowTopicTree", topics);
   },
+  
   doCreateTopicTreeItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateTopicTreeItem");
     var pos = (arg.sourceObj) ? "inside" : "last";
@@ -1210,6 +1178,7 @@ lasuli.ui = {
     //logger.debug(pos);
     $("#tree").jstree("create", null, pos, {"data": _("no.name"), "attr": {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "rel": "topic"}}, null, true);
   },
+  
   doDestroyTopicTreeItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doDestroyTopicTreeItem");
     if(arg.sourceObj) {
@@ -1220,6 +1189,7 @@ lasuli.ui = {
 
   doRenameViewpoint : function(viewpointID, name){
     $('div#tabs li a[href="#' + viewpointID + '"]').html(name);
+    $('div#' + viewpointID).find('p.viewpoint-name span').html(name);
   },
 
   doRenameTopicTreeItem : function(arg){
@@ -1253,7 +1223,7 @@ lasuli.ui = {
   _initFragmentsContainer : function(topic){
     var logger = Log4Moz.repository.getLogger("lasuli.ui._initFragmentsContainer");
     if(!topic.color) topic.color = getColor(topic.topicID);
-    var html = '<div class="fragments ui-widget" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
+    var html = '<div class="fragments ui-widget hide" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
        +'<div class="fragment-header" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
        +'<img class="fragment-toggle" src="css/blitzer/images/toggle-close.png">'
        +'<span class="ui-corner-right" style="background-color:'+ alpha(topic.color) + '">'
@@ -1266,12 +1236,14 @@ lasuli.ui = {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateFragments");
     //logger.trace(arg);
     var fragments = arg.fragments;
+    var vid;
     for(var fragmentID in fragments)
     {
       fragment = fragments[fragmentID];
       var coordinates = fragment.getCoordinates();
       var startPos = coordinates[0][0];
       var viewpointID = fragment.topic.getViewpointID();
+      vid = viewpointID;
       var topicID = fragment.topic.getID();
       var text = fragment.getText();
       var li_html = '<li class="fragment ui-corner-bottom" viewpointID="' + viewpointID + '" topicID="' + topicID + '" fragmentID="' + fragmentID + '" startPos="' + startPos + '" >'
@@ -1286,6 +1258,7 @@ lasuli.ui = {
 
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
     dispatch("lasuli.ui.doMakeFragmentsDragable", null);
+    dispatch("lasuli.ui.doHideEmptyAnalysis", vid);
   },
 
   doShowFragments : function(arg){
@@ -1309,6 +1282,7 @@ lasuli.ui = {
         helper: 'clone',
         revert: 'invalid'
       });
+    dispatch("lasuli.ui.doHideEmptyAnalysis", null);
   },
 
   doMakeFragmentsDroppable : function(){
@@ -1343,18 +1317,19 @@ lasuli.ui = {
 
   doDropFragmentAccepted : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doDropFragmentAccepted");
-    //logger.trace(arg);
-    var viewpointID = $('li[fragmentID="' + arg.fragmentID + '"]').attr("viewpointID");
-    //logger.trace(viewpointID);
-
+    
+    //logger.debug(arg);
+    var viewpointID = $('.fragments li[fragmentID="' + arg.fragmentID + '"]').attr("viewpointID");
+    //logger.debug(viewpointID);
+    var fragments = $("div.fragments[viewpointID='" + viewpointID + "']").show();
     var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + arg.targetTopicID + "'] ul";
-    //logger.trace(el);
-    $('li[fragmentID="' + arg.fragmentID + '"]').clone().appendTo($(el)).attr("topicID", arg.targetTopicID);
-    //logger.trace($('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').html());
-    $('li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').hide().remove();
-    //logger.trace("old fragment hide");
-    $('li.ui-draggable-dragging[fragmentID="' + arg.fragmentID + '"]').hide().remove();
-    //logger.trace("sort fragments");
+    //logger.debug(el);
+    $('.fragments li[fragmentID="' + arg.fragmentID + '"]').clone().appendTo($(el)).attr("topicID", arg.targetTopicID);
+    //logger.debug($(el).html());
+    $('.fragments li[fragmentID="' + arg.fragmentID + '"][topicID="' + arg.sourceTopicID + '"]').hide().remove();
+    //logger.debug("old fragment hide");
+    $('.fragments li.ui-draggable-dragging[fragmentID="' + arg.fragmentID + '"]').hide().remove();
+    //logger.debug("sort fragments");
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
     dispatch("lasuli.ui.doMakeFragmentsDragable", null);
   },
@@ -1366,10 +1341,10 @@ lasuli.ui = {
   doRemoveFragment : function(fragmentID) {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveFragment");
     var el = "li.fragment[fragmentID='" + fragmentID + "']";
-    //logger.trace(el);
+    logger.trace(el);
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
+    dispatch("lasuli.ui.doHideEmptyAnalysis", null);
   },
-
 
   doCreateAnalysis: function(topic){
     lasuli.ui._initFragmentsContainer(topic);

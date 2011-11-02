@@ -160,7 +160,7 @@ lasuli.hypertopic = {
     //Get item from freecoding server
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.item");
     var items = this.items;
-    logger.debug(items);
+    logger.trace(items);
     if(!items || !items["freecoding"])
       return null;
     return items["freecoding"];
@@ -951,7 +951,13 @@ lasuli.hypertopic = {
         var obj = {};
         obj.data = t.getName() || "";
         var topicType = this.getTopicType(this.viewpointID, t.getID());
-        obj.attr = {"viewpointID": this.viewpointID, "topicID": t.getID(), "name": obj.data + "", "rel": topicType};
+        obj.attr = {
+          "id": "topic_" + topic.getID(),
+          "viewpointID": this.viewpointID, 
+          "topicID": t.getID(), 
+          "name": obj.data + "", 
+          "rel": topicType
+        };
         obj.children = this.getNarrowers(t);
         //logger.debug(obj.children);
         obj.children = obj.children.concat(this.getFragments(t));
@@ -970,7 +976,7 @@ lasuli.hypertopic = {
           //logger.debug(fragment.getText());
           var obj = {};
           obj.data = fragment.getText() || "";
-          obj.attr = {"fragmentID": fragment.getID(), "fragment": fragment, "name": obj.data + "", "rel": 'fragment'};
+          obj.attr = { "id": "fragment_" + fragment.getID(), "fragmentID": fragment.getID(), "fragment": fragment, "name": obj.data + "", "rel": 'fragment'};
           fragments.push(obj);
         }catch(e){
           logger.fatal(e.message);
@@ -1014,7 +1020,7 @@ lasuli.hypertopic = {
         var obj = {};
         obj.data = topic.getName() || "";
         var topicType = this.getTopicType(this.viewpointID, topic.getID());
-        obj.attr = {"viewpointID": this.viewpointID, "topicID": topic.getID(), "name": obj.data + "", "rel": topicType};
+        obj.attr = {"id": "topic_" + topic.getID(), "viewpointID": this.viewpointID, "topicID": topic.getID(), "name": obj.data + "", "rel": topicType};
         obj.children = this.getNarrowers(topic);
         obj.children = obj.children.concat(this.getFragments(topic));
         topics.data.push(obj);

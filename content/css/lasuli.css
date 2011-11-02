@@ -269,6 +269,11 @@ div.ui-tabs-panel {
 .viewpoint-name{
   float:left;
 }
+input.edit-viewpoint-name-in-place{
+  padding: 4px;
+  margin-top: -8px;
+  margin-bottom: 10px;
+}
 .viewpoint-modify{
   float:right;
   margin-right: -10px;

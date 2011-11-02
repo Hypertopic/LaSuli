@@ -261,6 +261,20 @@ lasuli.core = {
     _p(100);
   },
 
+  doRenameViewpoint : function(arg){
+    _p(10);
+    if(lasuli.hypertopic.renameViewpoint(arg.viewpointID, arg.newName))
+    {
+      _p(60);
+      dispatch("lasuli.ui.doRenameViewpoint", arg.viewpointID, arg.newName);
+    }
+    else
+    {
+      dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.viewpoint.rename.failed', [arg.name,arg.newName])});
+    }
+    _p(100);
+  },
+  
   doLoadTopicTree : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadTopicTree");
     //logger.debug(viewpointID);
@@ -388,6 +402,7 @@ lasuli.core = {
     else
       dispatch("lasuli.ui.doRollbackTopicTree", data);
   },
+  
   doRenameTopicTreeItem : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameTopicTreeItem");
     //logger.debug(arg);
@@ -396,23 +411,7 @@ lasuli.core = {
     var viewpointID = arg.viewpointID;
 
     _p(30);
-    /*if(arg.topicType && arg.topicType == "viewpoint")
-    {
-      if(lasuli.hypertopic.renameViewpoint(viewpointID, arg.newName))
-      {
-        _p(60);
-        arg.name = arg.newName;
-        dispatch("lasuli.ui.doRenameViewpoint", viewpointID, arg.newName);
-      }
-      else
-      {
-        dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('topictree.viewpoint.rename.failed', [arg.name,arg.newName])});
-      }
-      dispatch("lasuli.ui.doRenameTopicTreeItem", arg);
-      _p(100);
-      return;
-    }*/
-
+    
     if(arg.topicType && (arg.topicType == "analysis" || arg.topicType == "topic"))
     {
       var result =lasuli.hypertopic.renameAnalysis(arg.viewpointID, arg.topicID, arg.name, arg.newName);
@@ -654,16 +653,17 @@ lasuli.core = {
 
   doMoveFragment : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doMoveFragment");
-    logger.debug(arg);
+    logger.trace(arg);
     _p(30);
     var result = lasuli.hypertopic.moveFragment(arg.fragmentID, arg.targetTopicID);
     _p(60);
     this.fragments[lasuli.hypertopic.currentUrl] = lasuli.hypertopic.coordinates;
     _p(70);
-    logger.debug(result);
+    logger.trace(result);
     if(result){
-      if(arg.rslt)
-        dispatch("lasuli.ui.doRefreshTopicTree", arg);
+      if(arg.rslt) {
+        dispatch("lasuli.core.doReloadTopicTree", false );
+      }
       dispatch("lasuli.ui.doDropFragmentAccepted", arg );
       //logger.debug(lasuli.hypertopic.topics[arg.targetTopicID]);
       var color = getColor(arg.targetTopicID);

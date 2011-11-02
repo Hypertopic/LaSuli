@@ -15,14 +15,18 @@
 		<script type="text/javascript" src="js/jquery.contextMenu.js"></script>
 		<script type="text/javascript" src="js/jquery.tinysort.js"></script>
 		<script type="text/javascript" src="js/jquery.easing.1.3.js"></script>
+		<script type="text/javascript" src="js/jquery.cookie.js"></script>
     <script type="text/javascript" src="js/jquery.jstree.js"></script>
 
 		<script type="text/javascript" src="js/lasuli.js"></script>
 		<script type="text/javascript" src="js/lasuli.ui.js"></script>
 		<script language="javascript">
-		  /*$(function(){
-		    $(document).bind("dblclick", function() { self.location.reload(); } );
-		  });*/
+		  $(function(){
+		    $(document).bind("dblclick", function() { 
+		      //self.location.reload(); 
+		      alert($.cookie('jstree_open'));
+		    } );
+		  });
 		</script>
 	</head>
 <body>
