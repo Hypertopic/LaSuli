@@ -12,9 +12,7 @@ span.toolbar
   margin-right: -10px;
   float: right;
 }
-div.topics{
-  margin-top: 30px;
-}
+
 input.cb-remove-keyword{
   vertical-align: middle;
   margin-right: -3px;
@@ -190,40 +188,6 @@ div#create-viewpoint input
 	padding-bottom: 6px;
 }
 
-.h3-title img
-{
-	vertical-align: bottom;
-	cursor: pointer;
-	margin-left: 6px;
-}
-
-
-.topics {margin-bottom: 15px;}
-.topics ul{ list-style-type: none;  list-style-position: outside; list-style-image:none; margin: 0; padding: 0px;}
-.topics ul li {display:inline-block;}
-.topics ul li img{ vertical-align: middle; cursor: pointer;}
-
-.topic a {
-  margin-left:15px;
-  background-color:#FBB0AE;
-  border-bottom:1px solid #3E6D8E;
-  border-right:1px solid #7F9FB6;
-  color:#600000;
-  line-height:2.2;
-  margin:2px 2px 2px 6px;
-  padding:3px 4px;
-  text-decoration:none;
-  white-space:nowrap;
-}
-
-.topic a:hover{
-  background-color:#CD0000;
-  border-bottom:1px solid #37607D;
-  border-right:1px solid #37607D;
-  color:#E0EAF1;
-  text-decoration:none;
-}
-
 .fragments {margin-bottom: 20px;}
 .fragments ul { list-style-type: none; margin: 0; padding: 5px 0 0 0; }
 .fragments ul li {
@@ -375,3 +339,40 @@ input.cb-fragment {
 #tree li > ins { vertical-align:top; }
 #tree .jstree-hovered, #tree .jstree-clicked { border:0; }
 #tree {background-color: #FFF !important;}
+div.viewpoint-content {
+  float: left;
+  width: 100%;
+}
+
+.tab-viewpoint {
+  width: 40px;
+  text-overflow: ellipsis;
+  white-space:nowrap;
+  overflow:hidden;
+}
+ul.topics-ul {
+  width: 100%;
+  margin-left: 10px; 
+  padding: 0px;
+}
+ul.topics-ul li {
+  margin-bottom: 3px;
+}
+
+ul.apply-tag
+{
+  width: 100%;
+  margin-left: 10px; 
+  padding: 0px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+ul.apply-tag input
+{
+  padding: 2px;
+  margin-right: 4px;
+}
+ul.apply-tag button{
+  padding-top: 6px;
+  padding-bottom: 6px;
+}

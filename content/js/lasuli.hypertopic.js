@@ -411,6 +411,35 @@ lasuli.hypertopic = {
     logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return result;
   },
+  get preparedKeywords(){
+    //if(enableCache && MemCache.docTopics && MemCache.docKeywords) 
+    //  return MemCache.availableTags;
+    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.availableTags");
+    var topics, result = {};
+    try{
+      topics = this.viewpoint.getTopics();
+    }catch(e){ logger.fatal(e.message); }
+    //logger.debug(topics);
+    for(var i=0, topic; topic = topics[i]; i++)
+      try{
+        if(!(topic.getID() in this.docKeywords) 
+          && !(topic.getID() in this.docTopics))
+        {
+            var topicName = topic.getName();
+            if(!topicName) continue;
+            result[topic.getID()] =  {"topicID": topic.getID(), "viewpointID": this.viewpointID, "name": topicName};
+        }
+      }catch(e){
+        logger.fatal(e.message);
+        logger.error(topic);
+      }
+    //logger.debug(result);
+    for(var topicID in result)
+      result[topicID].color = getColor(topicID);
+    //logger.trace(result);
+    //MemCache.availableTags = result;
+    return result;
+  },
   get topics(){
     if(enableCache && MemCache.topics) return MemCache.topics;
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.topics");
@@ -651,12 +680,22 @@ lasuli.hypertopic = {
       var result = this.createItem(name);
       if(!result) return false;
     }
-    logger.debug(this.item);
+    //logger.debug(this.item);
+    
     try{
-      var topic = this.viewpoint.getTopic(topicID);
+      var topic;
+      if(!topicID) {
+        //logger.debug("create a new topic");
+        topic = this.viewpoint.createTopic(null, name);
+        if(!topic) return false;
+        topicID = topic.getID();
+      }
+      else
+        topic = this.viewpoint.getTopic(topicID);
+      //logger.debug(topic);
       var result = this.item.tag(topic);
       if(result)
-        return true;
+        return topic;
     }catch(e){
       logger.fatal(e.message);
       logger.error(viewpointID);
