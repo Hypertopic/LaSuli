@@ -49,6 +49,7 @@ lasuli.ui = {
           {
             dispatch("lasuli.ui.doUpdateViewpointName", null);
             dispatch("lasuli.ui.doHideEmptyAnalysis", null);
+            $('div.ui-tabs-panel').css('overflow-y', 'auto');
             content.slideDown({duration: 500, easing: 'easeInBounce', 
               complete: function() {
                 $(this).next().slideUp({duration: 400, easing: 'easeOutBounce', complete: function(){
@@ -64,6 +65,7 @@ lasuli.ui = {
           {
             dispatch("lasuli.ui.doShowViewpointInput", null);
             dispatch("lasuli.ui.doShowTreePanel", null);
+            $('div.ui-tabs-panel').css('overflow-y', 'hidden');
             content.slideUp({duration: 100, easing: 'easeInOutBack', 
               complete: function() {
                   $(this).next().slideDown({duration: 800, easing: 'easeOutBounce', complete: function(){
@@ -121,7 +123,6 @@ lasuli.ui = {
         dispatch('lasuli.highlighter.doClear', null);
       }
       $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 56);
-      $("#config-panel").height($(window).height() - 56);
     });
 
     $('#tabs span.ui-icon-close').die().live('click', function() {
@@ -132,9 +133,7 @@ lasuli.ui = {
 
     $(window).bind('resize', function() {
       var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.window.resize");
-      //logger.debug($('.toolbar').innerWidth());
       $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 56);
-      $("#config-panel").height($(window).height() - 56);
     }).trigger('resize');
 
     $('#h3-related-topics').html(_('topics'));
@@ -640,10 +639,11 @@ lasuli.ui = {
     var viewpointDiv = $('div#' + viewpointID);
     var originalHtml = viewpointDiv.find('p.viewpoint-name').html();
     var viewpointName = viewpointDiv.find('p.viewpoint-name span').html();
-    var input = $('<input type="text" class="edit-viewpoint-name-in-place">')
+    var input = $('<input type="text" class="vpnameEditor">')
                 .val(viewpointName)
                 .attr("viewpointName", viewpointName)
                 .data("html", originalHtml);
+    
     viewpointDiv.find('p.viewpoint-name span').replaceWith(input);
 	},
 	
@@ -651,7 +651,7 @@ lasuli.ui = {
 	  var logger = Log4Moz.repository.getLogger("lasuli.ui.doUpdateViewpointName");
     viewpointID = viewpointID || $('div#tabs li.ui-tabs-selected a').attr('href').substr(1);
     var viewpointDiv = $('div#' + viewpointID);
-    var input = viewpointDiv.find('input.edit-viewpoint-name-in-place');
+    var input = viewpointDiv.find('input.vpnameEditor');
     var newName = input.val(),
         oldName = input.attr("viewpointName"),
         originalHtml = input.data('html');
@@ -862,7 +862,11 @@ lasuli.ui = {
         + "<button class='tt-rename'></button>"
         + "<button class='tt-trash'></button>"
         + "<button class='tt-tag'></button>");
-
+    $(window).resize(function(){
+      viewpointDiv.find('#tree').height($("div.ui-tabs-panel").height() - 80);
+      $('input.vpnameEditor').width($('#tabs').innerWidth() - 110);
+    }).resize();
+    
     $('.tt-stopic').button({
 			text: false, disabled: false,
 			icons: { primary: 'ui-icon-stopic' }
@@ -1489,11 +1493,15 @@ lasuli.ui = {
     }
     if(v < 100)
     {
+      //$('#status-toolbar').hide();
+      $('#config').hide();
       $('div#overlay-div').removeClass('hide').css("opacity", 0.2);
       $('div#progressbar').show().progressbar({ value: v });
     }
     else
     {
+      //$('#status-toolbar').show();
+      $('#config').show();
       $('div#overlay-div').addClass('hide').css("opacity", 0.5);
       $('div#progressbar').hide().destroy();
     }

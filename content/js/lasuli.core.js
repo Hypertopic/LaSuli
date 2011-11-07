@@ -5,7 +5,9 @@ include("resource://lasuli/modules/HypertopicMap.js");
 
 lasuli.core = {
   fragments : {},
-
+  toggleSidebar : function(){
+    toggleSidebar('viewLaSuliSidebar');
+  },
   //Open lasuli sidebar
   openSideBar : function(){
 		if(!lasuli.core.isSidebarOpen()){

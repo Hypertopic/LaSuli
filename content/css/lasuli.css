@@ -211,10 +211,7 @@ div.ui-tabs-panel {
   overflow-y: auto;
 }
 
-.tt-stopic, .tt-ptopic, .tt-rename, .tt-trash, .tt-tag{
-  padding-top:5px;
-  padding-bottom: 5px;
-}
+
 .viewpoint-header{
   float:left;
   display: inline-block;
@@ -233,7 +230,7 @@ div.ui-tabs-panel {
 .viewpoint-name{
   float:left;
 }
-input.edit-viewpoint-name-in-place{
+input.vpnameEditor{
   padding: 4px;
   margin-top: -8px;
   margin-bottom: 10px;
@@ -257,39 +254,14 @@ div#progressbar{
   margin: 0;
   height:12px;
   min-width: 40px;
-  width: -moz-calc(100% - 40px);
+  width: 100%;
   z-index:999999;
+  width: -moz-calc(100% - 12px);
 }
+
 input.cb-fragment {
   margin-left: -14px;
   margin-right: 2px;
-}
-
-#config{
-	position: fixed;
-  top: auto;
-  bottom: 6px;
-  left: auto;
-  right: 4px;
-  margin: 0;
-  height:16px;
-  width: 16px;
-  z-index:999999;
-  background-image: url(blitzer/images/config.png);
-  display: block;
-  text-indent: -99999px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-#config-panel{
-	background-color: #FFFFFF;
-  border-radius: 4px 4px 4px 4px;
-  box-shadow: 4px 2px 2px #AAAAAA;
-  margin: 4px;
-  min-height: 100px;
-  padding: 10px;
-  overflow: auto;
 }
 
 :-moz-placeholder {
@@ -339,6 +311,7 @@ input.cb-fragment {
 #tree li > ins { vertical-align:top; }
 #tree .jstree-hovered, #tree .jstree-clicked { border:0; }
 #tree {background-color: #FFF !important;}
+#tree { overflow: scroll; width: 100%; margin: 0px; }
 div.viewpoint-content {
   float: left;
   width: 100%;
@@ -371,8 +344,55 @@ ul.apply-tag input
 {
   padding: 2px;
   margin-right: 4px;
+  width: -moz-calc(100% -40px);
 }
 ul.apply-tag button{
   padding-top: 6px;
   padding-bottom: 6px;
+}
+
+#config{
+  background-image: url(blitzer/images/config.png);
+  display: block;
+  text-indent: -99999px;
+  overflow: hidden;
+  cursor: pointer;
+  float:right;
+  height: 16px;
+  width: 16px;
+  position: fixed;
+  top: auto;
+  bottom: 6px;
+  left: auto;
+  right: 6px;
+}
+
+#config-panel{
+	background-color: #FFFFFF;
+  border-radius: 4px 4px 4px 4px;
+  box-shadow: 4px 2px 2px #AAAAAA;
+  margin: 4px;
+  min-height: 100px;
+  padding: 10px;
+  overflow: auto;
+  height: -moz-calc(100%-56px);
+}
+
+#status-toolbar{
+  width: -moz-calc(100%-28px);
+  padding-left: 10px;
+  position: fixed;
+  top: auto;
+  bottom: 26px;
+  left: 4px;
+  right: auto;
+  margin: 0;
+  z-index:999999;
+  height: 24px;
+}
+.tt-stopic, .tt-ptopic, .tt-rename, .tt-trash, .tt-tag{
+  padding-top:5px;
+  padding-bottom: 5px;
+  float: left;
+  display: block;
 }

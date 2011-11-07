@@ -31,7 +31,7 @@
                  group="sidebar"
                  sidebarurl="chrome://lasuli/content/index.html"
                  sidebartitle="LaSuli"
-                 oncommand="lasuli.core.openSideBar();" />
+                 oncommand="lasuli.core.toggleSidebar();" />
   </broadcasterset>
 
   <statusbar id="status-bar">
