@@ -11,13 +11,13 @@
   </RDF:Seq>
   <RDF:Description RDF:about="rdf:#$upiS92"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="3.6.2"
-                   em:maxVersion="3.6.13"
+                   em:minVersion="6.0a1"
+                   em:maxVersion="9.*"
                    em:updateLink="http://lasuli.sourceforge.net/lasuli.xpi"
                    em:updateInfoURL="http://lasuli.sourceforge.net/info.xml"
                    em:updateHash="sha256:45550e90f11dbe45919e88e50a2cef84bf3e34903e9105a0eb29acbe3a3909f0" />
   <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.1.25">
+                   em:version="0.8.2.4">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
   </RDF:Description>
 </RDF:RDF>

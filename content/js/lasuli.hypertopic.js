@@ -469,7 +469,7 @@ lasuli.hypertopic = {
           result[fragment.getID()] = fragment;
       }catch(e){
         logger.fatal(e.message);
-        logger.error(topic);
+        logger.fatal(fragment);
       }
     //logger.trace(result);
     MemCache.fragments = result;
