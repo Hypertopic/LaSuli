@@ -147,23 +147,27 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
     if(!lasuli.core.isSidebarOpen()) return false;
     dispatch("lasuli.ui.doClearDocumentPanel", null);
-    _p([1,10]);
+    _p(10);
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
-    _p([2,10]);
+    _p(20);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
-    _p([3,10]);
+    _p(30);
     dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.docUsers);
-    _p([7,10]);
+    _p(40);
     dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.docTags);
-    _p([8,10]);
+    _p(80);
+    //logger.debug("doShowTagCloud");
     // Highlight all fragments
     var fragments = lasuli.hypertopic.docCoordinates;
     logger.info(fragments);
     this.fragments[lasuli.hypertopic.currentUrl] = fragments;
+    //logger.debug("fragments");
     dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
+    //logger.debug("doHighlight");
     Sync.sleep(1000);
+    //logger.debug("doHighlightAnchor");
     dispatch("lasuli.highlighter.doHighlightAnchor", null);
-    _p([10,10]);
+    _p(100);
   },
 
   doListViewpoints: function(){

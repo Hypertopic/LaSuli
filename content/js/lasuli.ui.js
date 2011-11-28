@@ -1505,11 +1505,13 @@ $(window).bind("load", function(){
   lasuli.ui.initViewpointPanel();
   lasuli.ui.initPlusPanel();
   lasuli.ui.initAttributeGrid();
+  
   lasuli.ui.initTagCloud();
   lasuli.ui.initItemName();
   dispatch('lasuli.sidebar.onSidebarOpened', null);
   //wait until all event listener registered
   Sync.sleep(500);
+  
   try{ lasuli.ui.initDocumentPanel(); }catch(e){ logger.fatal(e); }
 });
 

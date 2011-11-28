@@ -204,6 +204,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
         return JSON.parse(result);
       }
     }catch(e){
+      logger.fatal(httpAction + httpUrl);
       logger.fatal(e.message);
       logger.fatal(result);
     }

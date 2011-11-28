@@ -31,14 +31,20 @@ lasuli.highlighter = {
   },
 
   clearDocument : function(m_document){
-    var nodes = m_document.querySelectorAll("span." + lasuli._class);
-    for(var i = 0, node; node = nodes[i]; i++)
+    if(this.nodeList)
+      for(var i=0, nl; nl = nodeList[i]; i++)
+        nl.newNode.l_parentNode.replaceChild(nl.originalNode, nl.newNode);
+    else
     {
-      var p_node = node.parentNode;
-      if(p_node)
+      var nodes = m_document.querySelectorAll("span." + lasuli._class);
+      for(var i = 0, node; node = nodes[i]; i++)
       {
-        var m_textNode = m_document.createTextNode(node.textContent);
-        p_node.replaceChild(m_textNode, node);
+        var p_node = node.parentNode;
+        if(p_node)
+        {
+          var m_textNode = m_document.createTextNode(node.textContent);
+          p_node.replaceChild(m_textNode, node);
+        }
       }
     }
   },
@@ -179,8 +185,10 @@ lasuli.highlighter = {
     }
 
     //var_dump("[highlighter.js] doHighlight::nodeList", nodeList.length, 4);
-    for(var i=0, nl; nl = nodeList[i]; i++)
+    for(var i=0, nl; nl = nodeList[i]; i++){
+      nodeList[i].newNode.l_parentNode = nl.originalNode.parentNode;
       nl.originalNode.parentNode.replaceChild(nl.newNode, nl.originalNode);
+    }
 
     var endTime = new Date().getTime();
     logger.debug("Execution time: " + (endTime - startTime) + "ms");
