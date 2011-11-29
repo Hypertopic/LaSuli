@@ -1,0 +1,633 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    
+    <style type="text/css">
+    .speeches{
+      display: table;
+    }
+    .speeches-row{
+      display: table-row;
+    }
+    .actor{
+      display: table-cell;
+      font-weight: bold !important;
+      padding: 0 5px 0 0;
+      text-align: right;
+      vertical-align: top;
+    }
+    .words{
+      display:inline-block;
+    }
+    </style>
+
+  </head>
+  <body>
+    <div id="container">
+      <form id="menu">
+        <input type="button" onClick="self.location='..'" value="Corpus" />
+        <input type="button" onClick="clearHighlights()" value="Raw text" />
+        <input id="specific" type="button" onClick="highlightWords('specific')"
+          value="Specific words" disabled="disabled" />
+        <input id="rare" type="button" onClick="highlightWords('rare')"
+          value="Rare words" disabled="disabled" />
+        <input id="repeated" type="button" onClick="highlightPhrases()"
+          value="Repeated phrases" disabled="disabled" />
+
+      </form>
+      <div id="content">
+        <h1>caféteriaUTT</h1>
+          <div class="speeches">
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+
+                <font>Bonjour</font></div>
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>bonjour</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font> </font><font>Dans</font> <font>le</font><font> </font><font>cadre</font><font> </font><font>de</font><font> </font><font>ma</font><font> </font><font>formation</font><font> </font><font>élève</font><font> </font><font>ingénieur</font><font> </font><font>à</font><font> </font><font>l</font><font>&#39;</font><font>UTT</font><font> </font><font>dans</font><font> </font><font>la</font><font> </font><font>branche</font><font> </font><font>Systèmes</font><font> </font><font>d</font><font>’</font><font>informations</font><font> </font><font>et</font><font> </font><font>télécommunications</font><font> </font><font>et</font><font> </font><font>d</font><font>’</font><font>une</font><font> </font><font>UV</font><font> </font><font>sur</font><font> </font><font>les</font><font> </font><font>méthodes</font><font> </font><font>d</font><font>’</font><font>ingénierie</font><font> </font><font>des</font><font> </font><font>connaissances</font><font> </font><font>pour</font><font> </font><font>l</font><font>’</font><font>audit</font><font> </font><font>du</font><font> </font><font>système</font><font> </font><font>d</font><font>’</font><font>information</font><font>, </font><font>le</font><font> </font><font>professeur</font><font> </font><font>nous</font><font>  </font><font>a</font><font> </font><font>demander</font><font> </font><font>de</font><font> </font><font>réaliser</font><font> </font><font>un</font><font> </font><font>entretien</font><font> </font><font>avec</font><font> </font><font>un</font><font> </font><font>professionnel</font><font> </font><font>afin</font><font> </font><font>d</font><font>’</font><font>avoir</font><font> </font><font>une</font><font> </font><font>approche</font><font> </font><font>et</font><font> </font><font>un</font><font> </font><font>contact</font><font> </font><font>direct</font><font> </font><font>avec</font><font> </font><font>le</font><font> </font><font>milieu</font><font> </font><font>professionnel</font><font>. </font><font>En</font><font> </font><font>effet</font><font>, </font><font>j</font><font>’</font><font>aimerais</font><font> </font><font>avoir</font><font> </font><font>divers</font><font> </font><font>renseignements</font><font> </font><font>sur</font><font> </font><font>votre</font><font> </font><font>métier</font><font> </font><font>d</font><font>’</font><font>une</font><font> </font><font>part</font><font>? </font><font>Ainsi</font><font> </font><font>que</font><font> </font><font>votre</font><font> </font><font>rôle</font><font> </font><font>dans</font><font> </font><font>l</font><font>’</font><font>entreprise</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Je</font><font> </font><font>suis</font><font> </font><font>Ogel</font><font> </font><font>Hervé</font><font> </font><font>je</font><font> </font><font>suis</font><font> </font><font>gérant</font><font> </font><font>du</font><font> </font><font>restaurant</font><font> </font><font>depuis</font><font> </font><font>4</font><font> </font><font>ans</font><font>, </font><font>avant</font><font> </font><font>je</font><font> </font><font>faisais</font><font> </font><font>de</font><font> </font><font>la</font><font>  </font><font>restauration</font><font> </font><font>traditionnels</font><font>, </font><font>j</font><font>&#39;</font><font>ai</font><font> </font><font>fait</font><font> </font><font>aussi</font><font> </font><font>6</font><font> </font><font>ans</font><font> </font><font>à</font><font> </font><font>paris</font><font> </font><font>autant</font><font> </font><font>que</font><font> </font><font>directeur</font><font> </font><font>régional</font><font> </font><font>de</font><font> </font><font>la</font><font> </font><font>boite</font><font> </font><font>de</font><font> </font><font>chez</font><font> </font><font>Dior</font><font> </font><font>et</font><font> </font><font>maint</font><font> </font><font>cela</font><font> </font><font>fait</font><font> </font><font>4</font><font> </font><font>ans</font><font> </font><font>que</font><font> </font><font>je</font><font> </font><font>suis</font><font> </font><font>la</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Comment</font><font> </font><font>ça</font><font> </font><font>se</font><font> </font><font>passe</font><font> </font><font>ici</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Très</font><font> </font><font>bien</font><font>, </font><font>pour</font><font> </font><font>l</font><font>&#39;</font><font>instant</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Avez</font><font>-</font><font>vous</font><font> </font><font>loué</font><font> </font><font>la</font><font> </font><font>cafeteria</font><font> ?</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>C</font><font>’</font><font>est</font><font> </font><font>une</font><font> </font><font>conception</font><font>, </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>une</font><font> </font><font>location</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ok</font></div>
+            </div>
+
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font> </font><font>En</font><font> </font><font>fait</font><font> </font><font>vous</font><font> </font><font>passez</font><font> </font><font>ici</font><font> </font><font>sous</font><font> </font><font>appel</font><font> </font><font>d</font><font>’</font><font>offre</font><font>, </font><font>qui</font><font> </font><font>sont</font><font> </font><font>lancer</font><font> </font><font>par</font><font> </font><font>la</font><font> </font><font>direction</font><font>, </font><font>la</font><font> </font><font>présidence</font><font> </font><font>Chaque</font><font> </font><font>candidats</font><font> </font><font>vient</font><font> </font><font>chercher</font><font> </font><font>un</font><font> </font><font>dossier</font><font>, </font><font>répond</font><font> </font><font>aux</font><font> </font><font>questions</font><font> </font><font>au</font><font> </font><font>critère</font><font> </font><font>pour</font><font> </font><font>tout</font><font> </font><font>ce</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>financement</font><font>, </font><font>loyer</font><font>, </font><font>produits</font><font>, </font><font>tous</font><font> </font><font>les</font><font> </font><font>tarifs</font><font>, </font><font>il</font><font> </font><font>y</font><font> </font><font>a</font><font> </font><font>une</font><font> </font><font>commission</font><font> </font><font>qui</font><font> </font><font>se</font><font> </font><font>réuni</font><font> </font><font>et</font><font> </font><font>par</font><font> </font><font>rapport</font><font> </font><font>à</font><font> </font><font>ça</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>eux</font><font> </font><font>qui</font><font> </font><font>décide</font><font> </font><font>de</font><font> </font><font>prendre</font><font> </font><font>ou</font><font> </font><font>pas</font><font> </font><font>demain</font><font> </font><font>je</font><font> </font><font>ne</font><font> </font><font>suis</font><font> </font><font>pas</font><font> </font><font>sûre</font><font> </font><font>d</font><font>&#39;</font><font>être</font><font> </font><font>ici</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>donc</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>un</font><font> </font><font>contrat</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Tous</font><font> </font><font>les</font><font> </font><font>4</font><font> </font><font>ans</font><font> </font><font>soit</font><font> </font><font>il</font><font> </font><font>garde</font><font> </font><font>le</font><font> </font><font>prestataire</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>sur</font><font> </font><font>place</font><font> </font><font>soit</font><font> </font><font>ils</font><font> </font><font>rechangent</font><font> </font><font>selon</font><font> </font><font>le</font><font> </font><font>dossier</font><font> </font><font>qui</font><font> </font><font>ont</font><font> </font><font>qu</font><font>&#39;</font><font>ils</font><font> </font><font>récupèrent</font><font> </font><font>par</font><font> </font><font>rapport</font><font> </font><font>à</font><font> </font><font>l</font><font>&#39;</font><font>appel</font><font> </font><font>d</font><font>&#39;</font><font>offre</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ok</font><font> </font><font>donc</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>l</font><font>&#39;</font><font>UTT</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>derrière</font><font> </font><font>tout</font><font> </font><font>ça</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Voilà</font><font> </font><font>tout</font><font> </font><font>à</font><font> </font><font>fait</font><font> .........</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ok</font><font> , </font><font>quel</font><font> </font><font>service</font><font>?</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>La</font><font> </font><font>présidence</font><font>, </font><font>service</font><font> </font><font>intérieur</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Donc</font><font> </font><font>vous</font><font> </font><font>vous</font><font> </font><font>êtes</font><font> </font><font>lié</font><font> </font><font>directement</font><font> </font><font>à</font><font> </font><font>la</font><font> </font><font>présidence</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Tout</font><font> </font><font>à</font><font> </font><font>fait</font><font> </font><font>j</font><font>&#39;</font><font>ai</font><font> </font><font>un</font><font> </font><font>interlocuteur</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>madame</font><font> </font><font>LEFRANC</font><font>, </font><font>pour</font><font> </font><font>tout</font><font> </font><font>ce</font><font> </font><font>qui</font><font> </font><font>est</font><font>  </font><font>question</font><font>, </font><font>repas</font><font> </font><font>fête</font><font>, </font><font>tout</font><font> </font><font>ce</font><font> </font><font>qui</font><font> </font><font>touche</font><font> </font><font>un</font><font> </font><font>peu</font><font> </font><font>l</font><font>&#39;</font><font>externe</font><font> </font><font>je</font><font> </font><font>vois</font><font> </font><font>avec</font><font> </font><font>elle</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>D</font><font>’</font><font>accord</font><font> </font><font>et</font><font> </font><font>pour</font><font> </font><font>l</font><font>&#39;</font><font>interne</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>vous</font><font>....</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Voilà</font><font>...</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ok</font><font>, </font><font>vous</font><font> </font><font>avez</font><font> </font><font>combien</font><font> </font><font>d</font><font>&#39;</font><font>employer</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Un</font><font> </font><font>serveur</font><font> </font><font>et</font><font> </font><font>deux</font><font> </font><font>cuisiniers</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>C</font><font>’</font><font>est</font><font> </font><font>suffisant</font><font>, </font><font>normal</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Non</font><font> </font><font>pas</font><font> </font><font>du</font><font> </font><font>tout</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Et</font><font> </font><font>pour</font><font> </font><font>quoi</font><font>, </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>aux</font><font> </font><font>qui</font><font> </font><font>exigent</font><font> </font><font>ça</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Non</font><font> </font><font>du</font><font> </font><font>tout</font><font>, </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>à</font><font> </font><font>moi</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>propre</font><font> </font><font>de</font><font> </font><font>prendre</font><font> </font><font>mon</font><font> </font><font>personnel</font><font>, </font><font>mais</font><font> </font><font>comme</font><font> </font><font>je</font><font> </font><font>suis</font><font> </font><font>d</font><font>&#39;</font><font>offre</font><font> </font><font>je</font><font> </font><font>vais</font><font> </font><font>voir</font><font> </font><font>après</font><font> </font><font>si</font><font> </font><font>je</font><font> </font><font>suis</font><font> </font><font>repris</font><font> </font><font>je</font><font> </font><font>prends</font><font> </font><font>des</font><font> </font><font>personnel</font><font>, </font><font>autrement</font><font>..</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>d</font><font>’</font><font>accord</font><font>, </font><font>concernant</font><font> </font><font>les</font><font> </font><font>plat</font><font> </font><font>et</font><font> </font><font>tout</font><font> </font><font>vous</font><font> </font><font>acheter</font><font> </font><font>où</font><font>....</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Le</font><font> </font><font>métro</font><font> </font><font>je</font><font> </font><font>me</font><font> </font><font>sers</font><font>, </font><font>c</font><font>’</font><font>est</font><font> </font><font>un</font><font> </font><font>entrepôt</font><font> </font><font>réservé</font><font> </font><font>au</font><font> </font><font>personnel</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Vous</font><font> </font><font>avez</font><font> </font><font>une</font><font> </font><font>personne</font><font> </font><font>qui</font><font> </font><font>s</font><font>&#39;</font><font>en</font><font> </font><font>occupe</font><font>  </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Non</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>moi</font><font> </font><font>qui</font><font> </font><font>va</font><font> </font><font>chercher</font><font> </font><font>ça</font><font> </font><font>tous</font><font> </font><font>les</font><font> </font><font>jours</font><font>, </font><font>tous</font><font> </font><font>les</font><font> </font><font>jours</font><font>, </font><font>tous</font><font> </font><font>les</font><font> </font><font>matins</font><font> </font><font>des</font><font> </font><font>produits</font><font> </font><font>frais</font><font>, </font><font>essentiellement</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>des</font><font> </font><font>produit</font><font> </font><font>frais</font><font> </font><font>à</font><font> </font><font>part</font><font> </font><font>steak</font><font> </font><font>haché</font><font> </font><font>qu</font><font>’</font><font>on</font><font> </font><font>peut</font><font> </font><font>choisi</font><font> </font><font>sinon</font><font> </font><font>tout</font><font> </font><font>est</font><font> </font><font>du</font><font> </font><font>frais</font><font>, </font><font>le</font><font> </font><font>poulet</font><font> </font><font>que</font><font> </font><font>on</font><font> </font><font>prend</font><font> </font><font>pour</font><font> </font><font>les</font><font> </font><font>sandwiches</font><font> </font><font>les</font><font> œ</font><font>ufs</font><font> </font><font>les</font><font> </font><font>salades</font><font>, </font><font>les</font><font> </font><font>tomates</font><font> </font><font>ect</font><font>  </font><font>tout</font><font> </font><font>est</font><font> </font><font>frais</font><font> </font><font>je</font><font> </font><font>prends</font><font> </font><font>tout</font><font> </font><font>le</font><font> </font><font>matin</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>bien</font><font> </font><font>je</font><font> </font><font>ne</font><font> </font><font>savais</font><font> </font><font>que</font><font> </font><font>c</font><font>&#39;</font><font>était</font><font> </font><font>vraiment</font><font> </font><font>frais</font><font> </font><font>du</font><font> </font><font>chaque</font><font> </font><font>jours</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>si</font><font> </font><font>et</font><font> </font><font>le</font><font> </font><font>poulet</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>halal</font><font> </font><font>vous</font><font> </font><font>le</font><font> </font><font>saviez</font><font> </font><font>déjà</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>oui</font><font> </font><font>oui</font><font>…</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Les</font><font> </font><font>clients</font><font> </font><font>préfèrent</font><font> </font><font>avoir</font><font> </font><font>des</font><font> </font><font>produits</font><font> </font><font>frais</font><font> </font><font>que</font><font> </font><font>surgelé</font><font> </font><font>déjà</font><font> </font><font>à</font><font> </font><font>la</font><font> </font><font>base</font><font> </font><font>ça</font><font> </font><font>se</font><font> </font><font>travaille</font><font> </font><font>mieux</font><font> </font><font>il</font><font> </font><font>y</font><font> </font><font>a</font><font> </font><font>pas</font><font> </font><font>de</font><font> </font><font>stockage</font><font> </font><font>derrière</font><font>, </font><font>donc</font><font> </font><font>je</font><font> </font><font>préfère</font><font> </font><font>aller</font><font> </font><font>tous</font><font> </font><font>les</font><font> </font><font>jours</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>D</font><font>’</font><font>accord</font><font> </font><font>ok</font><font>, </font><font>et</font><font> </font><font>lorsque</font><font> </font><font>vous</font><font> </font><font>organiser</font><font> </font><font>une</font><font> </font><font>fête</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>(</font><font>sourire</font><font>) </font><font>Je</font><font> </font><font>n</font><font>’</font><font>ai</font><font> </font><font>pas</font><font> </font><font>le</font><font> </font><font>droit</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Pardon</font><font> </font><font>je</font><font> </font><font>voulais</font><font> </font><font>dire</font><font> </font><font>l</font><font>&#39;</font><font>UTT</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>par</font><font> </font><font>exemple</font><font> </font><font>pour</font><font> </font><font>la</font><font> </font><font>porte</font><font> </font><font>ouvert</font><font> </font><font>de</font><font> </font><font>samedi</font><font> </font><font>dernier</font><font>, </font><font>ils</font><font> </font><font>ont</font><font> </font><font>fait</font><font> </font><font>appel</font><font> </font><font>à</font><font> </font><font>moi</font><font> </font><font>et</font><font> </font><font>puis</font><font> </font><font>on</font><font> </font><font>établit</font><font> </font><font>ensemble</font><font> </font><font>des</font><font> </font><font>réservations</font><font> </font><font>j</font><font>&#39;</font><font>établis</font><font> </font><font>le</font><font> </font><font>menu</font><font>   </font><font>et</font><font> </font><font>puis</font><font> </font><font>après</font><font> </font><font>c</font><font>&#39;</font><font>est</font><font> </font><font>partie</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>d</font><font>’</font><font>accord</font><font>, </font><font>donc</font><font> </font><font>vous</font><font> </font><font>avez</font><font> </font><font>un</font><font> </font><font>menu</font><font>....</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Voilà</font><font> </font><font>un</font><font> </font><font>menu</font><font> </font><font>consacré</font><font> </font><font>à</font><font> </font><font>tout</font><font> </font><font>le</font><font> </font><font>monde</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>C</font><font>’</font><font>est</font><font> </font><font>quoi</font><font> </font><font>un</font><font> </font><font>menu</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>vraiment</font><font> </font><font>classique</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Par</font><font> </font><font>exemple</font><font> </font><font>pour</font><font> </font><font>la</font><font> </font><font>porte</font><font> </font><font>ouverte</font><font> </font><font>de</font><font> </font><font>samedi</font><font> </font><font>dernier</font><font>  </font><font>j</font><font>&#39;</font><font>ai</font><font> </font><font>fait</font><font> </font><font>entrer</font><font> </font><font>au</font><font> </font><font>buffet</font><font>  </font><font>les</font><font> </font><font>gens</font><font> </font><font>servais</font><font> </font><font>j</font><font>’</font><font>avais</font><font> </font><font>met</font><font> </font><font>des</font><font> </font><font>poissons</font><font> </font><font>et</font><font> </font><font>de</font><font> </font><font>la</font><font> </font><font>viandes</font><font> </font><font>pour</font><font> </font><font>le</font><font> </font><font>dessert</font><font> </font><font>la</font><font> </font><font>galette</font><font> </font><font>de</font><font> </font><font>roi</font><font> </font><font>parce</font><font> </font><font>que</font><font> </font><font>ou</font><font> </font><font>plein</font><font> </font><font>dedans</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>D</font><font>’</font><font>accord</font><font> </font><font>hem</font><font>... </font><font>Oui</font><font> </font><font>donc</font><font> ….</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Je</font><font> </font><font>ne</font><font> </font><font>sais</font><font> </font><font>pas</font><font> </font><font>posez</font><font> </font><font>des</font><font> </font><font>questions</font><font> </font><font>dont</font><font> </font><font>vous</font><font> </font><font>avez</font><font> </font><font>besoin</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>ok</font><font> </font><font>merci</font><font>, </font><font>donc</font><font> </font><font>vous</font><font> </font><font>travaillez</font><font> </font><font>combien</font><font> </font><font>d</font><font>’</font><font>heure</font><font> </font><font>par</font><font> </font><font>jour</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Moi</font><font> </font><font>personnellement</font><font> </font><font>je</font><font> </font><font>ne</font><font> </font><font>les</font><font> </font><font>comptes</font><font> </font><font>pas</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ici</font><font> </font><font>à</font><font> </font><font>l</font><font>’</font><font>UTT</font><font> ?</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>ok</font><font> </font><font>Ah</font><font> </font><font>à</font><font> </font><font>l</font><font>’</font><font>université</font><font> </font><font>on</font><font> </font><font>est</font><font> </font><font>ouvert</font><font> </font><font>de</font><font> </font><font>7H30</font><font> </font><font>à</font><font> </font><font>15H</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Vous</font><font> </font><font>travailler</font><font> </font><font>de</font><font>  </font><font>7H30</font><font> </font><font>à</font><font> </font><font>15H</font><font>…</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Voilà</font><font> </font><font>et</font><font> </font><font>moi</font><font> </font><font>j</font><font>’</font><font>ai</font><font> </font><font>les</font><font> </font><font>courses</font><font> </font><font>à</font><font> </font><font>faire</font><font> </font><font>les</font><font> </font><font>matins</font><font>, </font><font>les</font><font> </font><font>papiers</font><font> </font><font>à</font><font> </font><font>faire</font><font> </font><font>à</font><font> </font><font>la</font><font> </font><font>maison</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Donc</font><font> </font><font>plus</font><font> </font><font>les</font><font> </font><font>restaurations</font><font>  </font><font>vous</font><font> </font><font>faites</font><font> </font><font>tout</font><font> </font><font>ce</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>administratif</font><font> ?</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Oui</font><font> </font><font>voilà</font><font>, </font><font>c</font><font>’</font><font>est</font><font> </font><font>pour</font><font> </font><font>cela</font><font> </font><font>je</font><font> </font><font>ne</font><font> </font><font>compte</font><font> </font><font>pas</font><font> </font><font>les</font><font> </font><font>heures</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>ok</font><font> </font><font>et</font><font> </font><font>les</font><font> </font><font>employer</font><font> </font><font>sont</font><font> </font><font>là</font><font> </font><font>35</font><font> </font><font>heures</font><font> </font><font>par</font><font> </font><font>semaine</font><font> ?</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Oui</font><font> </font><font>voilà</font><font> </font><font>du</font><font> </font><font>lundi</font><font> </font><font>au</font><font> </font><font>vendredi</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Ok</font><font>, </font><font>comment</font><font> </font><font>vous</font><font> </font><font>décrivez</font><font> </font><font>une</font><font> </font><font>journée</font><font> </font><font>classique</font><font> </font><font>du</font><font> </font><font>travail</font><font> ?</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>C</font><font>&#39;</font><font>est</font><font>-</font><font>à</font><font>-</font><font>dire</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font> </font><font>ba</font><font>…… </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>C</font><font>’</font><font>est</font><font> </font><font>de</font><font> </font><font>la</font><font> </font><font>routine</font><font> </font><font>c</font><font>’</font><font>est</font><font> </font><font>toujours</font><font> </font><font>pareils</font><font> </font><font>on</font><font> </font><font>vient</font><font> </font><font>à</font><font> </font><font>7h30</font><font> </font><font>on</font><font> </font><font>ouvre</font><font> </font><font>la</font><font> </font><font>cafétéria</font><font>  </font><font>il</font><font> </font><font>y</font><font> </font><font>a</font><font> </font><font>les</font><font> </font><font>petits</font><font> </font><font>déjeuner</font><font> </font><font>la</font><font> </font><font>mise</font><font> </font><font>en</font><font> </font><font>place</font><font> </font><font>pour</font><font> </font><font>les</font><font> </font><font>service</font><font>, </font><font>le</font><font> </font><font>nettoyage</font><font> , </font><font>bon</font><font> </font><font>c</font><font>’</font><font>est</font><font> </font><font>toujours</font><font> , </font><font>nombre</font><font> </font><font>de</font><font> </font><font>client</font><font> </font><font>c</font><font>’</font><font>est</font><font> </font><font>aléatoire</font><font> </font><font>on</font><font> </font><font>sait</font><font> </font><font>pas</font><font> </font><font>qu</font><font>’</font><font>est</font><font> </font><font>ce</font><font> </font><font>qu</font><font>’</font><font>on</font><font> </font><font>va</font><font> </font><font>faire</font><font> , </font><font>généralement</font><font> </font><font>on</font><font> </font><font>fait</font><font> </font><font>100</font><font> </font><font>couvercles</font><font> </font><font>par</font><font> </font><font>jours</font><font> </font><font>et</font><font> </font><font>un</font><font> </font><font>peu</font><font> </font><font>près</font><font> </font><font>50</font><font>, </font><font>60</font><font> </font><font>ou</font><font> </font><font>70</font><font>  </font><font>sandwich</font><font> </font><font>à</font><font> </font><font>emporter</font><font> </font><font>ou</font><font> </font><font>sur</font><font> </font><font>place</font><font> </font><font>pour</font><font> </font><font>l</font><font>’</font><font>instant</font><font> </font><font>on</font><font> </font><font>tombe</font><font> </font><font>on</font><font> </font><font>fait</font><font> </font><font>complet</font><font> </font><font>un</font><font> </font><font>peu</font><font> </font><font>près</font><font> </font><font>tous</font><font> </font><font>les</font><font> </font><font>midi</font><font>, </font><font>il</font><font> </font><font>ne</font><font> </font><font>reste</font><font> </font><font>presque</font><font> </font><font>rien</font><font> , </font><font>c</font><font>’</font><font>est</font><font> </font><font>très</font><font> </font><font>très</font><font> </font><font>dure</font><font> </font><font>à</font><font> </font><font>gérer</font><font> </font><font>pour</font><font> </font><font>les</font><font> </font><font>petits</font><font> </font><font>déjeuné</font><font> </font><font>on</font><font> </font><font>a</font><font> </font><font>beaucoup</font><font> </font><font>de</font><font> </font><font>monde</font><font>  </font><font>vers</font><font> </font><font>10H</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Pour</font><font> </font><font>les</font><font> </font><font>commandes</font><font> </font><font>vous</font><font> </font><font>les</font><font> </font><font>faites</font><font> </font><font>par</font><font> </font><font>tel</font><font> </font><font>et</font><font> </font><font>vous</font><font> </font><font>allez</font><font> </font><font>les</font><font> </font><font>chercher</font><font> </font><font>après</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Non</font><font> </font><font>je</font><font> </font><font>vais</font><font> </font><font>choisir</font><font> </font><font>moi</font><font>-</font><font>même</font><font>, </font><font>je</font><font> </font><font>prends</font><font> </font><font>tout</font><font> </font><font>sur</font><font> </font><font>place</font><font>, </font><font>c</font><font>’</font><font>est</font><font> </font><font>un</font><font> </font><font>entrepôt</font><font> </font><font>ou</font><font> </font><font>il</font><font> </font><font>y</font><font> </font><font>a</font><font> </font><font>tout</font><font>, </font><font>la</font><font> </font><font>marie</font><font>, </font><font>boucherie</font><font>, </font><font>épicerie</font><font> </font><font>et</font><font> </font><font>il</font><font> </font><font>faut</font><font> </font><font>avoir</font><font> </font><font>une</font><font> </font><font>carte</font><font> </font><font>professionnel</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Bon</font><font> </font><font>je</font><font> </font><font>vais</font><font>-</font><font>je</font><font> </font><font>ferme</font><font> </font><font>la</font><font> </font><font>porte</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>C</font><font>’</font><font>est</font><font> </font><font>qui</font><font> ?</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>C</font><font>’</font><font>est</font><font> </font><font>mon</font><font> </font><font>apprenti</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Ah</font><font> </font><font>donc</font><font> </font><font>vous</font><font> </font><font>avez</font><font> </font><font>un</font><font> </font><font>apprenti</font><font> </font><font>en</font><font> </font><font>plus</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Oui</font><font>….</font><font>bon</font><font> </font><font>en</font><font> </font><font>gros</font><font> </font><font>c</font><font>’</font><font>est</font><font> </font><font>moi</font><font> </font><font>qui</font><font> </font><font>gère</font><font> </font><font>tout</font><font> </font><font>la</font><font> </font><font>gestion</font><font> </font><font>les</font><font> </font><font>personnel</font><font>, </font><font>la</font><font> </font><font>mise</font><font> </font><font>en</font><font> </font><font>place</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>La</font><font> </font><font>gestion</font><font>, </font><font>vous</font><font> </font><font>allez</font><font> </font><font>à</font><font> </font><font>la</font><font> </font><font>banque</font><font>….</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Oui</font><font> </font><font>je</font><font> </font><font>fais</font><font> </font><font>tout</font><font> </font><font>tout</font><font> </font><font>moi</font><font>-</font><font>même</font><font>, </font><font>la</font><font> </font><font>banque</font><font> </font><font>je</font><font> </font><font>vais</font><font> </font><font>tous</font><font> </font><font>les</font><font> </font><font>jours</font><font> </font><font>par</font><font> </font><font>contre</font><font> </font><font>j</font><font>’</font><font>ai</font><font> </font><font>un</font><font> </font><font>comptable</font><font> </font><font>qui</font><font> </font><font>gère</font><font> </font><font>les</font><font> </font><font>fiche</font><font> </font><font>de</font><font> </font><font>paye</font><font> </font><font>par</font><font> </font><font>contre</font><font>, </font><font>c</font><font>’</font><font>est</font><font> </font><font>un</font><font> </font><font>truc</font><font> </font><font>avec</font><font> </font><font>les</font><font> </font><font>lois</font><font> …..</font><font>les</font><font> </font><font>articles</font><font>, </font><font>les</font><font> </font><font>augmentation</font><font> </font><font>je</font><font> </font><font>préfère</font><font> </font><font>que</font><font> </font><font>ça</font><font> </font><font>soit</font><font> </font><font>regeler</font><font>  </font><font>par</font><font> </font><font>un</font><font> </font><font>centre</font><font> </font><font>social</font><font>, </font><font>j</font><font>’</font><font>ai</font><font> </font><font>aussi</font><font> </font><font>un</font><font> </font><font>comptable</font><font> </font><font>qui</font><font> </font><font>établit</font><font>  </font><font>le</font><font> </font><font>bilan</font><font> </font><font>annuaire</font><font>, </font><font>on</font><font> </font><font>lui</font><font> </font><font>donne</font><font> </font><font>des</font><font> </font><font>chiffre</font><font> </font><font>il</font><font> </font><font>se</font><font> </font><font>débrouille</font><font>, </font><font>tous</font><font> </font><font>ce</font><font> </font><font>qui</font><font> </font><font>est</font><font> </font><font>gestion</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Les</font><font> </font><font>employés</font><font> </font><font>ont</font><font> </font><font>le</font><font> </font><font>droit</font><font> </font><font>à</font><font> </font><font>une</font><font> </font><font>pose</font><font> </font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>Oui</font><font> </font><font>bien</font><font> </font><font>sûr</font><font> </font><font>chaque</font><font> </font><font>jours</font><font> </font><font>de</font><font> </font><font>10H45</font><font> </font><font>à</font><font> </font><font>11h30</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>D</font><font>’</font><font>accord</font><font> </font><font>je</font><font> </font><font>crois</font><font> </font><font>que</font><font> </font><font>c</font><font>’</font><font>est</font><font> </font><font>tout</font><font> </font><font>en</font><font> </font><font>tout</font><font> </font><font>cas</font><font> </font><font>si</font><font> </font><font>j</font><font>’</font><font>ai</font><font> </font><font>encore</font><font> </font><font>d</font><font>’</font><font>autre</font><font> </font><font>question</font><font> </font><font>je</font><font> </font><font>peux</font><font> </font><font>revenir</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font> </font><font>Oui</font><font> </font><font>bien</font><font> </font><font>sûre</font><font> </font><font>vous</font><font> </font><font>êtes</font><font> </font><font>là</font><font> </font><font>à</font><font> </font><font>l</font><font>’</font><font>UTT</font><font>.</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">Ogel</div>
+            <div class="words">
+              <div class="post">
+                <font>Je</font><font> </font><font>vous</font><font> </font><font>remercie</font><font>, </font><font>bonne</font><font>  </font><font>journée</font></div>
+
+            </div>
+          </div>
+                    <div class="speeches-row">
+                        <div class="actor">amal</div>
+            <div class="words">
+              <div class="post">
+                <font>A</font><font> </font><font>bientôt</font><font>,</font></div>
+
+            </div>
+          </div>
+          </div>
+      </div>
+      <div id="footer">
+        <a href="http://cassandre-qda.sourceforge.net/about.html">Cassandre</a> &nbsp;
+      </div>
+    </div>
+
+  </body>
+</html>

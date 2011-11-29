@@ -152,7 +152,7 @@ lasuli.hypertopic = {
         logger.error(this.currentUrl);
       }
     }
-    logger.trace(items);
+    logger.debug(items);
     MemCache.items = items;
     logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
     return items;
@@ -160,6 +160,10 @@ lasuli.hypertopic = {
   get item(){
     //Get item from freecoding server
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.item");
+    logger.debug("get item");
+    logger.debug(this.items);
+    logger.debug(this.items["freecoding"]);
+    
     if(!this.items || !this.items["freecoding"])
       return null;
     return this.items["freecoding"];
@@ -594,19 +598,49 @@ lasuli.hypertopic = {
   },
   createItem : function(name){
     var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createItem");
-    MemCache.items = false;
     name = name || _("no.name");
+    
+    logger.debug("get item id");
+    var itemID;
+    //First try to locate the corpus on Cassandre.
+    for(var k in this.items) {
+      var server = HtServers[k];
+      logger.debug(k);
+      if(server.serverType != 'cassandre')
+        continue;
+      
+      itemID = this.items[k].getID();
+      logger.debug(itemID);
+      logger.debug("corpus found on cassandre server");
+      break;
+    }
+    
+    if(!itemID)
+      for(var k in this.items) {
+        var server = HtServers[k];
+        logger.debug(k);
+        if(server.serverType != 'argos')
+          continue;
+        
+        itemID = this.items[k].getID();
+        logger.debug("corpus found on argos server");
+        break;
+      }
+
     //logger.trace('item name: ' + name);
     try{
       //logger.trace(this.corpus);
-      var item = this.corpus.createItem(name);
+      var corpus = this.corpus;
+      logger.debug(corpus);
+      var item = corpus.createItem(name, itemID);
       if(item)
       {
         item.describe("resource", this.currentUrl);
-        //logger.trace(item.getObject());
+        logger.debug(item.getObject());
+        MemCache.items = false;
         return true;
       }
-      logger.error(item);
+      logger.debug(item);
       return false;
     }catch(e){ logger.fatal(e.message); }
     return true;

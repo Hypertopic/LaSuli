@@ -586,13 +586,19 @@ HtMapCorpus.prototype.destroy = function() {
 }
 
 
-HtMapCorpus.prototype.createItem = function(name) {
+HtMapCorpus.prototype.createItem = function(name, itemID) {
   var item = {
     "item_name": name,
     "item_corpus": this.getID()
   };
-
-  var ret = this.htMap.httpPost(item);
+  var ret;
+  if(itemID) 
+  {  
+    item._id = itemID;
+    ret = this.htMap.httpPut(item);
+  }
+  else
+    ret = this.htMap.httpPost(item);
   if(!ret) return false;
   return this.getItem(ret._id);
 }
