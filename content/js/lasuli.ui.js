@@ -1414,7 +1414,7 @@ lasuli.ui = {
       { acceptNode: function(node)
         {
           // only get text content
-          if(node.nodeType != 3 || node.data.length == 0)
+          if(node.nodeType != 3 || node.data.length == 0 || !/[^\t\n\r ]/.test(node.data))
             return NodeFilter.FILTER_REJECT;
 
           // Filter the <script> content

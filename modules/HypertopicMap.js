@@ -76,7 +76,7 @@ function HtMap(baseUrl, user, pass) {
   }
   //If the baseUrl is not end with "/" append slash to the end.
   this.baseUrl = (baseUrl.substr(-1) == "/") ? baseUrl : baseUrl + "/";
-  logger.trace(this.baseUrl);
+  logger.debug(this.baseUrl);
   
   //Create the XMLHttpRequest object for HTTP requests
   this.xhr = new XMLHttpRequest();
@@ -85,7 +85,7 @@ function HtMap(baseUrl, user, pass) {
 
   this.user = user || "";
   this.pass = pass || "";
-  this.baseUrl = baseUrl; //+ "_design/" + this.serverType + "/_rewrite/";
+
   logger.trace(this.user);
   logger.trace(this.pass);
   
