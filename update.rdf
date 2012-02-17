@@ -6,18 +6,17 @@
     <RDF:li RDF:resource="rdf:#$rpiS92"/>
   </RDF:Seq>
   <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.2.6">
+                   em:version="0.8.2.7">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$upiS92"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                    em:minVersion="6.0a1"
                    em:maxVersion="9.*"
-                   em:updateLink="http://lasuli.sourceforge.net/lasuli.xpi"
-                   em:updateInfoURL="http://lasuli.sourceforge.net/info.xml"
-                   em:updateHash="sha256:9af4ffe8fdb26eb2a5ec77693ad0e7c9919a85dce9e1dd7eaead570f80b21d5d" />
-  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org"
-                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAKscvefyV/ieWmireT0oCi7ojeH76F7O8jhQ6y42M/52FW0wjTJkCDMFknDSZxp5EoRaJpQji2OWdrMYhy8wGKZgg7EAzxISc+LJp4pPYWxOqIAU71bGbtpqZF9HJ6U9tyRA5IiAknezyB6vlEWHDTv7XY0BSWdn7+8q20sXLc1c">
+                   em:updateLink="https://github.com/downloads/Hypertopic/LaSuli/lasuli.xpi"
+                   em:updateInfoURL="https://raw.github.com/Hypertopic/LaSuli/master/info.xml"
+  />
+  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org">
     <em:updates RDF:resource="rdf:#$qpiS92"/>
   </RDF:Description>
 </RDF:RDF>
