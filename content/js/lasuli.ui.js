@@ -1437,13 +1437,13 @@ lasuli.ui = {
     //logger.debug(typeof(endContainer));
     //logger.debug(endContainer.tagName);
     //logger.debug(endContainer.textContent);
-    //logger.debug(startContainer.isSameNode(endContainer));
+    //logger.debug(startContainer===endContainer);
     while(treewalker.nextNode())
     {
         var node = treewalker.currentNode;
         //logger.debug(node.textContent);
 
-        if(node.isSameNode(startContainer)){
+        if(node===startContainer){
           startPos = curPos + startOffset;
           //logger.debug("start:" + startPos);
           //logger.debug("strContent.length:" + strContent.length);

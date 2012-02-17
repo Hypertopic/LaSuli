@@ -44,7 +44,7 @@ while(treewalker.nextNode())
     var node = treewalker.currentNode;
     //logger.debug(node.textContent);
 
-    if(node.isSameNode(startContainer)){
+    if(node===startContainer){
       startPos = curPos + startOffset;
       //logger.debug("start:" + startPos);
       //logger.debug("strContent.length:" + strContent.length);
