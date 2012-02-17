@@ -2,9 +2,15 @@ LASULI – Social annotation for qualitative analysis
 ===================================================
 
 License: [BSD](http://www.opensource.org/licenses/bsd-license.php)
+
 Author: Chao Zhou
+
 Contact: <contact@hypertopic.org>
+
 Home page: <https://github.com/Hypertopic/LaSuli>
+
+Notice
+------
 
 It is possible to install LaSuli in Firefox with [just two clicks](http://lasuli.sourceforge.net/lasuli.xpi).
 
