@@ -4,7 +4,7 @@
          xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
   <RDF:Description RDF:about="rdf:#$ll2uD1"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="10.0.1"
+                   em:minVersion="10.0"
                    em:maxVersion="16.*" />
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:creator="Hypertopic team"

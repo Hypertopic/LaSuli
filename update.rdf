@@ -11,9 +11,9 @@
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$upiS92"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="10.0.1"
+                   em:minVersion="10.0"
                    em:maxVersion="16.*"
-                   em:updateLink="https://github.com/downloads/Hypertopic/LaSuli/lasuli.xpi"
+                   em:updateLink="https://hypertopic.s3.amazonaws.com/lasuli.xpi"
                    em:updateInfoURL="https://raw.github.com/Hypertopic/LaSuli/master/info.xml"
   />
   <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org">

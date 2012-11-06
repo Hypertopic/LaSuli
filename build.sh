@@ -34,10 +34,3 @@ echo "Cleaning up temporary files ..."
 cd ..
 rm -rf build
 
-echo "Patching update.rdf sha value ..."
-LSSHA=`shasum -a 256 $LSXPI | sed 's/ .*//'`
-echo "Hashvalue $LSSHA"
-sed -e "s/em:updateHash=\".*\" \/>/em:updateHash=\"sha256:$LSSHA\" \/>/" \
-  update.rdf > tmp.update.rdf
-cat tmp.update.rdf > update.rdf
-rm tmp.update.rdf
