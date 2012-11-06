@@ -1,22 +1,21 @@
 <?xml version="1.0"?>
-<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
-         xmlns:NC="http://home.netscape.com/NC-rdf#"
-         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-  <RDF:Seq RDF:about="rdf:#$qpiS92">
-    <RDF:li RDF:resource="rdf:#$rpiS92"/>
-  </RDF:Seq>
-  <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.2.8">
-    <em:targetApplication RDF:resource="rdf:#$upiS92"/>
-  </RDF:Description>
-  <RDF:Description RDF:about="rdf:#$upiS92"
-                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="10.0"
-                   em:maxVersion="16.*"
-                   em:updateLink="https://hypertopic.s3.amazonaws.com/lasuli.xpi"
-                   em:updateInfoURL="https://raw.github.com/Hypertopic/LaSuli/master/info.xml"
-  />
-  <RDF:Description RDF:about="urn:mozilla:extension:lasuli@hypertopic.org">
-    <em:updates RDF:resource="rdf:#$qpiS92"/>
-  </RDF:Description>
-</RDF:RDF>
+<rdf:RDF xmlns:m="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about="urn:mozilla:extension:lasuli@hypertopic.org">
+    <m:updates>
+      <rdf:Seq>
+        <rdf:li>
+        <rdf:Description m:version="0.8.2.8">
+          <m:targetApplication
+            m:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+            m:minVersion="10.0"
+            m:maxVersion="16.*"
+            m:updateLink="https://hypertopic.s3.amazonaws.com/lasuli.xpi"
+            m:updateInfoURL="https://raw.github.com/Hypertopic/LaSuli/master/info.xml"
+          />
+          </rdf:Description>
+        </rdf:li>
+      </rdf:Seq>
+    </m:updates>
+  </rdf:Description>
+</rdf:RDF>

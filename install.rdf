@@ -1,24 +1,19 @@
 <?xml version="1.0"?>
-<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
-         xmlns:NC="http://home.netscape.com/NC-rdf#"
-         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-  <RDF:Description RDF:about="rdf:#$ll2uD1"
-                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="10.0"
-                   em:maxVersion="16.*" />
-  <RDF:Description RDF:about="urn:mozilla:install-manifest"
-                   em:creator="Hypertopic team"
-                   em:developper="Chao Zhou — http://zhou.fr/"
-                   em:contributor="Aurélien Bénel – http://benel.tech-cico.fr/"
-                   em:contributor="Christophe Lejeune – http://www.squash.ulg.ac.be/"
-                   em:description="Social annotation software for interpretative reading."
-                   em:homepageURL="https://github.com/Hypertopic/LaSuli/wiki"
-                   em:id="lasuli@hypertopic.org"
-                   em:name="LaSuli"
-                   em:updateURL="https://raw.github.com/Hypertopic/LaSuli/master/update.rdf"
-                   em:type="2"
-    >
-    <em:targetApplication RDF:resource="rdf:#$ll2uD1"/>
-    <em:version>0.8.2.8</em:version>
-  </RDF:Description>
-</RDF:RDF>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:m="http://www.mozilla.org/2004/em-rdf#">
+  <rdf:Description rdf:about="urn:mozilla:install-manifest"
+    m:id="lasuli@hypertopic.org"
+    m:version="0.8.2.8"
+    m:type="2"
+    m:name="LaSuli"
+    m:description="Social annotation software for interpretative reading."
+    m:creator="Hypertopic team"
+    m:homepageURL="https://github.com/Hypertopic/LaSuli/wiki"
+    m:updateURL="https://raw.github.com/Hypertopic/LaSuli/master/update.rdf">
+    <m:targetApplication
+        m:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+        m:minVersion="10.0"
+        m:maxVersion="16.*"
+    />
+  </rdf:Description>
+</rdf:RDF>
