@@ -1,3 +1,3 @@
-pref("extensions.lasuli.setting", '[{"default": true,"url": "http://argos2.hypertopic.org", "user": "guest", "pass": "guest"}, {"url": "http://cassandre.hypertopic.org", "user": "guest", "pass": "guest"}]');
+pref("extensions.lasuli.setting", '[{"default": true,"url": "http://argos2.hypertopic.org/", "user": "prenom.nom", "pass": ""}]');
 pref("extensions.lasuli.log.level", "Info");
 pref("extensions.lasuli.cache", true);
