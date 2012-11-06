@@ -6,13 +6,13 @@
     <RDF:li RDF:resource="rdf:#$rpiS92"/>
   </RDF:Seq>
   <RDF:Description RDF:about="rdf:#$rpiS92"
-                   em:version="0.8.2.7">
+                   em:version="0.8.2.8">
     <em:targetApplication RDF:resource="rdf:#$upiS92"/>
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$upiS92"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="6.0a1"
-                   em:maxVersion="9.*"
+                   em:minVersion="10.0.1"
+                   em:maxVersion="16.*"
                    em:updateLink="https://github.com/downloads/Hypertopic/LaSuli/lasuli.xpi"
                    em:updateInfoURL="https://raw.github.com/Hypertopic/LaSuli/master/info.xml"
   />
