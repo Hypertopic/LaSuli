@@ -3,13 +3,13 @@
   xmlns:m="http://www.mozilla.org/2004/em-rdf#">
   <rdf:Description rdf:about="urn:mozilla:install-manifest"
     m:id="lasuli@hypertopic.org"
-    m:version="0.8.2.8"
+    m:version="0.8.2.9"
     m:type="2"
     m:name="LaSuli"
     m:description="Social annotation software for interpretative reading."
     m:creator="Hypertopic team"
     m:homepageURL="https://github.com/Hypertopic/LaSuli/wiki"
-    m:updateURL="https://raw.github.com/Hypertopic/LaSuli/master/update.rdf">
+    m:updateURL="https://hypertopic.s3.amazonaws.com/lasuli.rdf">
     <m:targetApplication>
       <rdf:Description
         m:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"

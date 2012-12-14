@@ -5,11 +5,11 @@
     <m:updates>
       <rdf:Seq>
         <rdf:li>
-        <rdf:Description m:version="0.8.2.8">
+        <rdf:Description m:version="0.8.2.9">
           <m:targetApplication
             m:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
             m:minVersion="10.0"
-            m:maxVersion="16.*"
+            m:maxVersion="18.*"
             m:updateLink="https://hypertopic.s3.amazonaws.com/lasuli.xpi"
             m:updateInfoURL="https://raw.github.com/Hypertopic/LaSuli/master/info.xml"
           />
