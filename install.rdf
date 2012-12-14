@@ -10,10 +10,12 @@
     m:creator="Hypertopic team"
     m:homepageURL="https://github.com/Hypertopic/LaSuli/wiki"
     m:updateURL="https://raw.github.com/Hypertopic/LaSuli/master/update.rdf">
-    <m:targetApplication
+    <m:targetApplication>
+      <rdf:Description
         m:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
         m:minVersion="10.0"
-        m:maxVersion="16.*"
-    />
+        m:maxVersion="18.*"
+      />
+    </m:targetApplication>
   </rdf:Description>
 </rdf:RDF>
