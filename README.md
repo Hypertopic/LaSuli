@@ -35,3 +35,10 @@ Installation procedure
 * Rename ``LaSuli`` directory into ``lasuli@hypertopic.org``
 
 * Restart Firefox.
+
+Debugging procedure
+-------------------
+
+* Install [Console² extension](https://addons.mozilla.org/en-US/firefox/addon/console²/) and restart Firefox.
+* Show the extension toobar and customize it with the Console² icon.
+* Click the icon and enable (only) `JS` and `Chrome`.
