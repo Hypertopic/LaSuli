@@ -1447,7 +1447,7 @@ lasuli.ui = {
           startPos = curPos + startOffset;
           //logger.debug("start:" + startPos);
           //logger.debug("strContent.length:" + strContent.length);
-          endPos = startPos + strContent.length;
+          endPos = startPos + ('' + range).length;
           //logger.debug("endPos:" + endPos);
           break;
         }
