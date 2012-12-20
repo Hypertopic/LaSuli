@@ -39,6 +39,8 @@ Installation procedure
 Debugging procedure
 -------------------
 
+* Open `about:config` in Firefox.
+* Search for `extensions.lasuli.log.level` and set it to `Debug`.
 * Install [Console² extension](https://addons.mozilla.org/en-US/firefox/addon/console²/) and restart Firefox.
 * Show the extension toobar and customize it with the Console² icon.
 * Click the icon and enable (only) `JS` and `Chrome`.
