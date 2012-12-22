@@ -46,4 +46,3 @@
 .contextMenu LI.separator {
 	border-top: solid 1px #CCC;
 }
-.contextMenu LI.insert A { background-image: url(icons/plus.png); }
