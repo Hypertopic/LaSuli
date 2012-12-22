@@ -8,7 +8,6 @@ const include = Cu.import;
 
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/XMLHttpRequest.js");
-include("resource://lasuli/modules/Services.js");
 include("resource://lasuli/modules/Sync.js");
 include("resource://lasuli/modules/Base64.js");
 include("resource://lasuli/modules/Preferences.js");
