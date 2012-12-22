@@ -646,48 +646,6 @@ lasuli.ui = {
 		});*/
   },
 
-  initTagCloud : function(){
-    $("#tags").contextMenu({
-        menu: "tagcloudContextMenu"
-    },
-    function(action, el, pos)
-    {
-      switch(action)
-      {
-        case "tagcloudSwitcher":
-          if($("#tags ul").hasClass("alt"))
-            $("#tags ul").hide().removeClass("alt").fadeIn("fast");
-          else
-            $("#tags ul").hide().addClass("alt").fadeIn("fast");
-          return;
-        case "tagcloudSortAlphabetically":
-          if($(".tagcloudSortAlphabetically").data("desc"))
-          {
-            $("#tags ul li").tsort({order:"desc"});
-            $(".tagcloudSortAlphabetically").data("desc", false);
-          }
-          else
-          {
-            $(".tagcloudSortAlphabetically").data("desc", true);
-            $("#tags ul li").tsort({order:"asc"});
-          }
-          return;
-        case "tagcloudSortByStrength":
-          if($(".tagcloudSortByStrength").data("desc"))
-          {
-            $(".tagcloudSortByStrength").data("desc", false);
-            $("#tags ul li").tsort({order:"asc",attr:"class"});
-          }
-          else
-          {
-            $(".tagcloudSortByStrength").data("desc", true);
-            $("#tags ul li").tsort({order:"desc",attr:"class"});
-          }
-          return;
-      }
-    });
-  },
-
   initItemName : function(){
     //Edit in place of a tag
     $("h3#h3-entity-name").die().live("click", function(event){
@@ -927,7 +885,6 @@ lasuli.ui = {
       var content = "<li class='tag" + size + "'><a>" + name + "</a></li>";
       $("#tags ul").append(content);
     }
-    $(".tagcloudSortAlphabetically").data("desc", true);
     $("#tags ul li").tsort({order:"asc"});
     $("#tags ul li a").click(function(){
       var topicName = $(this).text();
@@ -1505,8 +1462,6 @@ $(window).bind("load", function(){
   lasuli.ui.initViewpointPanel();
   lasuli.ui.initPlusPanel();
   lasuli.ui.initAttributeGrid();
-  
-  lasuli.ui.initTagCloud();
   lasuli.ui.initItemName();
   dispatch('lasuli.sidebar.onSidebarOpened', null);
   //wait until all event listener registered
