@@ -1,4 +1,4 @@
-let EXPORTED_SYMBOLS = ["base64_encode"];
+let EXPORTED_SYMBOLS = ["base64_encode","base64_decode"];
 
 /**
 *
@@ -8,6 +8,10 @@ let EXPORTED_SYMBOLS = ["base64_encode"];
 **/
 function base64_encode(str){
   return Base64.encode(str);
+}
+
+function base64_decode(str){
+  return Base64.decode(str);
 }
 
 var Base64 = {
