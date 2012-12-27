@@ -32,7 +32,7 @@ lasuli.contextmenu = {
     menu.setAttribute('id', 'lasuli_menuitem_' + topic.topicID);
     menu.setAttribute('label', topic.name);
     menu.setAttribute('insertafter', "context-sep-selectall");
-    menu.setAttribute('oncommand', "dispatch('lasuli.ui.doHighlightMenuClick', '" + base64_encode(JSON.stringify({"viewpointID": viewpointID, "topicID": topicID, "name": topicName})) + "' );");
+    menu.setAttribute('oncommand', "dispatch('lasuli.ui.doHighlightMenuClick', '" + Base64.encode(JSON.stringify({"viewpointID": viewpointID, "topicID": topicID, "name": topicName})) + "' );");
     menu.setAttribute('topicID', topicID);
     menu.setAttribute('viewpointID', viewpointID);
     if(topic.color)

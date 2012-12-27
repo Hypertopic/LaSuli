@@ -1340,7 +1340,7 @@ lasuli.ui = {
 
   doHighlightMenuClick: function(topicBase64Encoded){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
-    try{ topic = JSON.parse(base64_decode(topicBase64Encoded)); }catch(e){}
+    try{ topic = JSON.parse(Base64.decode(topicBase64Encoded)); }catch(e){}
     logger.debug(topic);
     var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
     var win = wm.getMostRecentWindow("navigator:browser");

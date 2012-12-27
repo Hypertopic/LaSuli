@@ -161,7 +161,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
   var result = null;
   var startTime = new Date().getTime();
   try{
-    var auth = "Basic " + base64_encode(this.user + ':' + this.pass);
+    var auth = "Basic " + Base64.encode(this.user + ':' + this.pass);
     //logger.trace(auth);
     this.xhr.open(httpAction, httpUrl, false, this.user, this.pass);
     //If there is a request body, set the content-type to json
