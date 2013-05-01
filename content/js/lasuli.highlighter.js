@@ -89,8 +89,7 @@ lasuli.highlighter = {
     //logger.trace(fragments);
 
     var coordinates = [];
-    for each(var fragment in fragments)
-    {
+    for (var fragment of fragments) {
       coordinates.push(fragment.startPos);
       coordinates.push(fragment.endPos);
     }

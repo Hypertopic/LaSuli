@@ -959,8 +959,7 @@ lasuli.ui = {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowKeywords");
     var html = "";
     var viewpointID = null;
-    for each(var topic in keywords)
-    {
+    for (var topic of keywords) {
       if(!viewpointID) viewpointID = topic.viewpointID;
       var el = 'div#' + topic.viewpointID + ' ul.topics-ul li a[uri="' + topic.topicID + '"]';
       //logger.trace(el);
@@ -1217,8 +1216,7 @@ lasuli.ui = {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowFragments");
     //logger.trace(arg);
     var topics = arg.topics;
-    for each(var topic in topics)
-    {
+    for (var topic of topics) {
       lasuli.ui._initFragmentsContainer(topic);
     }
     dispatch("lasuli.ui.doMakeFragmentsDroppable", null);
