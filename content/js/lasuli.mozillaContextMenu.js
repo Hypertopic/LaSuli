@@ -90,9 +90,8 @@ lasuli.contextmenu = {
     var menupopup = this.mainWindow.document.createElement('menupopup');
     menupopup.setAttribute('id', 'lasuliMenuPopup');
     menu.appendChild(menupopup);
-    for (var topic of this.topics) {
-      //logger.trace(topic);
-      var menuitem = this._createItem(topic);
+    for (var topic of Iterator(this.topics)) {
+      var menuitem = this._createItem(topic[1]);
       menupopup.appendChild(menuitem);
     }
     //logger.trace("appendChild");

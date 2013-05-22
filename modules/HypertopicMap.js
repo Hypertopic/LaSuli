@@ -739,7 +739,7 @@ HtMapItem.prototype.untag = function(topic) {
     delete item.topics[topic.getID()];
 
   var i=0;
-  for (var t of item.topics) {
+  for (var t in item.topics) {
     i++;
   }
   if(i == 0) delete item.topics;
@@ -1123,7 +1123,7 @@ HtMapTopic.prototype.getNarrower = function() {
   var view = this.getView();
   if(!view) return false;
   var narrower = view.narrower;
-  //logger.debug(narrower);
+  if(!narrower) return false;
   for (var topic of narrower) {
     //logger.debug(topic);
     result.push(this.Viewpoint.getTopic(topic));
@@ -1221,7 +1221,7 @@ HtMapTopic.prototype.getHighlights = function(recursion) {
 	var narrower = topic.narrower;
   for (var t of narrower)
   {
-    var topic = this.Viewpoint.getTopic(t);
+    var topic = this.Viewpoint.getTopic(t[1]);
     var highlights = topic.getHighlights(true);
     if(!highlights) continue;
     for(var i=0, highlight; highlight = highlights[i]; i++)
@@ -1247,7 +1247,8 @@ HtMapTopic.prototype.destroy = function() {
   if(!viewpoint.topics || !viewpoint.topics[topicID] ) return false;
   //logger.trace(viewpoint);
   delete viewpoint.topics[topicID];
-  for (var topic of viewpoint.topics) {
+  for (var t of Iterator(viewpoint.topics)) {
+    var topic = t[1];
     if(topic.broader && topic.broader instanceof Array)
       for(var i=0, t; t = topic.broader[i]; i++)
         if(t == topicID)
