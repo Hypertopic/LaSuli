@@ -99,7 +99,7 @@ lasuli.contextmenu = {
     cm.appendChild(menu);
     //logger.trace("this.cacm.appendChild");
     if(this.topics['new'])
-      delete this.topcis['new'];
+      delete this.topics['new'];
   },
 
   doAddMenuItem : function(topic){
