@@ -954,7 +954,9 @@ lasuli.ui = {
     $("div#" + viewpointID).find("button.cancel").click();
   },
 
-
+  /**
+   * @param keywords map
+   */
   doShowKeywords : function(keywords){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowKeywords");
     var html = "";
@@ -1211,7 +1213,9 @@ lasuli.ui = {
     $("div.fragments ul li").tsort({order:"asc",attr:"startPos"});
     dispatch("lasuli.ui.doMakeFragmentsDragable", null);
   },
-
+  /**
+   * @param arg map of topics (map), fragments (map), and scroll (boolean)
+   */
   doShowFragments : function(arg){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowFragments");
     //logger.trace(arg);

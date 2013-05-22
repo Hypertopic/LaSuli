@@ -1114,6 +1114,9 @@ HtMapTopic.prototype.getName = function() {
             ? topic.name[0] : '';
 }
 
+/**
+ * @return list
+ */
 HtMapTopic.prototype.getNarrower = function() {
   var logger = Log4Moz.repository.getLogger("HtMapTopic.getNarrower");
   var result = new Array();
@@ -1129,6 +1132,9 @@ HtMapTopic.prototype.getNarrower = function() {
   return result;
 }
 
+/**
+ * @return list
+ */
 HtMapTopic.prototype.getBroader = function() {
   var result = new Array();
   var view = this.getView();
