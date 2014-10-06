@@ -26,7 +26,7 @@ Installation requirements
 Installation procedure
 ----------------------
 
-* Start Firefox with your development profile and go to the [corresponding directory](http://support.mozilla.com/kb/Profiles#How_to_find_your_profile).
+* Start Firefox [with your development profile](https://support.mozilla.org/kb/using-multiple-profiles) and go to the [corresponding directory](http://support.mozilla.com/kb/Profiles#How_to_find_your_profile).
 
 * Go to the ``extension`` sub-directory and get the latest revision of the source code:
 
