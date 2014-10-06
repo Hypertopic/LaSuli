@@ -82,8 +82,8 @@ function HtMap(baseUrl, user, pass) {
   //Overrides the MIME type returned by the hypertopic service.
   this.xhr.overrideMimeType('application/json');
 
-  this.user = user || "";
-  this.pass = pass || "";
+  this.user = user;
+  this.pass = pass;
 
   logger.trace(this.user);
   logger.trace(this.pass);
@@ -160,15 +160,18 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
   var result = null;
   var startTime = new Date().getTime();
   try{
-    var auth = "Basic " + Base64.encode(this.user + ':' + this.pass);
-    //logger.trace(auth);
-    this.xhr.open(httpAction, httpUrl, false, this.user, this.pass);
+    this.xhr.open(httpAction, httpUrl, false);
     //If there is a request body, set the content-type to json
     if(httpBody && httpBody != '')
       this.xhr.setRequestHeader('Content-Type', 'application/json');
 		
 		this.xhr.setRequestHeader('Accept', 'application/json');
-    this.xhr.setRequestHeader('Authorization', auth);
+
+    if (this.user && this.pass) {
+      var auth = "Basic " + Base64.encode(this.user + ':' + this.pass);
+      //logger.trace(auth);
+      this.xhr.setRequestHeader('Authorization', auth);
+    }
 
     //If the request body is an object, serialize it to json
     if(typeof(httpBody) != 'string')
