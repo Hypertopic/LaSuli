@@ -107,7 +107,7 @@ HtMap.prototype.purgeCache = function(){
 }
 HtMap.prototype.getServerType = function(){
   var logger = Log4Moz.repository.getLogger("HtMap.getServerType");
-  var result = this.httpGet('/');
+  var result = this.httpGet('');
   logger.trace(result);
   if(typeof result['service'] == 'string')
     return result['service'].toLowerCase();
@@ -260,10 +260,6 @@ HtMap.prototype.httpGet = function(query) {
   var body;
   try{
     var url = this.baseUrl + query;
-    if(query.indexOf("_") == 0)
-      url = (this.baseUrl.indexOf("_design") > 0) ? this.baseUrl.substr(0,
-                  this.baseUrl.indexOf("_design")) + query : this.baseUrl
-                  + query;
     body = this.send("GET", url, null);
     if(!body)
       return false;
