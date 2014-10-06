@@ -114,11 +114,10 @@ HtMap.prototype.getServerType = function(){
   return false;
 }
 HtMap.prototype.getLastSeq = function(){
-  var result = this.httpGet('_changes');
-  if(result)
-    return result.last_seq;
-  else
-    return false;
+  var logger = Log4Moz.repository.getLogger("HtMap.getLastSeq");
+  var result = this.httpGet('');
+  logger.trace(result);
+  return result.update_seq || false;
 }
 
 HtMap.prototype.getType = function() {
