@@ -1452,7 +1452,7 @@ lasuli.ui = {
     else
     {
       $('div#overlay-div').addClass('hide').css("opacity", 0.5);
-      $('div#progressbar').hide().destroy();
+      $('div#progressbar').hide().progressbar('destroy');
     }
   }
 }
