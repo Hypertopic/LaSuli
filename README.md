@@ -12,9 +12,9 @@ Home page: <https://github.com/Hypertopic/LaSuli>
 Notice
 ------
 
-It is possible to install LaSuli in Firefox with just a few clicks ([Install stable version](https://hypertopic.s3.amazonaws.com/lasuli.xpi)).
+If you just want to **use** LaSuli, [install its **stable version**](https://hypertopic.s3.amazonaws.com/lasuli.xpi).
 
-The following instructions are **only** for people willing to modify the software or to test the **development version**.
+The following instructions are only for people willing to **modify** the software or to test the development version.
 
 Installation requirements
 -------------------------
