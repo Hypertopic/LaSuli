@@ -20,26 +20,26 @@ Installation requirements
 -------------------------
 
 * Git client
-* [Firefox](http://www.mozilla.org/firefox/) 
-* [Firefox development profile](http://support.mozilla.org/kb/Managing-profiles#w_starting-the-profile-manager)
+* [Firefox Developer Edition](https://www.mozilla.org/firefox/developer/)
 
 Installation procedure
 ----------------------
 
-* Start Firefox [with your development profile](https://support.mozilla.org/kb/using-multiple-profiles) and go to the [corresponding directory](http://support.mozilla.com/kb/Profiles#How_to_find_your_profile).
-
-* Go to the ``extension`` sub-directory and get the latest revision of the source code:
+* Start Firefox Developer Edition with the default development profile and go to the [corresponding directory](http://support.mozilla.com/kb/Profiles#How_to_find_your_profile).
+* Go to the ``extensions`` sub-directory (after creating it if necessary) and get the latest revision of the source code:
 
         git clone git@github.com:Hypertopic/LaSuli.git
 
 * Rename ``LaSuli`` directory into ``lasuli@hypertopic.org``
-
-* Restart Firefox.
+* Open `about:config` in Firefox Developer Edition.
+* Search for `xpinstall.signatures.required` and set it to `false`.
+* Open `about:addons` and enable `LaSuli`.
+* Restart Firefox Developer Edition.
 
 Debugging procedure
 -------------------
 
-* Open `about:config` in Firefox.
+* Open `about:config` in Firefox Developer Edition.
 * Search for `extensions.lasuli.log.level` and set it to `Debug`.
 * In the menu, choose `Tools > Web development > Browser console`.
 * Enable (only) `JS` and the levels you need (errors, warnings, log).
