@@ -68,37 +68,16 @@ lasuli.hypertopic = {
     var result = null, corpusID;
     
     logger.debug("get corpus");
-    //First try to locate the corpus on Cassandre.
+
     for(var k in this.items) {
-      var server = HtServers[k];
-      logger.debug(k);
-      if(server.serverType != 'cassandre')
-        continue;
-      
       corpusID = this.items[k].getCorpusID();
-      logger.debug(corpusID);
-      logger.debug("corpus found on cassandre server");
-      break;
+      if (corpusID) break;
     }
-    
-    if(!corpusID)
-      for(var k in this.items) {
-        var server = HtServers[k];
-        logger.debug(k);
-        if(server.serverType != 'argos')
-          continue;
-        
-        corpusID = this.items[k].getCorpusID();
-        logger.debug("corpus found on argos server");
-        break;
-      }
-      
     if(corpusID) {
+      logger.debug('Corpus ' + corpusID + ' found');
       var corpus = HtServers.freecoding.getCorpus(corpusID);
-      
       if(corpus.getView() === false) {
-        logger.debug(corpusID);
-        logger.debug("corpus doesn't exist!");
+        logger.debug('but not its duplicate on the default server');
         var ret = corpus.createWithID(corpusID, corpusID);
         logger.debug(ret);
         if(!ret) {
@@ -649,39 +628,16 @@ lasuli.hypertopic = {
     
     logger.debug("get item id");
     var itemID;
-    //First try to locate the corpus on Cassandre.
     for(var k in this.items) {
-      var server = HtServers[k];
-      logger.debug(k);
-      if(server.serverType != 'cassandre')
-        continue;
-      
       itemID = this.items[k].getID();
-      logger.debug(itemID);
-      logger.debug("corpus found on cassandre server");
-      break;
+      if (itemID) break;
     }
-    
-    if(!itemID)
-      for(var k in this.items) {
-        var server = HtServers[k];
-        logger.debug(k);
-        if(server.serverType != 'argos')
-          continue;
-        
-        itemID = this.items[k].getID();
-        logger.debug("corpus found on argos server");
-        break;
-      }
 
-    //logger.trace('item name: ' + name);
-    try{
-      //logger.trace(this.corpus);
+    try {
       var corpus = this.corpus;
       logger.debug(corpus);
       var item = corpus.createItem(name, itemID);
-      if(item)
-      {
+      if (item) {
         item.describe("resource", this.currentUrl);
         logger.debug(item.getObject());
         MemCache.items = false;
