@@ -3,32 +3,6 @@ include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/Sync.js");
 
 lasuli.highlighter = {
-  // Get TreeWalker Object
-  getTreeWalker : function(m_document)
-  {
-    try{
-      var treewalker = m_document.createTreeWalker(m_document.body,
-      NodeFilter.SHOW_TEXT,
-      { acceptNode: function(node)
-        {
-          // only get text content
-          if(node.nodeType != 3 || node.data.length == 0)
-            return NodeFilter.FILTER_REJECT;
-
-          // Filter the <script> content
-          var m_parent = node.parentNode;
-          if(m_parent && m_parent.tagName == "SCRIPT")
-            return NodeFilter.FILTER_REJECT;
-
-          return NodeFilter.FILTER_ACCEPT;
-        }
-      },
-      false);
-      return treewalker;
-    }catch(e){
-      return null;
-    }
-  },
 
   clearDocument : function(m_document){
     if(this.nodeList)
@@ -105,7 +79,7 @@ lasuli.highlighter = {
 
     var treewalker;
 
-    treewalker = this.getTreeWalker(m_document);
+    treewalker = createTreeWalker(m_document);
 
     if(!treewalker)
     {

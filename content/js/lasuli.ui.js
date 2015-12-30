@@ -1370,23 +1370,7 @@ lasuli.ui = {
     var treewalker;
     //logger.debug('start to get treewalker');
     try{
-      treewalker = contentDocument.createTreeWalker(contentDocument.body,
-      NodeFilter.SHOW_TEXT,
-      { acceptNode: function(node)
-        {
-          // only get text content
-          if(node.nodeType != 3 || node.data.length == 0)
-            return NodeFilter.FILTER_REJECT;
-
-          // Filter the <script> content
-          var m_parent = node.parentNode;
-          if(m_parent && m_parent.tagName == "SCRIPT")
-            return NodeFilter.FILTER_REJECT;
-
-          return NodeFilter.FILTER_ACCEPT;
-        }
-      },
-      false);
+      treewalker = createTreeWalker(contentDocument);
     }catch(e){
       logger.fatal(e);
       return false;

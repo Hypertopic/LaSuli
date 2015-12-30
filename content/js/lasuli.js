@@ -159,5 +159,19 @@ function alpha(color, alpha){
   }catch(e){ logger.fatal(e); }
 }
 
+function createTreeWalker(doc) {
+  return doc.createTreeWalker(
+    doc.body,
+    NodeFilter.SHOW_TEXT, {
+      acceptNode: function(node) {
+        return (node.data.length==0
+          || node.parentNode && node.parentNode.tagName=="SCRIPT"
+        )? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      }
+    },
+    false
+  );
+}
+
 function _p(v){ dispatch("lasuli.ui.doUpdateProgressBar", v); }
 
