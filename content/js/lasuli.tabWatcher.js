@@ -1,4 +1,3 @@
-const NOTIFY_STATE_DOCUMENT = Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT;
 const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
 const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
 const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
@@ -55,7 +54,7 @@ lasuli.tabWatcher =
 }
 
 window.addEventListener("load", function(){
-  gBrowser.addProgressListener(lasuli.tabWatcher, NOTIFY_STATE_DOCUMENT);
+  gBrowser.addProgressListener(lasuli.tabWatcher);
 }, false);
 
 window.addEventListener("unload", function(){
