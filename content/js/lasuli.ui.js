@@ -503,7 +503,7 @@ lasuli.ui = {
         if (event.keyCode == 27)
         {
           $(this).replaceWith(originalSpan);
-          setTimeout("restoreImg('" + originalImage + "');", 500);
+          setTimeout(function() {restoreImg(originalImage);}, 500);
         }
         if (event.keyCode == 13)
           $(this).blur();

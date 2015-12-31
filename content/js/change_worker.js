@@ -12,7 +12,7 @@ function fetch(){
       //dump(seq);
       if(seq < 0)
       {
-        changeWorker.timeoutID = setTimeout("fetch()", 2000);
+        changeWorker.timeoutID = setTimeout(fetch, 2000);
         return false;
       }
       changeWorker.sequences[server] = seq;
@@ -39,7 +39,7 @@ function fetch(){
     }
     req.send(null);
   }
-  changeWorker.timeoutID = setTimeout("fetch()", 20000);
+  changeWorker.timeoutID = setTimeout(fetch, 20000);
 }
 
 function getLastSeq(url){
