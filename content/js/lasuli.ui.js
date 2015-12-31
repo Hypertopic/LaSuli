@@ -115,13 +115,6 @@ lasuli.ui = {
 		});
 	},
 	
-  initDocumentPanel : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.initDocumentPanel");
-    //logger.trace("initDocumentPanel");
-    //var browsingUrl = "http://cassandre/text/d0";
-    dispatch("lasuli.core.doLocationChange", null);
-  },
-
   initPlusPanel : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.initViewpointPanel");
     $('#btn-create-viewpoint').button({
@@ -1454,8 +1447,7 @@ $(window).bind("load", function(){
   dispatch('lasuli.sidebar.onSidebarOpened', null);
   //wait until all event listener registered
   Sync.sleep(500);
-  
-  try{ lasuli.ui.initDocumentPanel(); }catch(e){ logger.fatal(e); }
+  dispatch("lasuli.core.doLocationChange", true);
 });
 
 $(window).bind("unload", function(){

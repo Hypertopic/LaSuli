@@ -2,6 +2,8 @@ include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/HypertopicMap.js");
+const { require } = Cu.import("resource://gre/modules/commonjs/toolkit/require.js", {})
+var tabs = require("sdk/tabs");
 
 lasuli.core = {
   fragments : {},
@@ -63,19 +65,10 @@ lasuli.core = {
   },
 
   // When tabWatcher find a new location is input, trigger this function
-  doLocationChange: function(url){
+  doLocationChange: function(reload){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLocationChange");
-    //logger.debug("URL:" + url);
-    if(!url){
-      var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                   .getInterface(Components.interfaces.nsIWebNavigation)
-                   .QueryInterface(Components.interfaces.nsIDocShellTreeItem)
-                   .rootTreeItem
-                   .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                   .getInterface(Components.interfaces.nsIDOMWindow);
-      url = mainWindow.content.location.href;
-      lasuli.hypertopic.currentUrl = "about:blank";
-    }
+    var url = tabs.activeTab.url;
+    logger.debug("Opened with: " + url);
     if(url.indexOf('#') > 0)
     {
       dispatch("lasuli.highlighter.doHighlightAnchor", url.substr(url.indexOf('#')));
@@ -92,7 +85,7 @@ lasuli.core = {
     }
 
     //If the url is unchanged, do nothing. (e.g. switch between two tabs on the same url)
-    if(url == lasuli.hypertopic.currentUrl)
+    if (url== lasuli.hypertopic.currentUrl && !reload)
       return false;
 
     lasuli.hypertopic.currentUrl = url;
