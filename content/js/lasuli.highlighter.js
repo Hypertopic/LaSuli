@@ -1,6 +1,7 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/Sync.js");
+var window_utils = require("sdk/window/utils");
 
 lasuli.highlighter = {
 
@@ -23,11 +24,8 @@ lasuli.highlighter = {
     }
   },
 
-  getContentDocument : function(){
-    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                   .getService(Components.interfaces.nsIWindowMediator);
-    var win = wm.getMostRecentWindow("navigator:browser");
-    return win.getBrowser().contentDocument;
+  getContentDocument: function() {
+    return window_utils.getMostRecentBrowserWindow().content.document;
   },
 
   doHighlight: function(arg)
