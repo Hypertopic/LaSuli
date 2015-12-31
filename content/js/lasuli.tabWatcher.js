@@ -1,8 +1,5 @@
-const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
 const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
 const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
-const NOTIFY_LOCATION = Components.interfaces.nsIWebProgress.NOTIFY_LOCATION;
-const NOTIFY_STATE_ALL = Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL;
 
 //implement nsIWebProgressListener (https://developer.mozilla.org/en/nsIWebProgressListener)
 lasuli.tabWatcher =
