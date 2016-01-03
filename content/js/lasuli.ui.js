@@ -1,7 +1,7 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Sync.js");
 include("resource://lasuli/modules/Preferences.js");
-include("resource://lasuli/modules/Base64.js");
+var base64 = require("sdk/base64");
 
 lasuli.ui = {
   initTabs : function(){
@@ -1336,7 +1336,7 @@ lasuli.ui = {
 
   doHighlightMenuClick: function(topicBase64Encoded){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
-    try{ topic = JSON.parse(Base64.decode(topicBase64Encoded)); }catch(e){}
+    try{ topic = JSON.parse(base64.decode(topicBase64Encoded)); }catch(e){}
     logger.debug(topic);
     var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
     var win = wm.getMostRecentWindow("navigator:browser");

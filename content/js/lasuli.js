@@ -15,6 +15,8 @@ include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Md5.js");
 
+const { require } = Cu.import("resource://gre/modules/commonjs/toolkit/require.js", {})
+
 /**
  * LaSuli namespace.
  */

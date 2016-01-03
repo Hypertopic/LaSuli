@@ -2,7 +2,6 @@ include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/HypertopicMap.js");
-const { require } = Cu.import("resource://gre/modules/commonjs/toolkit/require.js", {})
 var tabs = require("sdk/tabs");
 
 lasuli.core = {

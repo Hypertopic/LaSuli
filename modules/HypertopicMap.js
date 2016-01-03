@@ -9,8 +9,10 @@ const include = Cu.import;
 include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/XMLHttpRequest.js");
 include("resource://lasuli/modules/Sync.js");
-include("resource://lasuli/modules/Base64.js");
 include("resource://lasuli/modules/Preferences.js");
+
+const { require } = Cu.import("resource://gre/modules/commonjs/toolkit/require.js", {})
+var base64 = require("sdk/base64");
 
 var HtServers = {};
 var HtCaches = {};
@@ -168,7 +170,7 @@ HtMap.prototype.send = function(httpAction, httpUrl, httpBody) {
 		this.xhr.setRequestHeader('Accept', 'application/json');
 
     if (this.user && this.pass) {
-      var auth = "Basic " + Base64.encode(this.user + ':' + this.pass);
+      var auth = "Basic " + base64.encode(this.user + ':' + this.pass);
       //logger.trace(auth);
       this.xhr.setRequestHeader('Authorization', auth);
     }
