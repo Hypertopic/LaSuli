@@ -1,51 +1,32 @@
-const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
-const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
+var tabs = require("sdk/tabs");
 
-//implement nsIWebProgressListener (https://developer.mozilla.org/en/nsIWebProgressListener)
-lasuli.tabWatcher =
-{
-  QueryInterface: function(aIID){
-    if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
-      aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
-      aIID.equals(Components.interfaces.nsISupports))
-      return this;
-    throw Components.results.NS_NOINTERFACE;
-  },
+const ABOUT_URI = /^about:/;
 
-  onStateChange: function(aWebProgress, aRequest, aFlag, aStatus){
-    var logger = Log4Moz.repository.getLogger("lasuli.tabWatcher.onStateChange");
-    // If you use myListener for more than one tab/window, use
-    // aWebProgress.DOMWindow to obtain the tab/window which triggers the state change
-    var doc = aWebProgress.DOMWindow.document;
-    var docHref = doc.location.href;
-    if(aFlag & STATE_START)
-    {
-      logger.trace("The load event is initiated");
-    }
-    if(aFlag & STATE_STOP)
-    {
-      logger.trace(docHref + " is loaded!");
-      Observers.notify("lasuli.core.doStateChange", aWebProgress.DOMWindow);
-    }
-    return 0;
-  },
-
-  onLocationChange: function(aProgress, aRequest, aURI){
-    var logger = Log4Moz.repository.getLogger("lasuli.tabWatcher.onLocationChange");
-    Observers.notify("lasuli.core.doLocationChange");
-    return 0;
-  },
-
-  onProgressChange: function() {return 0;},
-  onStatusChange: function() {return 0;},
-  onSecurityChange: function() {return 0;},
-  onLinkIconAvailable: function() {return 0;}
+function handleURI(tab, next) {
+  if (!ABOUT_URI.test(tab.url)) {
+    dispatch("lasuli.ui.doUnBlockUI");
+    next(tab);
+  } else {
+    dispatch("lasuli.ui.doClearDocumentPanel");
+    dispatch("lasuli.ui.doBlockUI");
+  }
 }
 
-window.addEventListener("load", function(){
-  gBrowser.addProgressListener(lasuli.tabWatcher);
-}, false);
+tabs.on("load", function(tab) {
+  handleURI(tab, function(t) {
+    console.log('tabWatcher: ' + t.url + ' is shown for the first time');
+    // Show highlights and update document tab
+    dispatch("lasuli.core.doLocationChange", true);
+  });
+});
 
-window.addEventListener("unload", function(){
-  gBrowser.removeProgressListener(lasuli.tabWatcher);
-}, false);
+tabs.on("activate", function(tab) {
+  if (tab.readyState=='complete') {
+    handleURI(tab, function(t) {
+      console.log('tabWatcher: ' + t.url + ' is shown again');
+      // Close viewpoint tabs and update document tab
+      dispatch("lasuli.core.doLocationChange", false);
+    });
+  }
+});
+

@@ -104,33 +104,6 @@ lasuli.core = {
     dispatch("lasuli.core.doLoadDocument", null);
   },
 
-  //Triggered when the document is loaded
-  doStateChange : function(domWindow){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doStateChange");
-    var url = domWindow.document.location.href;
-    if(!url || url == "about:blank") return false;
-    //logger.debug(domWindow.document.location.href);
-    url = (url.indexOf('#') > 0) ? url.substr(0, url.indexOf('#')) : url;
-
-    if(!this.domWindows) this.domWindows = {};
-    this.domWindows[url] = domWindow;
-    var nodes = domWindow.document.querySelectorAll("span." + lasuli._class);
-    //logger.debug(nodes.length);
-    if(nodes.length > 0) return false;
-    var hashValue = domWindow.document.location.hash;
-    logger.debug(typeof hashValue);
-    if(this.fragments[url]){
-      var fragments = this.fragments[url];
-      if(typeof domWindow == "undefined")
-        dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments});
-      else
-        dispatch("lasuli.highlighter.doHighlight", {"fragments": fragments, "domWindow": domWindow});
-      Sync.sleep(1000);
-      if(typeof hashValue == "string")
-        dispatch("lasuli.highlighter.doHighlightAnchor", hashValue);
-    }
-  },
-
   doClearFragmentsCache : function(){
     this.fragments = {};
   },
