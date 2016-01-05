@@ -1447,7 +1447,7 @@ $(window).bind("load", function(){
   dispatch('lasuli.sidebar.onSidebarOpened', null);
   //wait until all event listener registered
   Sync.sleep(500);
-  dispatch("lasuli.core.doLocationChange", true);
+  dispatch("lasuli.core.doLoadDocument");
 });
 
 $(window).bind("unload", function(){

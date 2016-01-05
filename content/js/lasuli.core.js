@@ -63,56 +63,14 @@ lasuli.core = {
         Observers.remove("lasuli.core." + func, lasuli.core[func], lasuli.core);
   },
 
-  // When tabWatcher find a new location is input, trigger this function
-  doLocationChange: function(reload){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doLocationChange");
-    var url = tabs.activeTab.url;
-    logger.debug("Opened with: " + url);
-    if(url.indexOf('#') > 0)
-    {
-      dispatch("lasuli.highlighter.doHighlightAnchor", url.substr(url.indexOf('#')));
-      url = url.substr(0, url.indexOf('#'));
-    }
-
-    //Check the sidebar status
-    //logger.debug(url);
-    if(url && url != "about:blank")
-      dispatch("lasuli.ui.doUnBlockUI", null);
-    else{
-      dispatch("lasuli.ui.doClearDocumentPanel", null);
-      dispatch("lasuli.ui.doBlockUI", null);
-    }
-
-    //If the url is unchanged, do nothing. (e.g. switch between two tabs on the same url)
-    if (url== lasuli.hypertopic.currentUrl && !reload)
-      return false;
-
-    lasuli.hypertopic.currentUrl = url;
-    //If the sidebar is not opened yet, do nothing.
-    if(!lasuli.core.isSidebarOpen())
-      return false;
-
-    if(!url || url == "about:blank")
-      return false;
-
-    //logger.debug("doCloseViewpointPanel and doLoadDocument on url:" + lasuli.hypertopic.currentUrl);
-
-    //If opened an empty page, block the lasuli
-
-
-    dispatch("lasuli.ui.doCloseViewpointPanel", null);
-    dispatch("lasuli.core.doLoadDocument", null);
-  },
-
   doClearFragmentsCache : function(){
     this.fragments = {};
   },
 
   doLoadDocument : function(){
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
+    lasuli.hypertopic.currentUrl = tabs.activeTab.url.split('#')[0];
     if(!lasuli.core.isSidebarOpen()) return false;
-    dispatch("lasuli.ui.doClearDocumentPanel", null);
-    _p(10);
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
     _p(20);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
