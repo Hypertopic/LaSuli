@@ -74,8 +74,6 @@ lasuli.core = {
     dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
     _p(20);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
-    _p(30);
-    dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.docUsers);
     _p(40);
     dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.docTags);
     _p(80);
@@ -173,17 +171,6 @@ lasuli.core = {
     _p(70);
     var viewpoints = lasuli.hypertopic.getViewpointsByTopicName(topicName);
     _p(90);
-    dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
-    _p(100);
-  },
-
-  doOpenViewpointByUser : function(user){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doOpenViewpointByUser");
-    _p(30);
-    var viewpoints = lasuli.hypertopic.getViewpointsByUser(user);
-    _p(70);
-    logger.trace(viewpoints);
-    //TODO filter not related viewpoints
     dispatch("lasuli.ui.doShowViewpointPanels", viewpoints);
     _p(100);
   },

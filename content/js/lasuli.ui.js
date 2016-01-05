@@ -78,7 +78,6 @@ lasuli.ui = {
     }).trigger('resize');
 
     $('#h3-related-topics').html(_('topics'));
-    $('#h3-actors').html(_('users'));
     $('#tab-document-title').html(_('document'));
     $('#span-viewpoint-list').html(_('viewpoints'));
     $('#config').bind('click', lasuli.ui.initConfigPanel);
@@ -827,22 +826,6 @@ lasuli.ui = {
                                    + viewpoints[viewpointID] + "</a></li>");
   },
 
-  doShowUsers : function(users){
-    $("#actors ul li").hide().remove();
-    if(!users) return;
-    users.sort();
-    for(var i=0, user; user = users[i]; i++)
-    {
-      var content = "<li class='actor'><a uri='" + user + "'>" + user + "</a></li>";
-      $("#actors ul").append(content);
-    }
-    $("li.actor a").click(function(){
-      var user = $(this).attr("uri");
-      dispatch("lasuli.core.doOpenViewpointByUser", user);
-      return false;
-    });
-  },
-
   doShowAttributes : function(attributes){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowAttributes");
     //logger.trace(attributes);
@@ -904,13 +887,6 @@ lasuli.ui = {
     }catch(e){
       logger.fatal(e);
     }
-    // Clear the users list
-    try{
-      if($("#actors ul li").length > 0) $("#actors ul li").hide().remove();
-    }catch(e){
-      logger.fatal(e);
-    }
-
   },
 
   doShowViewpointPanels : function(viewpoints){
