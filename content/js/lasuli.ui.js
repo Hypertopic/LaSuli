@@ -1,7 +1,6 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Sync.js");
 include("resource://lasuli/modules/Preferences.js");
-var base64 = require("sdk/base64");
 
 lasuli.ui = {
   initTabs : function(){
@@ -1310,9 +1309,8 @@ lasuli.ui = {
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
   },
 
-  doHighlightMenuClick: function(topicBase64Encoded){
+  doHighlightMenuClick: function(topic){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
-    try{ topic = JSON.parse(base64.decode(topicBase64Encoded)); }catch(e){}
     logger.debug(topic);
     var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
     var win = wm.getMostRecentWindow("navigator:browser");
