@@ -1,6 +1,5 @@
 function fetch(){
   if(!changeWorker.run) return;
-  //changeWorker.lastTime = (new Date()).getTime();
   for(var server in changeWorker.servers)
   {
     var baseUrl = changeWorker.servers[server].baseUrl;

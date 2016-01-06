@@ -214,8 +214,6 @@ lasuli.core = {
         dispatch("lasuli.ui.doDestroyAnalysis", arg );
         _p(80);
         dispatch("lasuli.contextmenu.doRemoveMenuItem", topicID );
-        //lasuli.hypertopic.tags = null;
-        //lasuli.hypertopic.users = null;
         for(var i=0, fragmentID; fragmentID = result[i]; i++)
             dispatch("lasuli.highlighter.doRemoveFragment", fragmentID );
         _p(100);
@@ -327,8 +325,6 @@ lasuli.core = {
       return false;
     }
     _p(50);
-    //lasuli.hypertopic.users = null;
-    //lasuli.hypertopic.tags = null;
     dispatch("lasuli.ui.doShowKeywords", lasuli.hypertopic.keywords);
     _p(60);
     //update the sourceobj rel value

@@ -1068,7 +1068,6 @@ lasuli.ui = {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doReloadTopicTree");
     //$("#tree").jstree({"json_data" : topics}).jstree('refresh', -1);
     $("#tree").jstree('destroy');
-    //Sync.sleep(1000);
     dispatch("lasuli.ui.doShowTopicTree", topics);
   },
   doCreateTopicTreeItem : function(arg){
@@ -1107,7 +1106,6 @@ lasuli.ui = {
   },
 
   doRestoreKeyword : function(keyword){
-    //$('ul.topics-ul img.remove-tag-img').addClass('hide');
     $('ul.topics-ul').find('input.edit-in-place').replaceWith("<a uri='" + keyword.topicID + "'>" + keyword.name + "</a>");
   },
 

@@ -105,11 +105,6 @@ lasuli.contextmenu = {
     var menuitem = this._createItem(topic);
     menupopup.insertBefore(menuitem,lastNode);
     this.topics[topic.topicID] = topic;
-
-    /*topic = {"name": _('new.topic.for.analysis')};
-    var menuitem = this._createItem(topic);
-    menupopup.appendChild(menuitem);
-    this.topics['new'] = topic;*/
   },
 
   doRemoveMenuItem: function(topicID){
