@@ -32,7 +32,6 @@ lasuli.highlighter = {
   {
     var startTime = new Date().getTime();
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlight");
-    //logger.trace(arg);
     var fragments = arg.fragments;
     logger.trace(fragments);
     this.fragments = fragments;
@@ -42,23 +41,16 @@ lasuli.highlighter = {
     if(!arg.domWindow){
       m_document = this.getContentDocument();
       if(m_document.readyState != 'complete'){
-        //logger.trace("not loaded yet");
         return false;
       }
     }
     else{
-      //logger.debug("with domWindow");
       m_document = arg.domWindow.document;
     }
-    //logger.trace("clearDocument");
-    //logger.debug(m_document.location.href);
-    //logger.debug(m_document.location.hash);
     if(isAnchor)
       this.doRemoveFragment('lasuli_anchor_id');
     else
       this.clearDocument(m_document);
-
-    //logger.trace(fragments);
 
     var coordinates = [];
     for (var f of Iterator(fragments)) {
@@ -66,13 +58,8 @@ lasuli.highlighter = {
       coordinates.push(fragment.startPos);
       coordinates.push(fragment.endPos);
     }
-    //logger.trace("doHighlight::coordinates");
-    //logger.trace(coordinates);
-
     coordinates = coordinates.unique();
     coordinates.sort(function(a,b){return a - b});
-    //logger.trace(coordinates);
-
     if(coordinates.length == 0) return;
 
     var treewalker;
@@ -156,7 +143,6 @@ lasuli.highlighter = {
       startPos = endPos;
     }
 
-    //var_dump("[highlighter.js] doHighlight::nodeList", nodeList.length, 4);
     for(var i=0, nl; nl = nodeList[i]; i++){
       nodeList[i].newNode.l_parentNode = nl.originalNode.parentNode;
       nl.originalNode.parentNode.replaceChild(nl.newNode, nl.originalNode);
@@ -240,9 +226,6 @@ lasuli.highlighter = {
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doReColorFragment");
     var m_document = this.getContentDocument();
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
-    //logger.trace(nodes.length);
-    //logger.trace(fragmentID);
-    //logger.trace(color);
     if(nodes.length == 0)
       return;
     this.fragments[fragmentID].color = color;
@@ -250,15 +233,12 @@ lasuli.highlighter = {
     for(var i=0, node; node = nodes[i]; i++){
       var classes = node.getAttribute("class");
       var bgColor = null;
-      //logger.trace(classes);
       classes = classes.split(" ");
       for(var j=0, className; className = classes[j]; j++){
         var fragID = className.substr(1);
         if(fragID in this.fragments)
           bgColor = (bgColor) ? colorUtil.colorCalc(bgColor, this.fragments[fragID].color) : this.fragments[fragID].color;
       }
-
-      //logger.trace(bgColor);
       if(bgColor)
         node.setAttribute("style", "background-color: "+ alpha(bgColor));
       else
@@ -268,11 +248,9 @@ lasuli.highlighter = {
 
   doHighlightAnchor: function(UrlHash){
     var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlightAnchor");
-    //logger.debug(UrlHash);
     var m_document = this.getContentDocument();
     if(m_document.readyState != 'complete') return false;
     var hashFragment = UrlHash || m_document.location.hash;
-    //logger.debug(hashFragment);
     if(typeof hashFragment != 'string') return false;
     var coordinates = hashFragment.substr(1).split('+');
     if(coordinates.length != 2) return false;
@@ -297,7 +275,6 @@ lasuli.highlighter = {
       return false;
     }
     var fragments = {"lasuli_anchor_id": {"startPos": startPos, "endPos": endPos, "color": "#FF8000"}};
-    //logger.debug(fragments);
     this.doHighlight({"fragments": fragments, "isAnchor": true});
     this.doScrollTo('lasuli_anchor_id');
   },
@@ -308,7 +285,6 @@ lasuli.highlighter = {
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.add("lasuli.highlighter." + func, lasuli.highlighter[func], lasuli.highlighter);
-    //logger.trace("registered");
   },
 
   unregister: function(){

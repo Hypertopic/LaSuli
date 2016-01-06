@@ -1,6 +1,5 @@
 function fetch(){
   if(!changeWorker.run) return;
-  //dump("Interval:" + ((new Date()).getTime() - changeWorker.lastTime) + "\n");
   //changeWorker.lastTime = (new Date()).getTime();
   for(var server in changeWorker.servers)
   {
@@ -9,7 +8,6 @@ function fetch(){
     if(!changeWorker.sequences[server])
     {
       var seq = getLastSeq(changeUrl);
-      //dump(seq);
       if(seq < 0)
       {
         changeWorker.timeoutID = setTimeout(fetch, 2000);
@@ -20,16 +18,12 @@ function fetch(){
     changeUrl += "?since=" + changeWorker.sequences[server];
 
     var req = new XMLHttpRequest();
-    //dump("\n" + changeUrl);
     req.open("GET", changeUrl, false);
     req.onload = function()
     {
       var seq = -1;
       try{
         var result = JSON.parse(req.responseText.trim());
-        //dump("\nserver:" + server);
-        //dump("\nold seq:" + changeWorker.sequences[server]);
-        //dump("\nlast_seq:" + result.last_seq);
         if(!changeWorker.sequences[server] || changeWorker.sequences[server] < result.last_seq)
         {
           changeWorker.sequences[server] = result.last_seq;
@@ -43,7 +37,6 @@ function fetch(){
 }
 
 function getLastSeq(url){
-  //dump(url);
   var req = new XMLHttpRequest();
   req.open("GET", url, false);
   req.send(null);
