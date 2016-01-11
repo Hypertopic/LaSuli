@@ -11,7 +11,6 @@ lasuli.hypertopic = {
     return this._currentUrl;
   },
   set currentUrl(url){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.currentUrl");
     MemCache = {};
     this._currentUrl = url;
     this._viewpointID = null;
@@ -36,9 +35,7 @@ lasuli.hypertopic = {
    */
   get users(){
     if(enableCache && MemCache.users) return MemCache.users;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.users");
     var result = {};
-    logger.trace(HtServers);
     for(var key in HtServers)
     {
       try{
@@ -47,7 +44,9 @@ lasuli.hypertopic = {
         {
           result[key] = user;
         }
-      }catch(e){ logger.fatal(e.message); }
+      } catch(e) {
+        console.error(e);
+      }
     }
     MemCache.users = result;
     return result;
@@ -60,55 +59,52 @@ lasuli.hypertopic = {
   },
   get corpus(){
     if(enableCache && MemCache.corpus) return MemCache.corpus;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.corpus");
     var result = null, corpusID;
-    
-    logger.debug("get corpus");
-
     for(var k in this.items) {
       corpusID = this.items[k].getCorpusID();
       if (corpusID) break;
     }
     if(corpusID) {
-      logger.debug('Corpus ' + corpusID + ' found');
+      // Corpus found
       var corpus = HtServers.freecoding.getCorpus(corpusID);
       if(corpus.getView() === false) {
-        logger.debug('but not its duplicate on the default server');
+        // but not its duplicate on the default server
         var ret = corpus.createWithID(corpusID, corpusID);
-        logger.debug(ret);
         if(!ret) {
-          logger.fatal('unable to create a corpus with a specific ID:' + corpusID);
+          console.error('unable to create a corpus with a specific ID:' + corpusID);
           return false;
         }
         return ret;
       }
       return corpus;
     }
-    
-    logger.debug("none corpus was found! Need to use user's corpus!");
+    // No corpus found! Need to use user's corpus!
     var corpora,
         user = this.user;
     try{
-      logger.debug("user.listCorpora");
       if(user)
         corpora = user.listCorpora();
-    }catch(e){ logger.fatal(e.message); }
-
+    } catch(e) {
+      console.error(e);
+    }
     if(!corpora || corpora.length == 0){
       try{
-        logger.debug("try to create a new corpus");
+        // Try to create a new corpus
         var corpusName = _("default.corpus.name", [user.getID()]);
 
         var corpus = user.createCorpus(corpusName);
-        logger.debug("created a corpus");
         if(corpus)
           result = corpus;
-      }catch(e){ logger.fatal(e.message); }
+      } catch(e) {
+        console.error(e);
+      }
     }
     else
       try{
         result = HtServers.freecoding.getCorpus(corpora[0].id);
-      }catch(e){ logger.fatal(e.message); }
+      } catch(e) {
+        console.error(e);
+      }
     MemCache.corpus = result;
     return result;
   },
@@ -117,8 +113,7 @@ lasuli.hypertopic = {
    */
   get items(){
     if(enableCache && MemCache.items) return MemCache.items;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.items");
-    var startTime = new Date().getTime();
+    console.time("lasuli.hypertopic.items");
     var item, items = {};
     //Load items from all Hypertopic server by using resource URL
     for(var k in HtServers)
@@ -128,33 +123,23 @@ lasuli.hypertopic = {
         if(item)
           items[k] = item;
       }catch(e){
-        logger.fatal(e.message);
-        logger.error(k);
-        logger.error(this.currentUrl);
+        console.error(e, k, this.currentUrl);
       }
     }
-    logger.debug(items);
     MemCache.items = items;
-    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    console.timeEnd("lasuli.hypertopic.items");
     return items;
   },
   get item(){
     //Get item from freecoding server
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.item");
-    logger.debug("get item");
-    logger.debug(this.items);
-    logger.debug(this.items["freecoding"]);
-    
     if(!this.items || !this.items["freecoding"])
       return null;
     return this.items["freecoding"];
   },
   get itemName(){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.itemName");
     return (this.item) ? this.item.getName() : _("no.name");
   },
   set itemName(name){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.itemName");
     try{
       if(!this.item)
       {
@@ -168,8 +153,7 @@ lasuli.hypertopic = {
         return this.item.rename(name);
       }
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(name);
+      console.error(e, name);
       return false;
     }
   },
@@ -178,22 +162,16 @@ lasuli.hypertopic = {
    */
   get attributes(){
     if(enableCache && MemCache.attributes) return MemCache.attributes;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.attributes");
-
     var result,attributes = {};
     for(var k in this.items)
     {
       try{
         var item = this.items[k];
         result = item.getAttributes();
-        logger.debug(item);
-        logger.debug(result);
       if(result)
         attributes[k] = result;
       }catch(e){
-        logger.fatal(e.message);
-        logger.error(k);
-        logger.error(result);
+        console.error(e, k, result);
       }
     }
 
@@ -208,7 +186,6 @@ lasuli.hypertopic = {
         if(idx == -1)
           result[attribute.name].push(strValue);
       }
-    logger.debug(result);
     MemCache.attributes = result;
     return result;
   },
@@ -217,15 +194,13 @@ lasuli.hypertopic = {
    */
   get docUsers(){
     if(enableCache && MemCache.docUsers) return MemCache.docUsers;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docUsers");
+    console.time("lasuli.hypertopic.docUsers");
     var result = new Array();
     //Try to get all viewpoint from topics and keywords
     var viewpoints = {};
-    var startTime = new Date().getTime();
     try{
       var docTopics = this.docTopics;
       var docKeywords = this.docKeywords;
-      startTime = new Date().getTime();
       for (var t of Iterator(docTopics)) {
         var topic = t[1];
         var viewpointID = topic.getViewpointID();
@@ -238,7 +213,9 @@ lasuli.hypertopic = {
         if(!(viewpointID in viewpoints) && topic.Viewpoint)
           viewpoints[viewpointID] = topic.Viewpoint;
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     //Get all users from the viewpoints
     try{
       for (var viewpoint of Iterator(viewpoints)) {
@@ -248,9 +225,11 @@ lasuli.hypertopic = {
             if(result.indexOf(user) < 0)
               result.push(user);
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     MemCache.docUsers = result;
-    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    console.timeEnd("lasuli.hypertopic.docUsers");
     return result;
   },
   /**
@@ -258,18 +237,14 @@ lasuli.hypertopic = {
    */
   get docFragments(){
     if(enableCache && MemCache.docFragments) return MemCache.docFragments;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docFragments");
-    var startTime, result = {};
+    console.time("lasuli.hypertopic.docFragments");
+    var result = {};
     try{
       var items = this.items;
-      startTime = new Date().getTime();
       var topics = {};
-      logger.info(items);
       for(var k in items){
         var item = items[k];
-        var startTime2 = new Date().getTime();
         var fragments = item.getHighlights();
-        logger.info(fragments);
         for(var j=0, fragment; fragment = fragments[j]; j++){
           this._locations[fragment.getID()] = k;
           result[fragment.getID()] = fragment;
@@ -284,8 +259,10 @@ lasuli.hypertopic = {
           fragment.topic = topics[t.id];
         }
       }
-    }catch(e){ logger.fatal(e.message); }
-    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms ");
+    } catch(e) {
+      console.error(e);
+    }
+    console.timeEnd("lasuli.hypertopic.docFragments");
     MemCache.docFragments = result;
     return result;
   },
@@ -294,12 +271,10 @@ lasuli.hypertopic = {
    */
   get docKeywords(){
     if(enableCache && MemCache.docKeywords) return MemCache.docKeywords;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docKeywords");
-    var startTime;
+    console.time("lasuli.hypertopic.docKeywords");
     var docKeywords = {};
     try{
       var items = this.items;
-      startTime = new Date().getTime();
       for (var item of Iterator(items)) {
         var topics = item[1].getTopics();
         if(topics)
@@ -317,9 +292,11 @@ lasuli.hypertopic = {
           }
         }
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     MemCache.docKeywords = docKeywords;
-    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    console.timeEnd("lasuli.hypertopic.docKeywords");
     return docKeywords;
   },
   /**
@@ -327,12 +304,10 @@ lasuli.hypertopic = {
    */
   get docTopics(){
     if(enableCache && MemCache.docTopics) return MemCache.docTopics;
-    var startTime = new Date().getTime();
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTopics");
+    console.time("lasuli.hypertopic.docTopics");
     var docTopics = {};
     try{
       var docFragments = this.docFragments;
-      var startTime = new Date().getTime();
       for (var fragment of Iterator(docFragments)) {
         var topic = fragment[1].topic;
         var topicID = topic.getID();
@@ -344,9 +319,11 @@ lasuli.hypertopic = {
           docTopics[topicID].count = 1;
         }
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     MemCache.docTopics = docTopics;
-    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    console.timeEnd("lasuli.hypertopic.docTopics");
     return docTopics;
   },
   /**
@@ -354,9 +331,7 @@ lasuli.hypertopic = {
    */
   get docTags(){
     if(enableCache && MemCache.docTags) return MemCache.docTags;
-    var startTime = new Date().getTime();
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docTags");
-
+    console.time("lasuli.hypertopic.docTags");
     var result = {};
     try{
       for (var t of Iterator(this.docTopics)) {
@@ -377,9 +352,11 @@ lasuli.hypertopic = {
           else
             result[topicName] = {"size": topic.count};
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     MemCache.docTags = result;
-    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    console.timeEnd("lasuli.hypertopic.docTags");
     return result;
   },
   /**
@@ -387,9 +364,7 @@ lasuli.hypertopic = {
    */
   get docCoordinates(){
     if(enableCache && MemCache.docCoordinates) return MemCache.docCoordinates;
-    var startTime = new Date().getTime();
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.docCoordinates");
-
+    console.time("lasuli.hypertopic.docCoordinates");
     var result = {};
     try{
       for (var f of Iterator(this.docFragments)) {
@@ -397,9 +372,11 @@ lasuli.hypertopic = {
         var coordinate = fragment.getCoordinates();
         result[fragment.getID()]={ "startPos": coordinate[0], "endPos": coordinate[1]};
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     MemCache.docCoordinates = result;
-    logger.trace("Execution time: " + ((new Date().getTime()) - startTime) + "ms");
+    console.timeEnd("lasuli.hypertopic.docCoordinates");
     return result;
   },
   /**
@@ -407,11 +384,12 @@ lasuli.hypertopic = {
    */
   get topics(){
     if(enableCache && MemCache.topics) return MemCache.topics;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.topics");
     var topics, result = {};
     try{
       topics = this.viewpoint.getTopics();
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     for(var i=0, topic; topic = topics[i]; i++)
       try{
         if(!(topic.getID() in this.keywords))
@@ -421,8 +399,7 @@ lasuli.hypertopic = {
             result[topic.getID()] =  {"topicID": topic.getID(), "viewpointID": this.viewpointID, "name": topicName};
         }
       }catch(e){
-        logger.fatal(e.message);
-        logger.error(topic);
+        console.error(e, topic);
       }
 
     for(var topicID in result)
@@ -435,8 +412,6 @@ lasuli.hypertopic = {
    */
   get keywords(){
     if(enableCache && MemCache.keywords) return MemCache.keywords;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.keywords");
-
     var result = {};
     for (var t of Iterator(this.docKeywords)) {
       var topic = t[1];
@@ -448,8 +423,7 @@ lasuli.hypertopic = {
           result[topic.getID()] = {"topicID": topic.getID(), "viewpointID": this.viewpointID, "name": topicName};
         }
       }catch(e){
-        logger.fatal(e.message);
-        logger.error(topic);
+        console.error(e, topic);
       }
     }
     MemCache.keywords = result;
@@ -460,7 +434,6 @@ lasuli.hypertopic = {
    */
   get fragments(){
     if(enableCache && MemCache.fragments) return MemCache.fragments;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.fragments");
     var result = {};
     for (var f of Iterator(this.docFragments)) {
       var fragment = f[1];
@@ -469,8 +442,7 @@ lasuli.hypertopic = {
         if(topic.getViewpointID() == this.viewpointID)
           result[fragment.getID()] = fragment;
       }catch(e){
-        logger.fatal(e.message);
-        logger.fatal(fragment);
+        console.error(e, fragment);
       }
     }
     MemCache.fragments = result;
@@ -481,7 +453,6 @@ lasuli.hypertopic = {
    */
   get coordinates(){
     if(enableCache && MemCache.coordinates) return MemCache.coordinates;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.coordinates");
     var coordinate, topicID, result = {};
 
     for (var f of Iterator(this.fragments)) {
@@ -493,8 +464,7 @@ lasuli.hypertopic = {
         var color = getColor(topicID);
         result[fragment.getID()]={ "startPos": coordinate[0], "endPos": coordinate[1], "color": color};
       }catch(e){
-        logger.fatal(e.message);
-        logger.error(fragment);
+        console.error(e, fragment);
       }
     }
     MemCache.coordinates = result;
@@ -505,12 +475,10 @@ lasuli.hypertopic = {
    */
   get viewpoints(){
     if(enableCache && MemCache.viewpoints) return MemCache.viewpoints;
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.viewpoints");
-
     var result = {};
     if(!this.user)
     {
-      logger.fatal("User {" + HtServers.freecoding.user + "} isn't exist yet");
+      console.error("User {" + HtServers.freecoding.user + "} doesn't exist yet");
       return null;
     }
     try{
@@ -519,22 +487,19 @@ lasuli.hypertopic = {
       for(var i=0, viewpoint; viewpoint = viewpoints[i]; i++)
         result[viewpoint.id] = viewpoint.name;
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(this.user);
+      console.error(e, this.user);
     }
     MemCache.viewpoints = result;
     return result;
   },
   getViewpointLocation: function(viewpointID, server){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getViewpointLocation");
     if(this._locations[viewpointID])
       return this._locations[viewpointID];
     var viewpoint;
     try{
       viewpoint = HtServers[server].getViewpoint(viewpointID).getView();
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(viewpointID);
+      console.error(e, viewpointID);
     }
 
     if(server == "freecoding" && !viewpoint)
@@ -549,8 +514,7 @@ lasuli.hypertopic = {
       try{
         viewpoint = HtServers[server].getViewpoint(viewpointID).getView();
       }catch(e){
-        logger.fatal(e.message);
-        logger.error(viewpointID);
+        console.error(e, viewpointID);
       }
       if(!viewpoint)
       {
@@ -562,7 +526,6 @@ lasuli.hypertopic = {
     return server;
   },
   createViewpoint : function(viewpointName){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createViewpoint");
     MemCache.viewpoints = false;
     if(!this.user)
       return false;
@@ -571,30 +534,25 @@ lasuli.hypertopic = {
       var viewpoint = this.user.createViewpoint(viewpointName);
       if(viewpoint) return true;
     }catch(e){
-      logger.fatal(e.message);
-      logger.fatal(this.user);
-      logger.fatal(viewpointName);
+      console.error(e, this.user, viewpointName);
     }
     return false;
   },
   destroyViewpoint: function(viewpointID){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyViewpoint");
     MemCache.viewpoints = false;
     try{
       var viewpoint = HtServers.freecoding.getViewpoint(viewpointID);
       if(viewpoint.destroy())
         return true;
     }catch(e){
-      logger.fatal(e.message);
-      logger.fatal(viewpointID);
+      console.error(e, viewpointID);
     }
     return false;
   },
   createItem : function(name){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createItem");
     name = name || _("no.name");
     
-    logger.debug("get item id");
+    // get item id
     var itemID;
     for(var k in this.items) {
       itemID = this.items[k].getID();
@@ -603,21 +561,19 @@ lasuli.hypertopic = {
 
     try {
       var corpus = this.corpus;
-      logger.debug(corpus);
       var item = corpus.createItem(name, itemID);
       if (item) {
         item.describe("resource", this.currentUrl);
-        logger.debug(item.getObject());
         MemCache.items = false;
         return true;
       }
-      logger.debug(item);
       return false;
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     return true;
   },
   createAttribute : function(attribute){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createAttribute");
     MemCache.attributes = false;
     MemCache.items = false;
     if(!this.item)
@@ -626,14 +582,11 @@ lasuli.hypertopic = {
       var result = this.item.describe(attribute.name, attribute.value);
       if(result) return true;
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(this.item);
-      logger.error(attribute);
+      console.error(e, this.item, attribute);
     }
     return false;
   },
   destroyAttribute : function(attribute){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyAttribute");
     MemCache.attributes = false;
     MemCache.items = false;
     for (var i of Iterator(this.items)) {
@@ -642,13 +595,11 @@ lasuli.hypertopic = {
         item.undescribe(attribute.name, attribute.value);
       }
       catch(e){
-        logger.fatal(e.message);
-        logger.error(item.getRaw());
+        console.error(e, item.getRaw());
       }
     }
   },
   createKeyword : function(viewpointID, topicID, name){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createKeyword");
     MemCache = {};
     if(!this.item)
       this.createItem(name);
@@ -658,15 +609,11 @@ lasuli.hypertopic = {
       if(result)
         return true;
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(viewpointID);
-      logger.error(topicID);
-      logger.error(name);
+      console.error(e, viewpointID, topicID, name);
     }
     return false;
   },
   destroyKeyword : function(keyword, destroyTopic){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyKeyword");
     MemCache = {};
     if(!this.viewpoint) return false;
     try{
@@ -688,24 +635,20 @@ lasuli.hypertopic = {
         }
       }
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(keyword);
+      console.error(e, keyword);
     }
   },
   renameKeyword : function(keyword){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.renameKeyword");
     MemCache = {};
     if(!this.viewpoint) return false;
     try{
       var topic = this.viewpoint.getTopic(keyword.topicID);
       return topic.rename(keyword.newName);
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(keyword);
+      console.error(e, keyword);
     }
   },
   createAnalysis : function(viewpointID, topicID, topicName){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createAnalysis");
     var topicIDs = (topicID) ? new Array(topicID) : null;
     topicName = (topicName) ? topicName : _("no.name");
     try{
@@ -716,17 +659,12 @@ lasuli.hypertopic = {
       MemCache = {};
       return {"viewpointID": viewpointID, "topicID": topic.getID(), "name": topicName, "color": color};
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(viewpointID);
-      logger.error(topicID);
-      logger.error(topicName);
+      console.error(e, viewpointID, topicID, topicName);
     }
     return false;
   },
   //Return the fragment IDs which should be removed.
   destroyAnalysis: function(viewpointID, topicID, name){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyAnalysis");
-
     if(!this.viewpoint) return false;
     var fragmentIDs = new Array();
     try{
@@ -738,8 +676,7 @@ lasuli.hypertopic = {
             if(fragment.destroy())
               fragmentIDs.push(fragment.getID());
           }catch(e){
-            logger.fatal(e.message);
-            logger.error(fragment.getObject());
+            console.error(e, fragment.getObject());
           }
       }
       var result = topic.destroy();
@@ -749,32 +686,31 @@ lasuli.hypertopic = {
         return fragmentIDs;
       }
     }catch(e){
-      logger.fatal(e.message);
+      console.error(e);
     }
     MemCache = {};
     return false;
   },
   renameAnalysis : function(viewpointID, topicID, name, newName){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.renameAnalysis");
     MemCache = {};
     if(!this.viewpoint) return false;
     try{
       var topic = this.viewpoint.getTopic(topicID);
       return topic.rename(newName);
     }catch(e){
-      logger.fatal(e.message);
+      console.error(e);
     }
   },
   renameViewpoint : function(viewpointID,name){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.renameViewpoint");
     MemCache = {};
     if(!this.viewpoint) return false;
     try{
       return this.viewpoint.rename(name);
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e){
+      console.error(e);
+    }
   },
   getViewpointsByTopicName : function(topicName){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getViewpointsByTopicName");
     var viewpoints = new Array();
     try{
       for (var t of Iterator(this.docTopics)) {
@@ -782,18 +718,21 @@ lasuli.hypertopic = {
         if(topicName == topic.getName())
           viewpoints.push({"id": topic.getViewpointID(), "name": topic.Viewpoint.getName()});
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     try{
       for (var t of Iterator(this.docKeywords)) {
         var topic = t[1];
         if(topicName == topic.getName())
           viewpoints.push({"id": topic.getViewpointID(), "name": topic.Viewpoint.getName()});
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     return viewpoints;
   },
   getViewpointsByUser : function(userID){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getViewpointsByUser");
     var viewpointIDs = new Array();
     var result = new Array();
     try{
@@ -807,7 +746,9 @@ lasuli.hypertopic = {
             result.push({"id": topic.getViewpointID(), "name": topic.Viewpoint.getName()});
         }
       }
-    }catch(e){ logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     try{
       for (var t of Iterator(this.docKeywords)) {
         var topic = t[1];
@@ -819,12 +760,12 @@ lasuli.hypertopic = {
             result.push({"id": topic.getViewpointID(), "name": topic.Viewpoint.getName()});
         }
       }
-    }catch(e){ logger.fatal(e.message); }
-
+    } catch(e) {
+      console.error(e);
+    }
     return result;
   },
   createFragment: function(topicID, text, coordinates){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.createFragment");
     if(!this.item)
       this.createItem();
 
@@ -836,7 +777,7 @@ lasuli.hypertopic = {
         topicID = analysisTopic.topicID;
         createNewTopic = true;
       }catch(e){
-        logger.fatal(e.message);
+        console.error(e);
         return false;
       }
     try{
@@ -845,7 +786,7 @@ lasuli.hypertopic = {
       var fragment = this.item.createHighlight(topic, text, coordinates);
       fragment.topic = topic;
     }catch(e){
-      logger.fatal(e.message);
+      console.error(e);
     }
     MemCache = {};
     if(analysisTopic)
@@ -854,19 +795,19 @@ lasuli.hypertopic = {
       return {"fragment": fragment};
   },
   destroyFragment: function(fragmentID){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.destroyFragment");
     var result = false;
     if(this.docFragments[fragmentID])
       try{
         result = this.docFragments[fragmentID].destroy();
         if(result)
           delete this.docFragments[fragmentID];
-      }catch(e){ logger.fatal(e.message); }
+      } catch(e) {
+        console.error(e);
+      }
     MemCache = {};
     return result;
   },
   moveFragment : function(fragmentID, targetTopicID){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.moveFragment");
     if(!this.docFragments[fragmentID]) return false;
     try{
       var result = this.docFragments[fragmentID].moveToTopic(targetTopicID);
@@ -876,39 +817,30 @@ lasuli.hypertopic = {
         return true;
       }
     }catch(e){
-      logger.fatal(e.message);
-      logger.error(fragmentID);
-      logger.error(targetTopicID);
+      console.error(e, fragmentID, targetTopicID);
     }
     MemCache = {};
     return false;
   },
   moveTopic : function(viewpointID, narrowerTopicID, topicID){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.moveTopic");
-    logger.trace(viewpointID);
-    logger.trace(topicID);
-    logger.trace(narrowerTopicID);
     var result = false;
     try{
       if(topicID) {
         var topic = this.viewpoint.getTopic(topicID);
         var narrowerTopic = this.viewpoint.getTopic(narrowerTopicID);
-        logger.debug(topic);
-        logger.debug(narrowerTopic);
         result = topic.moveTopics(narrowerTopic);
       }
       else {
         var narrowerTopic = this.viewpoint.getTopic(narrowerTopicID);
         result = narrowerTopic.unlink();
       }
-      logger.debug(result);
       if(result)
       {
         MemCache = {};
         return true;
       }
     }catch(e){
-      logger.fatal(e.message);
+      console.error(e);
     }
     MemCache = {};
     return false;
@@ -930,7 +862,9 @@ lasuli.hypertopic = {
         obj.attr = {"viewpointID": this.viewpointID, "topicID": t.getID(), "name": obj.data + "", "rel": topicType};
         obj.children = this.getNarrowers(t);
         topics.push(obj);
-      }catch(e){logger.fatal(e.message); }
+      } catch(e) {
+        console.error(e);
+      }
     return topics;
   },
   getTopicType : function(viewpointID, topicID){
@@ -939,7 +873,6 @@ lasuli.hypertopic = {
     return 'topic';
   },
   get topicTree(){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.getTopicTree");
     var topics = {};
 
     if(!this.viewpoint) return topics;
@@ -951,8 +884,9 @@ lasuli.hypertopic = {
       root.attr = {"viewpointID": this.viewpointID, "name": root.data + "", "rel": "viewpoint"};
       root.children = new Array();
       root.state = 'open';
-    }catch(e){ logger.fatal(e.message); }
-
+    } catch(e) {
+      console.error(e);
+    }
     try{
       var upper = this.viewpoint.getUpperTopics();
       if(!upper) {
@@ -970,7 +904,9 @@ lasuli.hypertopic = {
         obj.children = this.getNarrowers(topic);
         root.children.push(obj);
       }
-    }catch(e){logger.fatal(e.message); }
+    } catch(e) {
+      console.error(e);
+    }
     topics.data.push(root);
     return topics;
   }

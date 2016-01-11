@@ -1,11 +1,11 @@
 include("resource://lasuli/modules/Observers.js");
-include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/Sync.js");
 var window_utils = require("sdk/window/utils");
 
 lasuli.highlighter = {
 
   clearDocument : function(m_document){
+    console.time("lasuli.highlighter.clearDocument");
     if(this.nodeList)
       for(var i=0, nl; nl = nodeList[i]; i++)
         nl.newNode.l_parentNode.replaceChild(nl.originalNode, nl.newNode);
@@ -22,6 +22,7 @@ lasuli.highlighter = {
         }
       }
     }
+    console.timeEnd("lasuli.highlighter.clearDocument");
   },
 
   getContentDocument: function() {
@@ -30,10 +31,8 @@ lasuli.highlighter = {
 
   doHighlight: function(arg)
   {
-    var startTime = new Date().getTime();
-    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlight");
+    console.time("lasuli.highlighter.doHighlight");
     var fragments = arg.fragments;
-    logger.trace(fragments);
     this.fragments = fragments;
     var isAnchor = (arg.isAnchor) ? true : false;
 
@@ -63,12 +62,10 @@ lasuli.highlighter = {
     if(coordinates.length == 0) return;
 
     var treewalker;
-
     treewalker = createTreeWalker(m_document);
-
     if(!treewalker)
     {
-      logger.fatal("cannot get treewalker");
+      console.error("cannot get treewalker");
       return;
     }
 
@@ -147,13 +144,12 @@ lasuli.highlighter = {
       nodeList[i].newNode.l_parentNode = nl.originalNode.parentNode;
       nl.originalNode.parentNode.replaceChild(nl.newNode, nl.originalNode);
     }
-
-    var endTime = new Date().getTime();
-    logger.debug("Execution time: " + (endTime - startTime) + "ms");
+    console.timeEnd("lasuli.highlighter.doHighlight");
   },
 
   doClear: function()
   {
+    console.time("lasuli.highlighter.doClear");
     var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
            .getService(Components.interfaces.nsIWindowMediator);
     for (var index = 0, tabbrowser = wm.getEnumerator('navigator:browser').getNext().getBrowser();
@@ -163,25 +159,23 @@ lasuli.highlighter = {
       var m_document = m_gBrowser.contentDocument;
       this.clearDocument(m_document);
     }
+    console.timeEnd("lasuli.highlighter.doClear");
   },
 
   doScrollTo: function(fragmentID){
-    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doScrollTo");
-    logger.trace(fragmentID);
+    console.time("lasuli.highlighter.doScrollTo");
     var m_document = this.getContentDocument();
-    logger.trace(m_document.location.href);
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
-    logger.trace(nodes.length);
     if(nodes.length == 0)
       return;
     nodes[0].scrollIntoView(true);
+    console.timeEnd("lasuli.highlighter.doScrollTo");
   },
 
   doRemoveFragment : function(fragmentID){
-    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doRemoveFragment");
+    console.time("lasuli.highlighter.doRemoveFragment");
     var m_document = this.getContentDocument();
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
-    logger.trace(nodes.length);
     if(nodes.length == 0)
       return;
 
@@ -207,29 +201,27 @@ lasuli.highlighter = {
     for(var i=0, node; node = nodes[i]; i++){
       var classes = node.getAttribute("class");
       var bgColor = null;
-      logger.trace(classes);
       classes = classes.split(" ");
       for(var j=0, className; className = classes[j]; j++){
         var fragID = className.substr(1);
         if(fragID in this.fragments && fragID != fragmentID)
           bgColor = (bgColor) ? colorUtil.colorCalc(bgColor, this.fragments[fragID].color) : this.fragments[fragID].color;
       }
-      logger.trace(bgColor);
       if(bgColor)
         node.setAttribute("style", "background-color: "+ alpha(bgColor));
       else
         node.removeAttribute("style");
     }
+    console.timeEnd("lasuli.highlighter.doRemoveFragment");
   },
 
   doReColorFragment: function(fragmentID, color){
-    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doReColorFragment");
+    console.time("lasuli.highlighter.doReColorFragment");
     var m_document = this.getContentDocument();
     var nodes = m_document.querySelectorAll("span._" + fragmentID);
     if(nodes.length == 0)
       return;
     this.fragments[fragmentID].color = color;
-
     for(var i=0, node; node = nodes[i]; i++){
       var classes = node.getAttribute("class");
       var bgColor = null;
@@ -244,10 +236,11 @@ lasuli.highlighter = {
       else
         node.removeAttribute("style");
     }
+    console.timeEnd("lasuli.highlighter.doReColorFragment");
   },
 
   doHighlightAnchor: function(UrlHash){
-    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.doHighlightAnchor");
+    console.time("lasuli.highlighter.doHighlightAnchor");
     var m_document = this.getContentDocument();
     if(m_document.readyState != 'complete') return false;
     var hashFragment = UrlHash || m_document.location.hash;
@@ -271,26 +264,30 @@ lasuli.highlighter = {
       else
         return false;
     }catch(e){
-      logger.fatal(e);
+      console.error(e);
       return false;
     }
     var fragments = {"lasuli_anchor_id": {"startPos": startPos, "endPos": endPos, "color": "#FF8000"}};
     this.doHighlight({"fragments": fragments, "isAnchor": true});
     this.doScrollTo('lasuli_anchor_id');
+    console.timeEnd("lasuli.highlighter.doHighlightAnchor");
   },
 
   //Auto register all observers
   register: function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.highlighter.register");
+    console.time("lasuli.highlighter.register");
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.add("lasuli.highlighter." + func, lasuli.highlighter[func], lasuli.highlighter);
+    console.timeEnd("lasuli.highlighter.register");
   },
 
   unregister: function(){
+    console.time("lasuli.highlighter.unregister");
     for(var func in this)
       if(func.substr(0, 2) == "do")
         Observers.remove("lasuli.highlighter." + func, lasuli.highlighter[func], lasuli.highlighter);
+    console.timeEnd("lasuli.highlighter.unregister");
   }
 }
 

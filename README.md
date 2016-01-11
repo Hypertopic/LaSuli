@@ -39,7 +39,5 @@ Installation procedure
 Debugging procedure
 -------------------
 
-* Open `about:config` in Firefox Developer Edition.
-* Search for `extensions.lasuli.log.level` and set it to `Debug`.
 * In the menu, choose `Tools > Web development > Browser console`.
 * Enable (only) `JS` and the levels you need (errors, warnings, log).

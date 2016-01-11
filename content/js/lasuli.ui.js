@@ -4,7 +4,6 @@ include("resource://lasuli/modules/Preferences.js");
 
 lasuli.ui = {
   initTabs : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs");
     $tabs = $('#tabs').tabs({
       tabTemplate: '<li><a href="#{href}" class="tab-viewpoint">#{label}</a> <span class="ui-icon ui-icon-close">Remove Tab</span></li>',
       selected:0,
@@ -29,7 +28,6 @@ lasuli.ui = {
     });
 
     $tabs.bind('tabsselect', function(event, ui) {
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.tabsselect");
       if($(ui.tab).hasClass("tab-viewpoint"))
       {
         var viewpointID = $(ui.tab).attr("href").substr(1);
@@ -64,7 +62,6 @@ lasuli.ui = {
     });
 
     $(window).bind('resize', function() {
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.initTabs.window.resize");
       $("div.ui-tabs-panel").height($(window).height() - $('ul.ui-tabs-nav').outerHeight() - 56);
       $("#config-panel").height($(window).height() - 56);
     }).trigger('resize');
@@ -106,7 +103,6 @@ lasuli.ui = {
 	},
 	
   initPlusPanel : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.initViewpointPanel");
     $('#btn-create-viewpoint').button({
 			label: _('Create'),
 			icons: {
@@ -160,7 +156,6 @@ lasuli.ui = {
       return false;
     });
     $('#viewpoints-ul li a').die().live('click', function(){
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.initViewpointPanel.viewpoint.click");
       var viewpointID = $(this).parent().attr("uri");
       var viewpointName = $(this).text();
       var viewpoints = new Array({"id": viewpointID, "name": viewpointName});
@@ -170,7 +165,6 @@ lasuli.ui = {
   },
 
   initViewpointPanel : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.initViewpointPanel");
     //init toolbar
     $('.toolbar button.modify').die().live('click', function(){
       $(this).hide().next().show();
@@ -630,14 +624,12 @@ lasuli.ui = {
   initItemName : function(){
     //Edit in place of a tag
     $("h3#h3-entity-name").die().live("click", function(event){
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName");
       var itemName = $(this).html();
       $('div#tabs-document').data('itemName', itemName);
       $(this).replaceWith("<input type='text' class='edit-itemname-in-place' value=''>");
       $("input.edit-itemname-in-place").val(itemName).focus().select();
 
       $("input.edit-itemname-in-place").blur(function(){
-        var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName.blur");
         var name = $('div#tabs-document').data('itemName');
         var newName = $(this).val();
         if(name == newName){
@@ -751,7 +743,6 @@ lasuli.ui = {
   },
 
   doCloseViewpointPanel : function(viewpointID){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doCloseViewpointPanel");
     //If the viewpointID is specificed, then only close one viewpoint panel.
     if(viewpointID)
     {
@@ -802,7 +793,6 @@ lasuli.ui = {
   },
 
   doShowViewpoints : function(viewpoints){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpoints");
     $('#viewpoints-ul li').hide().remove();
     for(var viewpointID in viewpoints)
       $("#viewpoints-ul").append("<li uri='" + viewpointID + "'><img src='css/blitzer/images/delete.png' class='icon-remove-viewpoint'><a>"
@@ -810,7 +800,6 @@ lasuli.ui = {
   },
 
   doShowAttributes : function(attributes){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowAttributes");
     $("#attribute-grid").jqGrid('clearGridData');
     if(!attributes) return false;
     var index = 1;
@@ -823,7 +812,6 @@ lasuli.ui = {
   },
 
   doShowTagCloud : function(tags){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowTagCloud");
     $("#tags ul li").hide().remove();
     if(!tags) return false;
 
@@ -849,25 +837,22 @@ lasuli.ui = {
   },
 
   doClearDocumentPanel : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doClearDocumentPanel");
     // Clear the document name
     $("#h3-entity-name").html(_("no.name"));
     // Clear the attribute grid
     try{
       $("#attribute-grid").jqGrid('clearGridData');
     }catch(e){
-      logger.fatal(e);
     }
     // Clear the tag cloud
     try{
       if($("#tags ul li").length > 0) $("#tags ul li").hide().remove();
     }catch(e){
-      logger.fatal(e);
+      console.error(e);
     }
   },
 
   doShowViewpointPanels : function(viewpoints){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowViewpointPanels");
     if(!viewpoints) return false;
 
     var tabIndex = -1;
@@ -901,7 +886,6 @@ lasuli.ui = {
    * @param keywords map
    */
   doShowKeywords : function(keywords){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowKeywords");
     var html = "";
     var viewpointID = null;
     for (var t of Iterator(keywords)) {
@@ -991,34 +975,16 @@ lasuli.ui = {
   
   jstree_dnd : {
     "drop_check": function(data){
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_dnd.drop_target");
-      logger.debug(data);
+      console.trace(data);
     }
   },
   
   jstree_crrm : {
     "move" : {
-      /*"check_move" : function (m) {
-        var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_crrm.move.check_move");
-        var p = this._get_parent(m.o);
-        logger.debug(m.o.attr('topicID'));
-        logger.debug(m.o.attr('name'));
-        logger.debug(m.np.attr('topicID'));
-        logger.debug(m.np.attr('name'));
-      }*/
     }
   },
   jstree_move : function (e, data) {
     data.rslt.o.each(function (i) {
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.jstree_move");
-      logger.debug($(this).attr("viewpointID"));
-      logger.debug($(this).attr("topicID"));
-      logger.debug($(this).attr("name"));
-      logger.debug($(this).attr("rel"));
-      logger.debug(data.rslt.np.attr("topicID"));
-      logger.debug(data.rslt.np.attr("name"));
-      logger.debug(data.rslt.np.attr("rel"));
-      
       if($(this).attr("rel") == 'viewpoint'){
         $.jstree.rollback(data.rlbk);
         return false;
@@ -1031,8 +997,6 @@ lasuli.ui = {
         "rlbk": data.rlbk,
         "rslt": data.rslt};
       dispatch("lasuli.core.doMoveTopicTreeItem", arg);
-      //$.jstree.rollback(data.rlbk);
-      //data.inst.refresh(data.inst._get_parent(data.rslt.oc));
     });
   },
   
@@ -1046,7 +1010,6 @@ lasuli.ui = {
       "crrm" : lasuli.ui.jstree_crrm,
       "plugins" : [ "themes", "json_data", "ui", "crrm", "dnd", "contextmenu", "types", "sort" ]
     }).bind("rename.jstree", function (e, data) {
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.rename");
       var sourceObj   = data.rslt.obj;
       var viewpointID = sourceObj.attr('viewpointID');
       var topicID     = sourceObj.attr('topicID') || '';
@@ -1065,17 +1028,13 @@ lasuli.ui = {
     $.jstree.rollback(data.rlbk);
   },
   doReloadTopicTree: function(topics){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doReloadTopicTree");
-    //$("#tree").jstree({"json_data" : topics}).jstree('refresh', -1);
     $("#tree").jstree('destroy');
     dispatch("lasuli.ui.doShowTopicTree", topics);
   },
   doCreateTopicTreeItem : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateTopicTreeItem");
     $("#tree").jstree("create", arg.sourceObj, "inside", {"data": _("no.name"), "attr": {"viewpointID": arg.viewpointID, "topicID": arg.topicID, "rel": "topic"}}, null, true);
   },
   doDestroyTopicTreeItem : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doDestroyTopicTreeItem");
     $("#tree").jstree("remove", arg.sourceObj);
   },
 
@@ -1099,7 +1058,6 @@ lasuli.ui = {
     }
   },
   doDestroyKeyword : function(keyword){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doDestroyKeyword");
     var el = 'div#' + keyword.viewpointID + ' ul.topics-ul li a[uri="' + keyword.topicID + '"]';
     if($(el).length > 0)
       $(el).parent().remove();
@@ -1110,7 +1068,6 @@ lasuli.ui = {
   },
 
   _initFragmentsContainer : function(topic){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui._initFragmentsContainer");
     if(!topic.color) topic.color = getColor(topic.topicID);
     var html = '<div class="fragments ui-widget" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
        +'<div class="fragment-header" viewpointID="' + topic.viewpointID + '" topicID="' + topic.topicID + '">'
@@ -1122,7 +1079,6 @@ lasuli.ui = {
   },
 
   doCreateFragments : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doCreateFragments");
     var fragments = arg.fragments;
     for(var fragmentID in fragments)
     {
@@ -1147,7 +1103,6 @@ lasuli.ui = {
    * @param arg map of topics (map), fragments (map), and scroll (boolean)
    */
   doShowFragments : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doShowFragments");
     var topics = arg.topics;
     for (var topic of Iterator(topics)) {
       lasuli.ui._initFragmentsContainer(topic[1]);
@@ -1167,12 +1122,10 @@ lasuli.ui = {
   },
 
   doMakeFragmentsDroppable : function(){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doMakeFragmentsDroppable");
     $(".fragments").droppable({
       accept: '.fragment',
       drop: function(event, ui)
       {
-        var logger = Log4Moz.repository.getLogger("lasuli.ui.doMakeFragmentsDroppable.drop");
         var li_element = ui.draggable;
         var ul_element = ui.draggable.parent();
         var sourceTopicID = ul_element.prev("div").attr("topicID");
@@ -1191,7 +1144,6 @@ lasuli.ui = {
   },
 
   doDropFragmentAccepted : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doDropFragmentAccepted");
     var viewpointID = $('li[fragmentID="' + arg.fragmentID + '"]').attr("viewpointID");
     var el = "div.fragments[viewpointID='" + viewpointID + "'][topicID='" + arg.targetTopicID + "'] ul";
     $('li[fragmentID="' + arg.fragmentID + '"]').clone().appendTo($(el)).attr("topicID", arg.targetTopicID);
@@ -1208,7 +1160,6 @@ lasuli.ui = {
   },
 
   doRemoveFragment : function(fragmentID) {
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRemoveFragment");
     var el = "li.fragment[fragmentID='" + fragmentID + "']";
     $(el).slideToggle({duration: 500, easing: 'easeInSine'}).remove();
   },
@@ -1225,14 +1176,12 @@ lasuli.ui = {
   },
 
   doRenameAnalysis : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRenameAnalysis");
     var el="div.fragment-header[viewpointID='" + arg.viewpointID + "'][topicID='" + arg.topicID + "']";
     var span = $(el).find("span");
     span.html(arg.name);
   },
 
   doRestoreAnalysis : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doRestoreAnalysis");
     var viewpointID = arg.viewpointID;
     var topicID = arg.topicID;
     var originalImage = arg.originalImage;
@@ -1244,7 +1193,6 @@ lasuli.ui = {
   },
 
   doDestroyAnalysis : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doDestroyAnalysis");
     var viewpointID = arg.viewpointID;
     var topicID = arg.topicID;
     var el="div.fragments[viewpointID='" + viewpointID + "'][topicID='" + topicID + "']";
@@ -1252,8 +1200,6 @@ lasuli.ui = {
   },
 
   doHighlightMenuClick: function(topic){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doHighlightMenuClick");
-    logger.debug(topic);
     var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
     var win = wm.getMostRecentWindow("navigator:browser");
     var content = win.getBrowser().contentWindow;
@@ -1261,7 +1207,6 @@ lasuli.ui = {
     var strContent = selection + "";
     strContent = strContent.trim();
     if(strContent == ""){
-      //TODO replace with message in lasuli
       alert(_("null.content.selected"));
       return false;
     }
@@ -1279,7 +1224,7 @@ lasuli.ui = {
     try{
       treewalker = createTreeWalker(contentDocument);
     }catch(e){
-      logger.fatal(e);
+      console.error(e);
       return false;
     }
     var curPos = 0;
@@ -1307,7 +1252,6 @@ lasuli.ui = {
   },
 
   doUpdateProgressBar: function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.ui.doUpdateProgressBar");
     var t,v;
     if(typeof(arg) == "object")
     {
@@ -1334,7 +1278,6 @@ lasuli.ui = {
 }
 
 $(window).bind("load", function(){
-  var logger = Log4Moz.repository.getLogger("lasuli.ui.load");
   lasuli.jqGirdLoader();
   lasuli.ui.register();
   lasuli.ui.doBlockUI();

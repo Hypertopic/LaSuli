@@ -9,7 +9,6 @@ if(typeof(include) == "undefined")
 if(typeof(Exception) == "undefined")
   var Exception = Components.Exception;
   
-include("resource://lasuli/modules/log4moz.js");
 include("resource://lasuli/modules/StringBundle.js");
 include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/Observers.js");
@@ -23,10 +22,6 @@ const { require } = Cu.import("resource://gre/modules/commonjs/toolkit/require.j
 var lasuli = {
   _class : "_LASULI_APPEND_CLASS_",
   _htClass : "_LASULI_HIGHTLIGHT_CLASS_",
-
-  init: function(){
-    lasuli.setupLogging();
-  },
 
   getLocalDirectory : function() {
     var directoryService =
@@ -43,36 +38,6 @@ var lasuli = {
     }
 
     return localDir;
-  },
-
-  // Setup log4moz
-  setupLogging: function() {
-    var debugLevel = Preferences.get("extensions.lasuli.log.level",'Warn');
-    var logfile = Preferences.get("extensions.lasuli.log.file", "");
-
-    // The basic formatter will output lines like:
-    // DATE/TIME	LoggerName	LEVEL	(log message)
-    var formatter = new Log4Moz.BasicFormatter();
-
-    // Loggers are hierarchical, lowering this log level will affect all output
-    var root = Log4Moz.repository.rootLogger;
-    if(root.appenders.length > 0) return;
-    root.level = Log4Moz.Level[debugLevel];
-
-    var capp = new Log4Moz.ConsoleAppender(formatter);
-    capp.level = Log4Moz.Level[debugLevel];
-    root.addAppender(capp);
-
-    if(logfile != "")
-    {
-      var logFile = lasuli.getLocalDirectory();
-      logFile.append("log.txt");
-      var appender = new Log4Moz.RotatingFileAppender(logFile, formatter);
-      appender.level = Log4Moz.Level[debugLevel];
-      root.addAppender(appender);
-    }
-    var logger = Log4Moz.repository.getLogger("setupLogging");
-    logger.trace(lasuli.getLocalDirectory());
   },
 
   jqGirdLoader : function()
@@ -98,16 +63,12 @@ var lasuli = {
 //Read localize string
 function _(n,arg)
 {
-  var logger = Log4Moz.repository.getLogger("i18n");
   var i18nStrings = new StringBundle("chrome://lasuli/locale/lasuli.properties");
   try{
     return i18nStrings.get(n,arg);
   }catch(e)
   {
-    logger.fatal(n);
-    logger.fatal(JSON.stringify(arg));
-    logger.fatal(i18nStrings.get(n));
-    logger.fatal(e.message);
+    console.error(e, n, arg, i18nStrings.get(n));
   }
 }
 
@@ -146,7 +107,9 @@ function getColorOverlay(a,b)
     R = R.length < 2? "0" + R: R;
     G = G.length < 2? "0" + G: G;
     B = B.length < 2? "0" + B: B;
-  }catch(e){ logger.fatal(e); }
+  } catch(e) {
+    console.error(e);
+  }
   return "#" + R + G + B;
 }
 
@@ -158,7 +121,9 @@ function alpha(color, alpha){
     if(typeof alpha == 'undefined')
       alpha = 0.5;
     return 'rgba(' + R + ',' + G + ',' + B + ',' + alpha + ')';
-  }catch(e){ logger.fatal(e); }
+  } catch(e) {
+    console.error(e);
+  }
 }
 
 function createTreeWalker(doc) {
