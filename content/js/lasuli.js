@@ -23,23 +23,6 @@ var lasuli = {
   _class : "_LASULI_APPEND_CLASS_",
   _htClass : "_LASULI_HIGHTLIGHT_CLASS_",
 
-  getLocalDirectory : function() {
-    var directoryService =
-      Cc["@mozilla.org/file/directory_service;1"].
-        getService(Ci.nsIProperties);
-    // this is a reference to the profile dir (ProfD) now.
-    var localDir = directoryService.get("ProfD", Ci.nsIFile);
-
-    localDir.append("lasuli");
-
-    if (!localDir.exists() || !localDir.isDirectory()) {
-      // read and write permissions to owner and group, read-only for others.
-      localDir.create(Ci.nsIFile.DIRECTORY_TYPE, 0774);
-    }
-
-    return localDir;
-  },
-
   jqGirdLoader : function()
   {
     var locale = preferences.get('general.useragent.locale') || 'en-US';
