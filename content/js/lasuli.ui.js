@@ -273,7 +273,6 @@ lasuli.ui = {
 
       in_element.blur(function(){
         var topicID = container.data("topicID");
-        //var_dump("[UI.init.js] edit in place topic name", uri, 4);
         var viewpointID = $(this).parents('.ui-tabs-panel').attr("id");
         var topicName = container.data("topicName");
         var topicNewName = $(this).val();
@@ -449,7 +448,6 @@ lasuli.ui = {
       var originalTopicName = $(this).text();
       var img = $(this).prev();
       var originalImage = img.attr('src');
-      //img.attr('src','css/blitzer/images/delete.png');
       $(this).replaceWith("<input type='text' class='edit-in-place' value=''>");
       var in_element = divContainer.find("input");
       in_element.val(originalSpan.html());
@@ -601,24 +599,6 @@ lasuli.ui = {
         dispatch("lasuli.ui.doShowMessage", message);
       }
 		});
-		//Modify selected attribute
-		/*$('#attribute-modify').button({
-			text: false,
-			icons: {
-				primary: 'ui-icon-pencil'
-			}
-		}).click(function(){
-		  var gr = $("#attribute-grid").jqGrid('getGridParam','selrow');
-      if( gr != null )
-        $('#attribute-dialog').dialog('open');
-      else
-      {
-        var message = {};
-        message.title = _("Warning");
-        message.content = _("no.attribute.selected");
-        dispatch("lasuli.ui.doShowMessage", message);
-      }
-		});*/
   },
 
   initItemName : function(){
@@ -898,7 +878,6 @@ lasuli.ui = {
     }
     if(viewpointID && $('#' + viewpointID).length > 0)
     {
-      //$('#' + viewpointID +' .topics-ul li').remove();
       $('#' + viewpointID).find(".topics-ul").append(html);
     }
   },
