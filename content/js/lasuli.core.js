@@ -1,6 +1,7 @@
 include("resource://lasuli/modules/Observers.js");
-include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/HypertopicMap.js");
+
+var preferences =  require('sdk/preferences/service');
 var tabs = require("sdk/tabs");
 
 lasuli.core = {
@@ -26,7 +27,7 @@ lasuli.core = {
     console.time("lasuli.core.loadSetting");
     var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"]
                         .getService(Ci.nsIPromptService);
-    var servers = Preferences.get("extensions.lasuli.setting", JSON.stringify(new Array()));
+    var servers = preferences.get('extensions.lasuli.setting') || '[]';
     if(typeof(servers) == "string")
       servers = JSON.parse(servers);
     HtServers = {};

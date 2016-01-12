@@ -1,6 +1,7 @@
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Sync.js");
-include("resource://lasuli/modules/Preferences.js");
+
+var preferences =  require('sdk/preferences/service');
 
 lasuli.ui = {
   initTabs : function(){
@@ -81,7 +82,7 @@ lasuli.ui = {
 				if($('#config-panel').css('display') != 'block') return false;
 				//Remove all none related panel
 				$('#config-panel').find('fieldset[id!="default-server"]').remove();
-				var servers = Preferences.get("extensions.lasuli.setting",JSON.stringify(new Array()));
+				var servers = preferences.get('extensions.lasuli.setting') || '[]';
       	if(typeof(servers) == "string") servers = JSON.parse(servers);
 				for(var i=0, server; server = servers[i]; i++)
     		if(server.default === true)
@@ -705,8 +706,7 @@ lasuli.ui = {
 	    dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('options.error.nodefaultserver')});
 	    return false;
 		}
-
-		Preferences.set("extensions.lasuli.setting",JSON.stringify(servers));
+    preferences.set('extensions.lasuli.setting', JSON.stringify(servers));
 		self.location.reload();
 	},
 	

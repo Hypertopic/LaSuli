@@ -10,11 +10,11 @@ if(typeof(Exception) == "undefined")
   var Exception = Components.Exception;
   
 include("resource://lasuli/modules/StringBundle.js");
-include("resource://lasuli/modules/Preferences.js");
 include("resource://lasuli/modules/Observers.js");
 include("resource://lasuli/modules/Md5.js");
 
 const { require } = Cu.import("resource://gre/modules/commonjs/toolkit/require.js", {})
+var preferences =  require('sdk/preferences/service');
 
 /**
  * LaSuli namespace.
@@ -42,7 +42,7 @@ var lasuli = {
 
   jqGirdLoader : function()
   {
-    var locale = Preferences.get("general.useragent.locale", "en-US");
+    var locale = preferences.get('general.useragent.locale') || 'en-US';
     var i18nUrl = "chrome://lasuli/content/js/i18n/grid.locale-en.js";
     if(locale == "fr-FR")
       i18nUrl = "chrome://lasuli/content/js/i18n/grid.locale-fr.js";

@@ -8,11 +8,11 @@ const include = Cu.import;
 
 include("resource://lasuli/modules/XMLHttpRequest.js");
 include("resource://lasuli/modules/Sync.js");
-include("resource://lasuli/modules/Preferences.js");
 include("resource://gre/modules/devtools/Console.jsm");
 
 const { require } = Cu.import("resource://gre/modules/commonjs/toolkit/require.js", {})
 var base64 = require("sdk/base64");
+var preferences =  require('sdk/preferences/service');
 
 var HtServers = {};
 var HtCaches = {};
@@ -86,7 +86,7 @@ function HtMap(baseUrl, user, pass) {
   //Initialize the local cache
   HtCaches[baseUrl] = {};
   //Set to false to disable cache for debuging
-  this.enableCache = Preferences.get("extensions.lasuli.cache", true);
+  this.enableCache = preferences.get('extensions.lasuli.cache') || true;
 }
 HtMap.prototype.purgeCache = function(){
   HtCaches[this.baseUrl] = {};

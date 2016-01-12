@@ -1,8 +1,7 @@
 include("resource://lasuli/modules/HypertopicMap.js");
-include("resource://lasuli/modules/Preferences.js");
 
 var MemCache = {};
-var enableCache = Preferences.get("extensions.lasuli.cache", true); //set to true for debug
+var enableCache = require('sdk/preferences/service').get("extensions.lasuli.cache") || true;
 
 lasuli.hypertopic = {
   _locations : {},
