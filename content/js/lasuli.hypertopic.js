@@ -164,7 +164,7 @@ lasuli.hypertopic = {
       if(!this.item)
       {
         //logger.trace('Need to create a new item.');
-        this.createItem(name);
+        this.createItem();
         return true;
       }
       else

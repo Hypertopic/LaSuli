@@ -148,7 +148,7 @@ lasuli.core = {
     if(!lasuli.core.isSidebarOpen()) return false;
     dispatch("lasuli.ui.doClearDocumentPanel", null);
     _p(10);
-    dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
+    // dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
     _p(20);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
     _p(30);
@@ -211,11 +211,11 @@ lasuli.core = {
     try{
       lasuli.hypertopic.itemName = arg.newName;
       _p(70);
-      dispatch('lasuli.ui.doShowItemName', arg.newName);
+      // dispatch('lasuli.ui.doShowItemName', arg.newName);
     }catch(e){
       //TODO Show error message
       logger.fatal('failed to rename item');
-      dispatch('lasuli.ui.doShowItemName', arg.name);
+      // dispatch('lasuli.ui.doShowItemName', arg.name);
     }
     _p(100);
   },

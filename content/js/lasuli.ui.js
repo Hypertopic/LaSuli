@@ -898,7 +898,7 @@ lasuli.ui = {
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doClearDocumentPanel");
     //logger.trace("clear the document panel");
     // Clear the document name
-    $("#h3-entity-name").html(_("no.name"));
+    // $("#h3-entity-name").html(_("no.name"));
     // Clear the attribute grid
     try{
       $("#attribute-grid").jqGrid('clearGridData');
@@ -1466,7 +1466,7 @@ $(window).bind("load", function(){
   lasuli.ui.initViewpointPanel();
   lasuli.ui.initPlusPanel();
   lasuli.ui.initAttributeGrid();
-  lasuli.ui.initItemName();
+  //lasuli.ui.initItemName();
   dispatch('lasuli.sidebar.onSidebarOpened', null);
   //wait until all event listener registered
   Sync.sleep(500);
