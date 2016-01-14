@@ -661,7 +661,7 @@ HtMapItem.prototype.getAttributes = function() {
   if(!item) return false;
   //logger.trace(item);
   var reserved = {"highlight": null, "resource": null, "thumbnail": null,
-    "topic": null, "corpus": null, "speeches": null, "name": null };
+    "topic": null, "corpus": null, "speeches": null, /*"name": null*/ };
   var result = new Array();
   for(var key in item)
     if(!(key in reserved) && !item[key].hasOwnProperty("coordinates"))
