@@ -211,11 +211,11 @@ lasuli.core = {
     try{
       lasuli.hypertopic.itemName = arg.newName;
       _p(70);
-      // dispatch('lasuli.ui.doShowItemName', arg.newName);
+      dispatch('lasuli.ui.doShowItemName', arg.newName);
     }catch(e){
       //TODO Show error message
       logger.fatal('failed to rename item');
-      // dispatch('lasuli.ui.doShowItemName', arg.name);
+      dispatch('lasuli.ui.doShowItemName', arg.name);
     }
     _p(100);
   },

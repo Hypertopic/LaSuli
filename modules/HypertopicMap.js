@@ -707,8 +707,9 @@ HtMapItem.prototype.undescribe = function(attribute, value) {
   var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
   if(!item[attribute]) return true;
-  if(typeof(item[attribute]) == "string" && item[attribute] == value)
+  if(typeof(item[attribute]) == "string" && item[attribute] == value) {
     delete item[attribute];
+  }
   else
     if(item[attribute] instanceof Array && item[attribute].indexOf(value) > -1)
       for(var i=0, attr; attr = item[attribute][i]; i++)

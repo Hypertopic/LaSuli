@@ -672,7 +672,10 @@ lasuli.hypertopic = {
     for (var i of Iterator(this.items)) {
       var item = i[1];
       try{
-        item.undescribe(attribute.name, attribute.value);
+        var undescribe = item.undescribe(attribute.name, attribute.value);
+        if(undescribe === true) {
+          dispatch("lasuli.ui.doShowMessage", {"title": _("Warning"), "content": _('delete.attribute.warning', [attribute.name])});
+        }
       }
       catch(e){
         logger.fatal(e.message);
