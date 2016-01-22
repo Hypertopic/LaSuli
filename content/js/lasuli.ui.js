@@ -545,7 +545,7 @@ lasuli.ui = {
       autoOpen: false,
       modal: true,
       width: 170,
-      title: _("add.attribute.dialog.title"),
+      title: _("attribute.dialog.title"),
       buttons: attributesDialogButtons,
       open: function(){
         $('#attribute-name').val('').focus().select();
@@ -597,7 +597,7 @@ lasuli.ui = {
         $("#attribute-grid").setGridWidth($('#tabs').innerWidth() - 38);
     }).trigger('resize');
     //initial toolbar
-    $('#t_attribute-grid').html("<button id='attribute-del'></button><button id='attribute-modify' class='hide'></button><button id='attribute-add'></button>");
+    $('#t_attribute-grid').html("<button id='attribute-del'></button><button id='attribute-modify'></button><button id='attribute-add'></button>");
     $('#attribute-add').button({
 			text: false,
 			icons: {
@@ -628,23 +628,27 @@ lasuli.ui = {
       }
 		});
 		//Modify selected attribute
-		/*$('#attribute-modify').button({
+		$('#attribute-modify').button({
 			text: false,
 			icons: {
 				primary: 'ui-icon-pencil'
 			}
 		}).click(function(){
 		  var gr = $("#attribute-grid").jqGrid('getGridParam','selrow');
-      if( gr != null )
+      if( gr != null ) { 
+        var data = $("#attribute-grid").jqGrid('getRowData',gr);
         $('#attribute-dialog').dialog('open');
-      else
-      {
+        $('#attribute-name').val(data.name);
+        $('#attribute-value').val(data.value);
+
+        $('#attribute-name').prop('disabled', true);
+      } else {
         var message = {};
         message.title = _("Warning");
         message.content = _("no.attribute.selected");
         dispatch("lasuli.ui.doShowMessage", message);
       }
-		});*/
+		});
   },
 
   initItemName : function(){

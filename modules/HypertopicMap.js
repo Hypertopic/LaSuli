@@ -692,15 +692,26 @@ HtMapItem.prototype.rename = function(name) {
 HtMapItem.prototype.describe = function(attribute, value) {
   var item = this.Corpus.htMap.httpGet(this.getID());
   if(!item) return false;
-  if(!item[attribute])
+  /*if(!item[attribute]) {
     item[attribute] = value;
-  else
-    if(typeof(item[attribute]) == "string")
-      item[attribute] = new Array(item[attribute], value);
-    else
-      if(item[attribute] instanceof Array && item[attribute].indexOf(value) < 0)
+  } else {
+    if(typeof(item[attribute]) == "string") {
+      item[attribute] = new Array(attribute, value);
+    } else {
+      if(item[attribute] instanceof Array && item[attribute].indexOf(value) < 0) {
+        item[attribute].pop();
         item[attribute].push(value);
-  return this.Corpus.htMap.httpPut(item);
+      }
+    }
+  }*/
+
+  // item_name is a special field
+  if(attribute == 'name') {
+    return this.rename(value);
+  } else {
+    item[attribute] = value;
+    return this.Corpus.htMap.httpPut(item);
+  }
 }
 
 HtMapItem.prototype.undescribe = function(attribute, value) {
