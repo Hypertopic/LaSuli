@@ -16,6 +16,8 @@ echo "Cleaning up unwanted files ..."
 find . -depth -name '*~' -exec rm -rf "{}" \;
 find . -depth -name '#*' -exec rm -rf "{}" \;
 find . -depth -name '*.psd' -exec rm -rf "{}" \;
+find . -depth -name '.DS_Store' -exec rm -rf "{}" \;
+find . -depth -name '.*.swp' -exec rm -rf "{}" \;
 find . -depth -name 'test*' -exec rm -rf "{}" \;
 
 echo "Gathering all locales into chrome.manifest ..."
