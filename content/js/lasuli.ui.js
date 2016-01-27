@@ -603,7 +603,10 @@ lasuli.ui = {
 			icons: {
 				primary: 'ui-icon-plus'
 			}
-		}).click(function(){ $('#attribute-dialog').dialog('open'); });
+		}).click(function(){
+      $('#attribute-name').prop('disabled', false); 
+      $('#attribute-dialog').dialog('open'); 
+    });
 
 		//Delete selected attribute
 		$('#attribute-del').button({
