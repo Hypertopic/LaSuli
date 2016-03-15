@@ -149,8 +149,6 @@ lasuli.core = {
     dispatch("lasuli.ui.doClearDocumentPanel", null);
     _p(20);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
-    _p(30);
-    dispatch("lasuli.ui.doShowUsers", lasuli.hypertopic.docUsers);
     _p(40);
     dispatch("lasuli.ui.doShowTagCloud", lasuli.hypertopic.docTags);
     _p(80);

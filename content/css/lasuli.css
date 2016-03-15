@@ -106,11 +106,6 @@ div#create-viewpoint input
   float: right;
 }
 
-#actors li a
-{
-	cursor: pointer;
-}
-
 /* Tag cloud */
 
 #tags ul{
