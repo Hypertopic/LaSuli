@@ -3,7 +3,7 @@
   xmlns:m="http://www.mozilla.org/2004/em-rdf#">
   <rdf:Description rdf:about="urn:mozilla:install-manifest"
     m:id="lasuli@hypertopic.org"
-    m:version="2.16.0126"
+    m:version="2.16.0315"
     m:type="2"
     m:name="LaSuli"
     m:description="Social annotation software for interpretative reading."
