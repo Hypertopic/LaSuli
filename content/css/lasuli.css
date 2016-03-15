@@ -240,8 +240,6 @@ div#create-viewpoint input
 
 .fragment-toggle { cursor: pointer; vertical-align:middle; }
 
-.edit-itemname-in-place { margin-bottom: 10px; padding: 5px;}
-
 div.ui-tabs-panel {
   overflow-x: hidden;
   overflow-y: auto;

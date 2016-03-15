@@ -654,51 +654,6 @@ lasuli.ui = {
 		});
   },
 
-  initItemName : function(){
-    //Edit in place of a tag
-    $("h3#h3-entity-name").die().live("click", function(event){
-      var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName");
-      var itemName = $(this).html();
-      $('div#tabs-document').data('itemName', itemName);
-      //logger.trace(itemName);
-      $(this).replaceWith("<input type='text' class='edit-itemname-in-place' value=''>");
-      $("input.edit-itemname-in-place").val(itemName).focus().select();
-
-      $("input.edit-itemname-in-place").blur(function(){
-        var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName.blur");
-        var name = $('div#tabs-document').data('itemName');
-        var newName = $(this).val();
-        //logger.trace(name + "," + newName);
-        if(name == newName){
-          dispatch("lasuli.ui.doShowItemName", name);
-          $('div#tabs-document').data('itemName', null)
-        }
-        else
-          dispatch("lasuli.core.doRenameItem", {"name": name, "newName": newName});
-        event.stopImmediatePropagation();
-        return false;
-      });
-
-      $("input.edit-itemname-in-place").keyup(function(event){
-        //var logger = Log4Moz.repository.getLogger("lasuli.ui.initItemName.keyup");
-        if (event.keyCode == 27)
-        {
-          dispatch("lasuli.ui.doShowItemName", $('div#tabs-document').data('itemName'));
-          $('div#tabs-document').data('itemName', null)
-        }
-        if(event.keyCode == 13)
-        {
-          //logger.trace(event.keyCode);
-          $(this).blur();
-        }
-        return false;
-      });
-      event.stopImmediatePropagation();
-      return false;
-    });
-  },
-
-
   //Auto register all observers
   register: function(){
     for(var func in this)
@@ -773,14 +728,6 @@ lasuli.ui = {
 		this.initConfigPanel();
 	},
 	
-  doShowItemName : function(itemName){
-    if(!itemName) itemName = _("no.name");
-    if($("input.edit-itemname-in-place").length > 0)
-      $("input.edit-itemname-in-place").replaceWith('<h3 id="h3-entity-name"></h3>');
-
-    $("#h3-entity-name").text(itemName);
-  },
-
   doCloseViewpointPanel : function(viewpointID){
     var logger = Log4Moz.repository.getLogger("lasuli.ui.doCloseViewpointPanel");
     //If the viewpointID is specificed, then only close one viewpoint panel.
@@ -1473,7 +1420,6 @@ $(window).bind("load", function(){
   lasuli.ui.initViewpointPanel();
   lasuli.ui.initPlusPanel();
   lasuli.ui.initAttributeGrid();
-  //lasuli.ui.initItemName();
   dispatch('lasuli.sidebar.onSidebarOpened', null);
   //wait until all event listener registered
   Sync.sleep(500);

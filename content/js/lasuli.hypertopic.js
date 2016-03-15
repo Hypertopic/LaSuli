@@ -153,31 +153,6 @@ lasuli.hypertopic = {
       return null;
     return this.items["freecoding"];
   },
-  get itemName(){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.itemName");
-    return (this.item) ? this.item.getName() : _("no.name");
-  },
-  set itemName(name){
-    var logger = Log4Moz.repository.getLogger("lasuli.hypertopic.itemName");
-    //logger.trace('rename item:' + name);
-    try{
-      if(!this.item)
-      {
-        //logger.trace('Need to create a new item.');
-        this.createItem();
-        return true;
-      }
-      else
-      {
-        MemCache.items = false;
-        return this.item.rename(name);
-      }
-    }catch(e){
-      logger.fatal(e.message);
-      logger.error(name);
-      return false;
-    }
-  },
   /**
    * @return a map of attributes (each key may have a list of values)
    */

@@ -147,8 +147,6 @@ lasuli.core = {
     var logger = Log4Moz.repository.getLogger("lasuli.core.doLoadDocument");
     if(!lasuli.core.isSidebarOpen()) return false;
     dispatch("lasuli.ui.doClearDocumentPanel", null);
-    _p(10);
-    // dispatch("lasuli.ui.doShowItemName", lasuli.hypertopic.itemName);
     _p(20);
     dispatch("lasuli.ui.doShowAttributes", lasuli.hypertopic.attributes);
     _p(30);
@@ -201,22 +199,6 @@ lasuli.core = {
     }
     else
       dispatch("lasuli.ui.doShowMessage", {"title": _("Error"), "content": _('destroy.viewpoint.error', viewpointName)});
-    _p(100);
-  },
-
-  doRenameItem : function(arg){
-    var logger = Log4Moz.repository.getLogger("lasuli.core.doRenameItem");
-    //logger.debug(arg);
-    _p(30);
-    try{
-      lasuli.hypertopic.itemName = arg.newName;
-      _p(70);
-      dispatch('lasuli.ui.doShowItemName', arg.newName);
-    }catch(e){
-      //TODO Show error message
-      logger.fatal('failed to rename item');
-      dispatch('lasuli.ui.doShowItemName', arg.name);
-    }
     _p(100);
   },
 
