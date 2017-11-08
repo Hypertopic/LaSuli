@@ -1,0 +1,31 @@
+{
+  "name": "LaSuli",
+  "version": "0.1",
+  "manifest_version": 2,
+
+  "description": "Adds a browser action icon to the toolbar. Change the number on the browser icon action depending of the number of ",
+
+
+  "browser_action" : {
+    "browser_style": true,
+    "default_area" : "navbar",
+    "default_icon" : "button/laSuli-32.jpg",
+    "default_title": "LaSuli"
+  },
+
+  "background":{
+    "scripts" : [
+      "dist/background.js"]
+  },
+
+  "icons":{
+    "32" : "icons/laSuli-32.png"
+  },
+
+  "permissions": [
+    "webRequest",
+    "<all_urls>",
+    "tabs",
+    "activeTab"
+  ]
+}
