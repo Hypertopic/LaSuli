@@ -10,7 +10,7 @@ function handleUpdated(tabId, changeInfo, tabInfo) {
 	if (changeInfo.url) {
 		db.getView(`/item/?resource=${changeInfo.url}`)
 		.then( (x) => {
-			let itemsPart = x[Object.keys(x)]; // items of the answer
+			let itemsPart = x[Object.keys(x)]; // answer without URL
 			let promiseArray = [];
 			if (itemsPart) {
 				let itemList = Object.keys(itemsPart); // Lists of items
