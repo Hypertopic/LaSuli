@@ -7343,84 +7343,30 @@ __webpack_require__(16).inherits(FetchError, Error);
 /* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+const hypertopic = __webpack_require__(34);
+const getStdin = __webpack_require__(96);
 
-
-var hypertopic = __webpack_require__(34);
-var getStdin = __webpack_require__(96);
-
-var db = hypertopic(["http://argos2.test.hypertopic.org", "http://steatite.hypertopic.org"]);
+let db = hypertopic(["http://argos2.test.hypertopic.org", "http://steatite.hypertopic.org"]);
 
 function handleUpdated(tabId, changeInfo, tabInfo) {
 	if (changeInfo.url) {
-		console.log('/item/?resource=' + changeInfo.url);
-		db.getView('/item/?resource=' + changeInfo.url).then(function (x) {
-			console.log(x);
-			var itemsPart = x[Object.keys(x)]; // items of the answer
-			var itemList = Object.keys(itemsPart); // Lists of items
-			var promiseArray = [];
-
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = itemList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var item = _step.value;
-
-					var _loop = function _loop(itemContent) {
-						//calling db.get to get fragments
-						promiseArray.push(db.getView('/item/' + itemContent.corpus + '/' + itemContent.id).then(function (answer) {
+		db.getView(`/item/?resource=${changeInfo.url}`).then(x => {
+			let itemsPart = x[Object.keys(x)]; // items of the answer
+			let promiseArray = [];
+			if (itemsPart) {
+				let itemList = Object.keys(itemsPart); // Lists of items
+				itemList.map(item => {
+					//Going throw each item
+					itemsPart[item].map(itemContent => {
+						promiseArray.push(db.getView(`/item/${itemContent.corpus}/${itemContent.id}`).then(answer => {
 							return Object.keys(answer[itemContent.corpus][itemContent.id]).length - 2;
 						}));
-					};
-
-					//Going throw each item
-					var _iteratorNormalCompletion2 = true;
-					var _didIteratorError2 = false;
-					var _iteratorError2 = undefined;
-
-					try {
-						for (var _iterator2 = itemsPart[item][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-							var itemContent = _step2.value;
-
-							_loop(itemContent);
-						}
-					} catch (err) {
-						_didIteratorError2 = true;
-						_iteratorError2 = err;
-					} finally {
-						try {
-							if (!_iteratorNormalCompletion2 && _iterator2.return) {
-								_iterator2.return();
-							}
-						} finally {
-							if (_didIteratorError2) {
-								throw _iteratorError2;
-							}
-						}
-					}
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
+					});
+				});
 			}
-
 			return Promise.all(promiseArray);
-		}).then(function (fragments) {
-			browser.browserAction.setBadgeText({ text: fragments.reduce(function (a, b) {
-					return a + b;
-				}, 0).toString() }); //sum fragments table numbers
+		}).then(fragments => {
+			browser.browserAction.setBadgeText({ text: fragments.reduce((a, b) => a + b, 0).toString() }); //sum fragments table numbers
 		});
 	}
 }
