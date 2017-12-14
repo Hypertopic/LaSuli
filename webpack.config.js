@@ -7,6 +7,7 @@ module.exports = {
     // and included in the extension source.
     // For example, you could add a background script like:
     background: __dirname + '/src/backgroundScripts/background.js',
+    content: __dirname + '/src/contentScripts/content.js',
   },
   output: {
     // This copies each source entry into the extension dist folder named

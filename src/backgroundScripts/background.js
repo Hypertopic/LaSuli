@@ -1,35 +1,47 @@
-const hypertopic = require('hypertopic');
-const getStdin = require('get-stdin');
+let currentTabId,
+	currentUrl;
 
-let db = hypertopic([
-  "http://argos2.test.hypertopic.org",
-  "http://steatite.hypertopic.org"
-]);
+browser.browserAction.setBadgeText({text: `...`});
 
-function handleUpdated(tabId, changeInfo, tabInfo) {
+const errorHandler = function (error){ error => console.error(error)};
+
+const updateHighlightNumber = async () => {
+	try {
+		const answer = await browser.tabs.sendMessage(currentTabId, {aim: `getAllHighlights`, data: currentUrl})
+		browser.browserAction.setBadgeText({text: answer.returnMessage});
+	} catch(e){browser.browserAction.setBadgeText({text: `err`})};
+}
+
+const handleUpdate = async (tabId, changeInfo, tabInfo) => {
 	if (changeInfo.url) {
-		db.getView(`/item/?resource=${changeInfo.url}`)
-		.then( (x) => {
-			let itemsPart = x[Object.keys(x)]; // answer without URL
-			let promiseArray = [];
-			if (itemsPart) {
-				let itemList = Object.keys(itemsPart); // Lists of items
-				itemList.map((item) => { //Going throw each item
-					itemsPart[item].map((itemContent) => {
-						promiseArray.push(
-							db.getView(`/item/${itemContent.corpus}/${itemContent.id}`)
-							.then(answer => {
-								return Object.keys(answer[itemContent.corpus][itemContent.id]).length-2;
-							})
-						);
-					});
-				});
-			}
-			return Promise.all(promiseArray);
-		})
-		.then((fragments) => {
-			browser.browserAction.setBadgeText({text: fragments.reduce((a, b) => a + b, 0).toString()}); //sum fragments table numbers
-		});
+		currentUrl = changeInfo.url;
+		currentTabId = tabId;
+		try {
+			await browser.tabs.executeScript(currentTabId, {file: "/dist/content.js"});
+			await updateHighlightNumber();
+		} catch(e) {errorHandler(e)};
 	}
 }
-browser.tabs.onUpdated.addListener(handleUpdated);
+
+const handleTabChange = async (activeInfo) => {
+	try{
+		currentUrl = (await browser.tabs.get(activeInfo.tabId)).url;
+		updateHighlightNumber();
+	}catch(e){errorHandler}
+}
+
+const handleExtensionButtonClick = async () => {
+	try {
+		if (await browser.browserAction.getBadgeText({}) != "...") {
+			console.log("clicked and not ...");
+			let answer = await browser.tabs.sendMessage(currentTabId, {aim:`showHighlights`, data: currentUrl});
+			console.log(answer.returnMessage);
+		}
+	}catch(e){errorHandler}
+}
+
+
+browser.tabs.onUpdated.addListener(handleUpdate);
+browser.tabs.onActivated.addListener(handleTabChange);
+browser.browserAction.onClicked.addListener(handleExtensionButtonClick);
+
