@@ -5,7 +5,7 @@ const getStdin = require('get-stdin');
 let bufferTreeWalker,
 	bufferTextNode,
 	bufferHighlights,
-	highlightsNumber,
+	bufferTextOffset,
 	db = hypertopic([
   "http://argos2.hypertopic.org",
   "http://steatite.hypertopic.org"
@@ -73,28 +73,52 @@ const updateTextNode = async () => {
 	let val = ``,
 		actualNode,
 		nodeText;
-	await updateTreeWalker();
-	while (bufferTreeWalker.nextNode()){
-		nodeText = (bufferTreeWalker.currentNode.textContent); //remove ending double space at end
-		nodes.push({
-		    start: val.length,
-		    end: (val += '' + nodeText).length, //7057 7071 trim au lieu de 8579 8595 sans trim 10439 10440
-		    text : nodeText
-    	});
-	}
+	try{
+		await updateTreeWalker();
+		while (bufferTreeWalker.nextNode()){
+			nodeText = (bufferTreeWalker.currentNode.textContent); //remove ending double space at end
+			nodes.push({
+			    start: val.length,
+			    end: (val += '' + nodeText).length, 
+			    text : nodeText
+	    	});
+		}
 	bufferTextNode = nodes;
+		//We are going to try to offset the text with the web page
+		//to do that we will find the offset of the first fragment.
+		//Then if the offset doesn't change for all of the fragments, we apply the offset on the nodes
+		bufferTextOffset = bufferHighlights[0].coordinates[0][0]-val.indexOf(bufferHighlights[0].text);
+		console.log(bufferTextOffset);
+		try{
+			bufferHighlights.forEach(node => {
+				if (node.coordinates[0][0]-val.indexOf(node.text) != bufferTextOffset) {
+					throw "differents ";
+				}
+				throw "same";
+			})
+		}catch(e){
+			if (e == "same") {
+				//Revoir le fonctionnement de map ou foreach
+				bufferTextNode = bufferTextNode.map(node => {
+					node.start += bufferTextOffset;
+					node.end += bufferTextOffset;
+					return node;
+				})
+			}
+		}
+
+	}catch(e){errorHandler(e)}
 }
 
-// const highlight = async () => {
-// 	console.log("toto");
-// 	await updateTextNode();
-// 	console.log(bufferTextNode);
-// }
+const highlight = async () => {
+	await updateTextNode();
+	console.log(bufferTextNode);
+	console.log(bufferHighlights);
+}
 
-let messageHandler = async (message) => {
+const messageHandler = async (message) => {
 	let returnMessage;
 	//let selection = window.document.getSelection();
-
 	switch(message.aim){
 		case `showHighlights`:
 			try{
@@ -109,6 +133,9 @@ let messageHandler = async (message) => {
 				returnMessage = bufferHighlights.length.toString();
 			} catch(e){errorHandler(e)}
 			
+		break;
+		case `scriptExecutionCheck`:
+			returnMessage = "running";			
 		break;
 	}
   	return Promise.resolve({returnMessage: returnMessage});
