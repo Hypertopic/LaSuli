@@ -1,4 +1,3 @@
-console.log("script launched");
 const hypertopic = require('hypertopic');
 const getStdin = require('get-stdin');
 
@@ -7,10 +6,14 @@ let bufferTextNode,
 	bufferTextOffset,
 	bufferAllFragCoords = [],
 	bufferSubFragParts = [],
+	colorsFragMap = new Map(),
 	db = hypertopic([
   "http://argos2.hypertopic.org",
   "http://steatite.hypertopic.org"
 ]);
+
+
+
 
 const errorHandler = function (error){ error => console.error(error)};
 
@@ -117,7 +120,17 @@ const updateSubFragParts = async () => {
 	}
 }
 
-const colorHighlights = async (viewpoints) => {
+//This function will allow to create class for each color and color overlap
+const colorFragmentsPart = async (topics) => {
+	let classColorName = topics.join('-');
+	console.log(classColorName);
+	
+// 	colorsFragMap
+// 	let color = "lightblue";
+// 	document.styleSheets[0].insertRule(`.Lasuli-color-${} {
+//   background-color: ${color};
+// }`, 0);
+// 	console.log(document.styleSheets[0]);
 
 }
 
@@ -131,34 +144,33 @@ const showHighlights = async () => {
 
 	//For each text node of the page's body
 	while (j < bufferTextNode.length){
-		// We check if everything has been highlighted
+		// We filter nodes after the last highlight
 		if (i >= bufferSubFragParts.length) {
 			break;
 		}
 		textNode = bufferTextNode[j];
-		//This it allow us to pass all  text nodes before the first highlight
 		absNodeEnd = textNode.end - textNode.start;
-		//if (textNode.end > bufferSubFragParts[0].beginIndex && i < bufferSubFragParts.length) {
-
 		absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
 		absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
 
-		//If we have to interact with the node
+		//We filter nodes before the first highlight
 		if (textNode.end > bufferSubFragParts[0].beginIndex) {
 			
 			remplacementNode = document.createElement(textNode.fullNode.parentNode.nodeName); //chercher à récupérer le type de node initial
 			
-			//Here to color in the good color
+			//Here we create the element handling the text we highlight
 			element = document.createElement("mark");
+			element.className = "test";
+			colorFragmentsPart(bufferSubFragParts[i].topics);
 
 			// If the subfragment cover all the node
 			if (absFragStart <= 0 && absFragEnd >= absNodeEnd) {
 				element.textContent = textNode.text.substring(absFragStart,absNodeEnd);
 				remplacementNode.appendChild(element);
 				textNode.fullNode.parentNode.parentNode.replaceChild(remplacementNode,textNode.fullNode.parentNode);
-				if (absFragStart == 0 && absFragEnd == absNodeEnd){
+				if (absFragEnd == absNodeEnd){
 					i++;
-					while( bufferSubFragParts[i].viewpoints.size == 0){
+					while( bufferSubFragParts[i].topics.size == 0){
 						i++;
 					}
 					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
@@ -171,7 +183,7 @@ const showHighlights = async () => {
 					element.textContent = textNode.text.substring(0,absFragEnd);
 					remplacementNode.appendChild(element);
 					i++;
-					while( bufferSubFragParts[i].viewpoints.size == 0){
+					while( bufferSubFragParts[i].topics.size == 0){
 						i++;
 					}
 					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
@@ -182,7 +194,7 @@ const showHighlights = async () => {
 					element.textContent = textNode.text.substring(absFragStart,absFragEnd);
 					remplacementNode.appendChild(element);
 					i++;
-					while( bufferSubFragParts[i].viewpoints.size == 0){
+					while( bufferSubFragParts[i].topics.size == 0){
 						i++;
 					}
 					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
@@ -194,10 +206,7 @@ const showHighlights = async () => {
 					remplacementNode.appendChild(element);
 				}
 			}
-		}
-		else if (bufferSubFragParts[i].viewpoints.size = 0){
-		}
-		//}	
+		}	
 	j++;	
 	}
 }
