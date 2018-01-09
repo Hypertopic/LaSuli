@@ -2,10 +2,11 @@ console.log("script launched");
 const hypertopic = require('hypertopic');
 const getStdin = require('get-stdin');
 
-let bufferTreeWalker,
-	bufferTextNode,
+let bufferTextNode,
 	bufferHighlights,
 	bufferTextOffset,
+	bufferAllFragCoords = [],
+	bufferSubFragParts = [],
 	db = hypertopic([
   "http://argos2.hypertopic.org",
   "http://steatite.hypertopic.org"
@@ -49,8 +50,8 @@ const updateBufferHighlights = async (url) => {
 	}catch(e){errorHandler(e)}
 }
 
-const updateTreeWalker = () => {
-	bufferTreeWalker = document.createTreeWalker(
+const getTreeWalker = async () => {
+	return document.createTreeWalker(
 		document.body,
 		NodeFilter.SHOW_TEXT,
 		{acceptNode: node => {
@@ -74,46 +75,131 @@ const updateTextNode = async () => {
 		actualNode,
 		nodeText;
 	try{
-		await updateTreeWalker();
-		while (bufferTreeWalker.nextNode()){
-			nodeText = (bufferTreeWalker.currentNode.textContent); //remove ending double space at end
+		let treeWalker = await getTreeWalker();
+		while (treeWalker.nextNode()){
+			nodeText = treeWalker.currentNode.textContent;
 			nodes.push({
 			    start: val.length,
 			    end: (val += '' + nodeText).length, 
-			    text : nodeText
+			    text : nodeText,
+			    fullNode : treeWalker.currentNode,
+			    parentNode : treeWalker.currentNode.parentNode
 	    	});
 		}
 	bufferTextNode = nodes;
-		//We are going to try to offset the text with the web page
-		//to do that we will find the offset of the first fragment.
-		//Then if the offset doesn't change for all of the fragments, we apply the offset on the nodes
-		bufferTextOffset = bufferHighlights[0].coordinates[0][0]-val.indexOf(bufferHighlights[0].text);
-		console.log(bufferTextOffset);
-		try{
-			bufferHighlights.forEach(node => {
-				if (node.coordinates[0][0]-val.indexOf(node.text) != bufferTextOffset) {
-					throw "differents ";
-				}
-				throw "same";
-			})
-		}catch(e){
-			if (e == "same") {
-				//Revoir le fonctionnement de map ou foreach
-				bufferTextNode = bufferTextNode.map(node => {
-					node.start += bufferTextOffset;
-					node.end += bufferTextOffset;
-					return node;
-				})
-			}
-		}
-
 	}catch(e){errorHandler(e)}
 }
 
-const highlight = async () => {
-	await updateTextNode();
+//The aim of this function is to create an array containing all section of text between each fragments coordinates
+//It means each portion of text highlighted, highlighted in different colors at the same time and non highlighted parts
+//of the text between highlighted portions of text
+//The array will contains coordinates of the text's part and all the viewpoints and topics referring to it.
+const updateSubFragParts = async () => {
+	let allFragCoordinatesSet = new Set(); //We create a set to remove duplicates value
+	bufferHighlights.forEach(highlight => {
+		allFragCoordinatesSet.add(highlight.coordinates[0][0]);
+		allFragCoordinatesSet.add(highlight.coordinates[0][1]);
+	});
+	bufferAllFragCoords = [...allFragCoordinatesSet]; 
+	bufferAllFragCoords.sort((a,b) => a-b);
+	let tempSubFrag;
+	bufferSubFragParts = []; //The array we'are looking for.
+	for (let i = 0; i <= bufferAllFragCoords.length-2 ; i++) {
+		let tempViewpoints = new Set();
+		let tempTopics = new Set();
+		bufferHighlights.forEach(highlight => {
+			if(highlight.coordinates[0][0] <= bufferAllFragCoords[i] && bufferAllFragCoords[i+1] <= highlight.coordinates[0][1]){
+				tempViewpoints.add(highlight.topic[0][`viewpoint`]);
+				tempTopics.add(highlight.topic[0][`id`])
+			}
+		});
+		bufferSubFragParts.push({beginIndex: bufferAllFragCoords[i], endIndex: bufferAllFragCoords[i+1], viewpoints:tempViewpoints, topics:tempTopics});
+	}
+}
+
+const colorHighlights = async (viewpoints) => {
+
+}
+
+const showHighlights = async () => {
+	let element,
+	remplacementNode,
+	i = 0,
+	j = 0;
+	console.log(bufferSubFragParts);
 	console.log(bufferTextNode);
-	console.log(bufferHighlights);
+
+	//For each text node of the page's body
+	while (j < bufferTextNode.length){
+		// We check if everything has been highlighted
+		if (i >= bufferSubFragParts.length) {
+			break;
+		}
+		textNode = bufferTextNode[j];
+		//This it allow us to pass all  text nodes before the first highlight
+		absNodeEnd = textNode.end - textNode.start;
+		//if (textNode.end > bufferSubFragParts[0].beginIndex && i < bufferSubFragParts.length) {
+
+		absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
+		absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
+
+		//If we have to interact with the node
+		if (textNode.end > bufferSubFragParts[0].beginIndex) {
+			
+			remplacementNode = document.createElement(textNode.fullNode.parentNode.nodeName); //chercher à récupérer le type de node initial
+			
+			//Here to color in the good color
+			element = document.createElement("mark");
+
+			// If the subfragment cover all the node
+			if (absFragStart <= 0 && absFragEnd >= absNodeEnd) {
+				element.textContent = textNode.text.substring(absFragStart,absNodeEnd);
+				remplacementNode.appendChild(element);
+				textNode.fullNode.parentNode.parentNode.replaceChild(remplacementNode,textNode.fullNode.parentNode);
+				if (absFragStart == 0 && absFragEnd == absNodeEnd){
+					i++;
+					while( bufferSubFragParts[i].viewpoints.size == 0){
+						i++;
+					}
+					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
+					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
+				}
+			}
+			else {
+				//Do we have a fragment beginning in a previous node and end in this node
+				if (absFragStart <= 0 && absFragEnd < absNodeEnd){
+					element.textContent = textNode.text.substring(0,absFragEnd);
+					remplacementNode.appendChild(element);
+					i++;
+					while( bufferSubFragParts[i].viewpoints.size == 0){
+						i++;
+					}
+					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
+					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
+				}
+				//While we have fragment(s) which begin in this node and end in this node
+				while (absFragStart >= 0 && absFragEnd <= absNodeEnd) {
+					element.textContent = textNode.text.substring(absFragStart,absFragEnd);
+					remplacementNode.appendChild(element);
+					i++;
+					while( bufferSubFragParts[i].viewpoints.size == 0){
+						i++;
+					}
+					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
+					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
+				}
+				//Do we have a fragment beginning in this node and ending in an other node ?
+				if (absFragStart >= 0 && absFragEnd > absNodeEnd) {
+					element.textContent = textNode.text.substring(absFragStart,absNodeEnd);
+					remplacementNode.appendChild(element);
+				}
+			}
+		}
+		else if (bufferSubFragParts[i].viewpoints.size = 0){
+		}
+		//}	
+	j++;	
+	}
 }
 
 const messageHandler = async (message) => {
@@ -123,7 +209,10 @@ const messageHandler = async (message) => {
 		case `showHighlights`:
 			try{
 				await updateBufferHighlights(message.data);
-				await highlight();
+				console.log(bufferHighlights);
+				await updateTextNode();
+				await updateSubFragParts();
+				await showHighlights();
 				returnMessage = `Highlighted`;
 			} catch(e){errorHandler(e)}
 		break;
