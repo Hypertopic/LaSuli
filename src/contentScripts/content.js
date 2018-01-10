@@ -121,7 +121,7 @@ const updateSubFragParts = async () => {
 }
 
 //This function will allow to create class for each color and color overlap
-const colorFragmentsPart = async (topics) => {
+const colorFragmentsPart = async (quantifier) => {
 	let classColorName = topics.join('-');
 	console.log(classColorName);
 	
@@ -136,11 +136,19 @@ const colorFragmentsPart = async (topics) => {
 
 const showHighlights = async () => {
 	let element,
+	elementSpan,
 	remplacementNode,
 	i = 0,
 	j = 0;
 	console.log(bufferSubFragParts);
 	console.log(bufferTextNode);
+
+	//We filter all nodes before the first node to highlight
+	textNode = bufferTextNode[j];
+	while (textNode.end <= bufferSubFragParts[0].beginIndex){
+		j++;
+		textNode = bufferTextNode[j];
+	}
 
 	//For each text node of the page's body
 	while (j < bufferTextNode.length){
@@ -154,58 +162,74 @@ const showHighlights = async () => {
 		absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
 
 		//We filter nodes before the first highlight
-		if (textNode.end > bufferSubFragParts[0].beginIndex) {
-			
-			remplacementNode = document.createElement(textNode.fullNode.parentNode.nodeName); //chercher à récupérer le type de node initial
-			
-			//Here we create the element handling the text we highlight
-			element = document.createElement("mark");
-			element.className = "test";
-			colorFragmentsPart(bufferSubFragParts[i].topics);
+		remplacementNode = document.createElement(textNode.fullNode.parentNode.nodeName); //chercher à récupérer le type de node initial
+		
+		//Here we create the element handling the text we highlight
+		elementSpan = document.createElement("span");
+		element = document.createElement("mark");
+		element.className = "test";
+		colorFragmentsPart(bufferSubFragParts[i].viewpoints);
 
-			// If the subfragment cover all the node
-			if (absFragStart <= 0 && absFragEnd >= absNodeEnd) {
-				element.textContent = textNode.text.substring(absFragStart,absNodeEnd);
+		// If the subfragment cover all the node
+		if (absFragStart <= 0 && absFragEnd >= absNodeEnd) {
+
+			if(bufferSubFragParts[i].viewpoints.size != 0){
+				element.textContent = textNode.text.substring(0,absNodeEnd);
 				remplacementNode.appendChild(element);
-				textNode.fullNode.parentNode.parentNode.replaceChild(remplacementNode,textNode.fullNode.parentNode);
-				if (absFragEnd == absNodeEnd){
-					i++;
-					while( bufferSubFragParts[i].topics.size == 0){
-						i++;
-					}
-					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
-					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
-				}
+				textNode.fullNode.parentNode.replaceChild(remplacementNode,textNode.fullNode);
 			}
-			else {
-				//Do we have a fragment beginning in a previous node and end in this node
-				if (absFragStart <= 0 && absFragEnd < absNodeEnd){
+			//If the subfragment begin in a previou node AND finish in this node at coord = nodeEnd
+			if(absFragEnd == absNodeEnd) {
+				i++;
+			}
+		}
+		//The fragment don't cover all the node
+		else {
+			//Do we have a fragment beginning in a previous node and ending in this node
+			if (absFragStart <= 0 && absFragEnd < absNodeEnd){
+				if(bufferSubFragParts[i].viewpoints.size != 0){
 					element.textContent = textNode.text.substring(0,absFragEnd);
 					remplacementNode.appendChild(element);
-					i++;
-					while( bufferSubFragParts[i].topics.size == 0){
-						i++;
-					}
-					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
-					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
 				}
-				//While we have fragment(s) which begin in this node and end in this node
-				while (absFragStart >= 0 && absFragEnd <= absNodeEnd) {
+				else {
+					elementSpan.textContent = textNode.text.substring(0,absFragEnd);
+					remplacementNode.appendChild(elementSpan);
+				}
+				i++;
+				absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
+				absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
+			}
+			element = document.createElement("mark");
+			//While we have fragment(s) which begin in this node and end in this node
+			while (absFragStart >= 0 && absFragEnd <= absNodeEnd) {
+				//If we have "no highlights" subfragments we put the text in a span
+				if (bufferSubFragParts[i].viewpoints.size == 0) {
+					elementSpan.textContent = textNode.text.substring(absFragStart,absFragEnd);
+					remplacementNode.appendChild(elementSpan);
+				}
+				// Else we highlight it we have "no highlights" subfragments we put the text in a span
+				else {
 					element.textContent = textNode.text.substring(absFragStart,absFragEnd);
 					remplacementNode.appendChild(element);
-					i++;
-					while( bufferSubFragParts[i].topics.size == 0){
-						i++;
-					}
-					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
-					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
 				}
-				//Do we have a fragment beginning in this node and ending in an other node ?
-				if (absFragStart >= 0 && absFragEnd > absNodeEnd) {
-					element.textContent = textNode.text.substring(absFragStart,absNodeEnd);
-					remplacementNode.appendChild(element);
-				}
+				i++;
+				absFragStart = bufferSubFragParts[i].beginIndex - textNode.start;
+				absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
+				element = document.createElement("mark");
 			}
+			//Do we have a fragment beginning in this node and ending in an other node ?
+			if (absFragStart >= 0 && absFragEnd > absNodeEnd) {
+				//checking if we are in the first frag to highlight to add the beginning of the node 
+				if(i == 0){
+					elementSpan.textContent = textNode.text.substring(0,absFragStart);
+					remplacementNode.appendChild(elementSpan);
+					elementSpan = document.createElement("span");
+				}
+				element.textContent = textNode.text.substring(absFragStart,absNodeEnd);
+				remplacementNode.appendChild(element);
+				element = document.createElement("mark");
+			}
+			textNode.fullNode.parentNode.replaceChild(remplacementNode,textNode.fullNode);
 		}	
 	j++;	
 	}
