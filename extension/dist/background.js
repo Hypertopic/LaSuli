@@ -109,6 +109,7 @@ const handleUpdate = async (tabId, changeInfo, tabInfo) => {
 		currentTabId = tabId;
 		browser.browserAction.setBadgeText({ text: `...` });
 		await browser.tabs.executeScript(currentTabId, { file: "/dist/content.js" });
+		await updateHighlightNumber();
 	}
 };
 
@@ -134,9 +135,7 @@ const handleTabCreation = async tab => {
 
 const handleExtensionButtonClick = async tab => {
 	try {
-		await updateHighlightNumber();
 		let answer = await browser.tabs.sendMessage(currentTabId, { aim: `showHighlights`, data: currentUrl });
-		console.log(answer.returnMessage);
 	} catch (e) {
 		errorHandler;
 	}

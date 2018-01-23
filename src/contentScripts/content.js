@@ -13,8 +13,6 @@ let bufferTextNode,
 ]);
 
 
-
-
 const errorHandler = function (error){ error => console.error(error)};
 
 const getItemsTable = async (url) => {
@@ -120,26 +118,10 @@ const updateSubFragParts = async () => {
 	}
 }
 
-//This function will allow to create class for each color and color overlap
-const colorFragmentsPart = async (quantifier) => {
-	
-// 	colorsFragMap
-// 	let color = "lightblue";
-// 	document.styleSheets[0].insertRule(`.Lasuli-color-${} {
-//   background-color: ${color};
-// }`, 0);
-// 	console.log(document.styleSheets[0]);
-
-}
-
 const showHighlights = async () => {
 	try{
 		let	i = 0,
 			j = 0;
-
-		console.log(bufferHighlights);
-		console.log(bufferSubFragParts);
-		console.log(bufferTextNode);
 
 		//We filter all nodes before the first node to highlight
 		let textNode = bufferTextNode[j];
@@ -158,49 +140,26 @@ const showHighlights = async () => {
 			absNodeEnd -= firstPart.textContent.length;
 			firstPart = remainingNode;
 
-
-
 		//For each text node of the page's body
 			while (i < bufferSubFragParts.length) {
-				// console.log("while i");
-				// console.log(`absFragStart = ${absFragStart}`);
-				// console.log(`absFragEnd = ${absFragEnd}`);
-				// console.log(`absNodeEnd = ${absNodeEnd}`);
-				// console.log(`firstPart`);
-				// console.log(firstPart);
-				// console.log(`remainingNode`);
-				// console.log(remainingNode);
 
 				cuttingCursor = (absFragEnd < absNodeEnd) ? absFragEnd : absNodeEnd;
 				remainingNode = firstPart.splitText(cuttingCursor);
 
-				// console.log(`cuttingCursor = ${cuttingCursor}`);
-				// console.log(`firstPart`);
-				// console.log(firstPart);
-				// console.log(`remainingNode`);
-				// console.log(remainingNode);
-				// console.log(`i = ${i}`);
-
-
-
 				if (bufferSubFragParts[i].viewpoints.size != 0 && (firstPart.textContent.match(/^[\s]*$/) === null)) {
 					element = document.createElement("mark");
 					element.textContent = firstPart.textContent;
-					console.log(`Marking "${element.textContent}"`);
 					remainingNode.parentNode.replaceChild(element,firstPart);
 				}
 				firstPart = remainingNode;
-				
 
 				if (absFragEnd <= absNodeEnd) {
 					if (i++ > bufferSubFragParts.length) {
 						break;
 					}
 				}
-				console.log(`i = ${i}`);
 				//Checking if we have to go to the next node in the span tree
 				if(absFragEnd >= absNodeEnd){
-					console.log("j++");
 					j++;
 					textNode = bufferTextNode[j];
 					firstPart = textNode.fullNode;
@@ -209,78 +168,11 @@ const showHighlights = async () => {
 					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start;
 				}
 				else{
-					console.log("no j ++");
 					absFragStart = bufferSubFragParts[i].beginIndex - textNode.start - cuttingCursor;
 					absFragEnd = bufferSubFragParts[i].endIndex - textNode.start - cuttingCursor;
 					absNodeEnd -= cuttingCursor;
-				}
-				
+				}	
 			}
-
-
-
-				// console.log("j",absFragStart,absFragEnd,absNodeEnd,bufferSubFragParts[i]);
-
-				//Here we create the element handling the text we highlight
-				// let element = document.createElement("mark");
-				//element.className = "test";
-				//colorFragmentsPart(bufferSubFragParts[i].viewpoints);
-
-				//If the subfragment cover all the node
-				// if (absFragStart <= 0 && absFragEnd >= absNodeEnd) {
-				// 	if(bufferSubFragParts[i].viewpoints.size != 0 && (textNode.text.match(/^[\s]*$/) === null)){
-				// 		element.textContent = textNode.text;
-				// 		textNode.fullNode.parentNode.replaceChild(element,textNode.fullNode);
-				// 	}
-				// 	//If the subfragment begin in a previou node AND finish in this node at coord = nodeEnd
-				// 	if(absFragEnd == absNodeEnd) {
-				// 		if (i++ > bufferSubFragParts.length) {
-				// 			break highlighting;
-				// 		}
-				// 	}
-				// }
-				// //The fragment don't cover all the node
-				// else {
-				// 	//Do we have a fragment beginning in a previous node and ending in this node
-				// 	let remainingNode = textNode.fullNode,
-				// 		firstPart = remainingNode,
-				// 		element;
-
-				// 	//While we have fragment(s) which begin in this node and end in this node
-				// 	while (absFragEnd <= absNodeEnd) {
-				// 		element = document.createElement("mark");
-				// 		firstPart = remainingNode;	//Cutting until the beginning of the mark part
-				// 		remainingNode = firstPart.splitText(absFragEnd);
-
-				// 		if (bufferSubFragParts[i].viewpoints.size != 0 && (firstPart.textContent.match(/^[\s]*$/) === null)) {
-				// 			element.textContent = firstPart.textContent;
-				// 			remainingNode.parentNode.replaceChild(element,firstPart);
-				// 		}
-				// 		if (i++ > bufferSubFragParts.length) {
-				// 			break highlighting;
-				// 		}
-				// 		//If the fragment end in this node we don't calculate the abs
-				// 		if(absFragEnd == absNodeEnd){
-				// 			break;
-				// 		}
-				// 		absFragStart = bufferSubFragParts[i].beginIndex - textNode.start - firstPart.textContent.length;
-				// 		absFragEnd = bufferSubFragParts[i].endIndex - textNode.start - firstPart.textContent.length;
-				// 		absNodeEnd -= firstPart.textContent.length;
-				// 	}
-
-				// 	//Do we have a fragment beginning in this node and ending in an other node ?
-				// 	if (absFragStart >= 0 && absFragEnd > absNodeEnd) {
-				// 		element = document.createElement("mark");
-				// 		if(bufferSubFragParts[i].viewpoints.size != 0 && (remainingNode.textContent.match(/^[\s]*$/) === null)){
-				// 			if(i == 0){
-				// 				firstPart = remainingNode;
-				// 				remainingNode = firstPart.splitText(absFragStart);
-				// 			}
-				// 			element.textContent = remainingNode.textContent;
-				// 			remainingNode.parentNode.replaceChild(element,remainingNode);
-				// 		}
-				// 	}
-				// }
 	}catch(e){console.log(e)}
 }
 
