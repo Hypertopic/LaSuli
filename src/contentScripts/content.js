@@ -1,5 +1,4 @@
 const hypertopic = require('hypertopic');
-const getStdin = require('get-stdin');
 
 let bufferTextNode,
 	bufferHighlights,

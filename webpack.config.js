@@ -17,8 +17,11 @@ module.exports = {
   },
   module: {
     // This transpiles all code (except for third party modules) using Babel.
-    loaders: [{ test: /\.js$/, exclude: /node_modules/, loaders: ['babel-loader']}
-    ],
+    /*loaders: [{
+      test: /\.js$/,
+      exclude: /node_modules/,
+      loaders: ['babel-loader']
+    }],*/
   },
   resolve: {
     // This allows you to import modules just like you would in a NodeJS app.

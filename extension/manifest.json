@@ -1,24 +1,29 @@
 {
   "name": "LaSuli",
+  "description": "Social annotation for qualitative analysis.",
   "version": "0.1",
+
   "manifest_version": 2,
+  "applications": {
+    "gecko": {
+      "strict_min_version": "52.0"
+    }
+  },
 
-  "description": "Adds a browser action icon to the toolbar. Change the number on the browser icon action depending of the number of ",
-
-
-  "browser_action" : {
+  "browser_action": {
     "browser_style": true,
     "default_area" : "navbar",
-    "default_icon" : "button/laSuli-32.jpg",
+    "default_icon" : "button/laSuli-32.png",
     "default_title": "LaSuli"
   },
 
-  "background":{
+  "background": {
     "scripts" : [
-      "/dist/background.js"]
+      "/dist/background.js"
+    ]
   },
 
-  "icons":{
+  "icons": {
     "32" : "icons/laSuli-32.png"
   },
 
