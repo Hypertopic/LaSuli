@@ -1,73 +1,74 @@
-//Launching Webext
-let currentTabId,
-	currentUrl;
+/*global browser */
+/*
+ * This script displays a browser action (toolbar button)
+ */
 
-const errorHandler = function (error){ error => console.error(error)};
+const errorHandler = (error) => console.error(error);
 
-try{
-	browser.windows.getCurrent({populate: true})
-	.then(windowInfo => {
-		windowInfo.tabs.forEach(tab => {
-			if (tab.active) {
-				currentTabId = tab.id;
-				currentUrl = tab.url;
-				if (currentUrl == undefined) {
-					browser.tabs.reload(tab.id);
-					currentUrl = tab.url;
-				}
-			}
-		});
+let button = browser.browserAction,
+	tabs = browser.tabs,
+	cache = {};
+
+browser.windows.getCurrent({populate: true}).then((window) => {
+	window.tabs.forEach(tab => {
+		if (tab.active && tab.url === undefined) {
+			browser.tabs.reload(tab.id);
+		}
 	});
-}catch(e){errorHandler}
+});
 
-browser.browserAction.setBadgeText({text: `...`});
+button.setBadgeBackgroundColor({color: '#333'});
 
-const updateHighlightNumber = async () => {
-	try {
-		const answer = await browser.tabs.sendMessage(currentTabId, {aim: `getAllHighlights`, data: currentUrl})
-		browser.browserAction.setBadgeText({text: answer.returnMessage});
-	} catch(e){
-		browser.browserAction.setBadgeText({text: `err`});
-	};
-}
+const updateHighlightNumber = async (tabId, url, refresh) => {
+	button.setBadgeText({text: null, tabId});
 
-const handleUpdate = async (tabId, changeInfo, tabInfo) => {
-	if (changeInfo.url) {
-		currentUrl = changeInfo.url;
-		currentTabId = tabId;
-		browser.browserAction.setBadgeText({text: `...`});
-		await browser.tabs.executeScript(currentTabId, {file: "/dist/content.js"});
-		await updateHighlightNumber();
+	// Get the number of highlights for this URL
+	if (refresh || !cache[url]) {
+		button.setBadgeText({text: '…', tabId});
+		await tabs.executeScript(tabId, {
+			file: '/dist/content.js'
+		});
+
+		const answer = await tabs.sendMessage(tabId, {
+			aim: 'getAllHighlights',
+			data: url
+		}).catch(errorHandler);
+
+		cache[url] = (answer)
+			? answer.returnMessage
+			: 'err';
 	}
-}
+	button.setBadgeText({text: cache[url], tabId});
+};
 
-const handleTabChange = async (activeInfo) => {
-	currentTabId = activeInfo.tabId;
-	try{
-		tab = await browser.tabs.get(activeInfo.tabId);
-		currentUrl = tab.url;
-		browser.browserAction.setBadgeText({text: `...`});
-		await updateHighlightNumber();
+/*
+ * Update the highlights when the URI changes
+ */
+tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+	if (changeInfo.url) {
+		await updateHighlightNumber(tabId, changeInfo.url, true);
+	}
+});
 
-	}catch(e){errorHandler}
-}
-
-const handleTabCreation = async (tab) => {
-	currentTabId = tab.id;
-	try{
-		browser.browserAction.setBadgeText({text: `...`});
-	}catch(e){errorHandler}
-}
-
-const handleExtensionButtonClick = async (tab) => {
+/*
+ * Update the highlights when a tab is accessed
+ */
+tabs.onActivated.addListener(async (activeInfo) => {
 	try {
-		let answer = await browser.tabs.sendMessage(currentTabId, {aim:`showHighlights`, data: currentUrl});
-	}catch(e){errorHandler}
-}
+		let tab = await tabs.get(activeInfo.tabId);
+		await updateHighlightNumber(tab.id, tab.url, false);
+	} catch (e) {
+		errorHandler(e);
+	}
+});
 
-browser.tabs.onUpdated.addListener(handleUpdate);
-browser.tabs.onActivated.addListener(handleTabChange);
-browser.tabs.onCreated.addListener(handleTabCreation);
-browser.browserAction.onClicked.addListener(handleExtensionButtonClick);
-
+/*
+ * Display the highlights when the button gets clicked
+ */
+button.onClicked.addListener(async (tab) => {
+	await tabs.sendMessage(tab.id, {
+		aim: 'showHighlights',
+		data: tab.url
+	}).catch(errorHandler);
+});
 
