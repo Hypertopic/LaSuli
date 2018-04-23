@@ -157,15 +157,28 @@ const showHighlights = async () => {
 				? node.fullNode.splitText(relStart)
 				: node.fullNode;
 			let isFinished = (frag.end <= node.end);
+			let relEnd = Math.min(frag.end, node.end) - fragStart;
+			let endNode = (frag.end < node.end)
+				? markNode.splitText(relEnd)
+				: null;
+			let newNodes = [new TextNode(node.start, node.fullNode)];
 
 			// Insert the <mark> in the document
 			if (markNode.textContent.match(/^[\s]*$/) === null) {
 				let mark = document.createElement('mark');
 				mark.textContent = markNode.textContent;
 				marks.push(mark);
-				// console.log(markNode, frag.viewpoints, frag.topics);
 				markNode.parentNode.replaceChild(mark, markNode);
 			}
+
+			// Replace the previous textNode with the new ones
+			if (relStart !== 0) {
+				newNodes.push(new TextNode(fragStart, markNode));
+			}
+			if (endNode !== null) {
+				newNodes.push(new TextNode(frag.end, endNode));
+			}
+			textNodes.splice(j, 1, ...newNodes);
 
 			// Go to the next fragment if finished,
 			// or to the next node otherwise
@@ -202,3 +215,4 @@ const messageHandler = async (message) => {
 };
 
 browser.runtime.onMessage.addListener(messageHandler);
+
