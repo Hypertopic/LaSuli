@@ -1,9 +1,29 @@
 /*global browser */
 /*
  * This script displays a browser action (toolbar button)
+ * and manages the whitelist
  */
 
 const errorHandler = (error) => console.error(error);
+
+const getDomain = (uri) => {
+	let anchor = document.createElement('a');
+	anchor.href = uri;
+	return anchor.hostname;
+};
+
+const isWhitelisted = async (domain) => {
+	let match = await browser.storage.local.get('whitelist');
+	let list = match['whitelist'];
+	if (!list) {
+		await browser.storage.local.set({
+			whitelist: ['cassandre.hypertopic.org']
+		});
+		return false;
+	} else {
+		return (list.indexOf(domain) !== -1);
+	}
+};
 
 let button = browser.browserAction,
 	tabs = browser.tabs,
@@ -20,7 +40,18 @@ browser.windows.getCurrent({populate: true}).then((window) => {
 button.setBadgeBackgroundColor({color: '#333'});
 
 const updateHighlightNumber = async (tabId, url, refresh) => {
-	button.setBadgeText({text: null, tabId});
+	// The page must be whitelisted
+	let isOk = await isWhitelisted(getDomain(url));
+	if (!isOk) {
+		button.setIcon({tabId});
+		button.setBadgeText({text: null, tabId});
+		return;
+	} else {
+		button.setIcon({
+			path: {32: '/button/laSuli-32.png'},
+			tabId
+		});
+	}
 
 	// Get the number of highlights for this URL
 	if (refresh || !cache[url]) {
