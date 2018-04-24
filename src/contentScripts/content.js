@@ -9,7 +9,9 @@ let textNodes = [],
 		'http://argos2.hypertopic.org',
 		'http://steatite.hypertopic.org'
 	]),
-	items = null;
+	items = null,
+	viewpoints = [],
+	baseColor = {hue: 60, sat: 100, light: .8};
 
 const errorHandler = (error) => console.error(error);
 
@@ -133,10 +135,48 @@ const updateSubFragParts = async () => {
 	}
 };
 
+// Replace the given node in the document with a <mark>
+const insertMark = (nodeToMark, frag) => {
+	if (nodeToMark.textContent.match(/^[\s]*$/) !== null) {
+		return;
+	}
+
+	// Get a color for each viewpoint
+	let hues = [];
+	frag.viewpoints.forEach(vp => {
+		let index = viewpoints.indexOf(vp);
+		if (index === -1) {
+			index = viewpoints.length;
+			viewpoints.push(vp);
+		}
+		hues.push((baseColor.hue + (280 * index)) % 360);
+	});
+	// Get the mean hue (angle on the color wheel)
+	hues = hues.map(hue => hue * Math.PI / 180); // To radians
+	let hue = 180 / Math.PI * Math.atan2(
+		hues.map(Math.sin).reduce((sum, n) => sum + n, 0) / hues.length,
+		hues.map(Math.cos).reduce((sum, n) => sum + n, 0) / hues.length
+	);
+	// Negative mixing: darker
+	let light = Math.pow(baseColor.light, hues.length);
+
+	// Insert the <mark>
+	let mark = document.createElement('mark');
+	mark.textContent = nodeToMark.textContent;
+	mark.style.backgroundColor =
+		`hsl(${hue}, ${baseColor.sat}%, ${light * 100}%)`;
+	mark.style.color = (light > .5)
+		? 'black'
+		: 'white';
+	mark.title = [...frag.viewpoints].join(', ');
+	marks.push(mark);
+	nodeToMark.parentNode.replaceChild(mark, nodeToMark);
+};
+
 const showHighlights = async () => {
 	let	j = 0;
 	textFragments.forEach(frag => {
-		// Skip this fragment if empty
+		// Skip this fragment if it is not highlighted
 		if (frag.viewpoints.size === 0) {
 			return;
 		}
@@ -161,15 +201,10 @@ const showHighlights = async () => {
 			let endNode = (frag.end < node.end)
 				? markNode.splitText(relEnd)
 				: null;
-			let newNodes = [new TextNode(node.start, node.fullNode)];
 
-			// Insert the <mark> in the document
-			if (markNode.textContent.match(/^[\s]*$/) === null) {
-				let mark = document.createElement('mark');
-				mark.textContent = markNode.textContent;
-				marks.push(mark);
-				markNode.parentNode.replaceChild(mark, markNode);
-			}
+			// Insert the <mark>
+			let newNodes = [new TextNode(node.start, node.fullNode)];
+			insertMark(markNode, frag);
 
 			// Replace the previous textNode with the new ones
 			if (relStart !== 0) {
@@ -180,12 +215,10 @@ const showHighlights = async () => {
 			}
 			textNodes.splice(j, 1, ...newNodes);
 
-			// Go to the next fragment if finished,
-			// or to the next node otherwise
 			if (isFinished) {
-				break;
+				break; // Go to the next fragment
 			} else {
-				++j;
+				++j; // Go to the next node
 				fragStart = node.end;
 			}
 		}
