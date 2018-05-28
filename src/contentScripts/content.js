@@ -1,61 +1,26 @@
-/*global browser, require */
-const hypertopic = require('hypertopic');
+/*global browser */
 
 let textNodes = [],
 	highlights = [],
 	textFragments = [],
 	marks = [],
-	db = hypertopic([
-		'http://argos2.hypertopic.org',
-		'http://steatite.hypertopic.org'
-	]),
-	items = null,
 	viewpoints = [],
 	baseColor = {hue: 60, sat: 100, light: .8};
 
 const errorHandler = (error) => console.error(error);
 
-const getItemsTable = async (url) => {
-	if (!items) {
-		let itemsWithUrl = await db.getView(`/item/?resource=${url}`);
-		items = itemsWithUrl[Object.keys(itemsWithUrl)];
-	}
-	return items;
+const updateBufferHighlights = async (uri) => {
+	let resource = await browser.runtime.sendMessage({
+		aim: 'getResource',
+		uri: uri,
+		reload: false
+	});
+	highlights = resource.highlights;
+	viewpoints = resource.viewpoints;
 };
 
-//Param : item {corpus : string , id : number}
-//Output : array of HighlightsTable
-const getHighlightsTable = async (item) => {
-	return db.getView(`/item/${item.corpus}/${item.id}`);
-};
-
-const updateBufferHighlights = async (url) => {
-	if (highlights.length !== 0) {
-		return;
-	}
-
-	const itemsTable = await getItemsTable(url).catch(errorHandler);
-	if (!itemsTable) {
-		return;
-	}
-
-	const itemsKeyTable = Object.keys(itemsTable); // Item keys for this page
-	for (let itemKey of itemsKeyTable) {
-		for (let item of itemsTable[itemKey]) {
-			let highlightsTable = await getHighlightsTable(item)
-				.catch(errorHandler);
-			highlightsTable = (highlightsTable)
-				? highlightsTable[item.corpus][item.id]
-				: {};
-			if (Object.keys(highlightsTable).length > 2) { // has fragments
-				delete highlightsTable['resource'];
-				delete highlightsTable['thumbnail'];
-				for (let fragments in highlightsTable) {
-					highlights.push(highlightsTable[fragments]);
-				}
-			}
-		}
-	}
+const getViewpoint = (id) => {
+	return viewpoints.filter(vp => vp.id === id)[0];
 };
 
 const getTreeWalker = async () => {
@@ -141,18 +106,13 @@ const insertMark = (nodeToMark, frag) => {
 		return;
 	}
 
-	// Get a color for each viewpoint
-	let hues = [];
-	frag.viewpoints.forEach(vp => {
-		let index = viewpoints.indexOf(vp);
-		if (index === -1) {
-			index = viewpoints.length;
-			viewpoints.push(vp);
-		}
-		hues.push((baseColor.hue + (280 * index)) % 360);
-	});
+	// Get the color hue for each viewpoint
+	let hues = Array.from(frag.viewpoints).map(id => {
+		let vp = getViewpoint(id);
+		return vp && (vp.color.hue * Math.PI / 180); // To radians
+	}).filter(hue => hue !== false);
+
 	// Get the mean hue (angle on the color wheel)
-	hues = hues.map(hue => hue * Math.PI / 180); // To radians
 	let hue = 180 / Math.PI * Math.atan2(
 		hues.map(Math.sin).reduce((sum, n) => sum + n, 0) / hues.length,
 		hues.map(Math.cos).reduce((sum, n) => sum + n, 0) / hues.length
@@ -228,6 +188,8 @@ const showHighlights = async () => {
 const messageHandler = async (message) => {
 	let returnMessage;
 	switch (message.aim) {
+	case 'isLoaded':
+		return true;
 	case 'showHighlights':
 		try {
 			await updateBufferHighlights(message.data);
@@ -235,12 +197,6 @@ const messageHandler = async (message) => {
 			await updateSubFragParts();
 			await showHighlights();
 			returnMessage = 'Highlighted';
-		} catch (e) { errorHandler(e); }
-		break;
-	case 'getAllHighlights':
-		try {
-			await updateBufferHighlights(message.data); //!
-			returnMessage = highlights.length.toString();
 		} catch (e) { errorHandler(e); }
 		break;
 	}
