@@ -1,41 +1,40 @@
-const path = require('path');
+/*global require, __dirname */
 const webpack = require('webpack');
+const path = require('path');
 
 module.exports = {
-  entry: {
-    // Each entry in here would declare a file that needs to be transpiled
-    // and included in the extension source.
-    // For example, you could add a background script like:
-    background: __dirname + '/src/backgroundScripts/background.js',
-    content: __dirname + '/src/contentScripts/content.js',
-    sidebar: __dirname + '/src/sidebar/sidebar.js'
-  },
-  output: {
-    // This copies each source entry into the extension dist folder named
-    // after its entry config key.
-    path: __dirname + '/extension/dist',
-    filename: '[name].js',
-  },
-  module: {
-    // This transpiles all code (except for third party modules) using Babel.
-    /*loaders: [{
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loaders: ['babel-loader']
-    }],*/
-  },
-  resolve: {
-    // This allows you to import modules just like you would in a NodeJS app.
-    extensions: ['.js', '.jsx'],
-  },
-  plugins: [
-    // Since some NodeJS modules expect to be running in Node, it is helpful
-    // to set this environment var to avoid reference errors.
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production'),
-    }),
-  ],
-  // This will expose source map files so that errors will point to your
-  // original source files instead of the transpiled files.
-  devtool: 'sourcemap',
+	// mode: 'production', // UglifyJS, remove errors, etc
+	mode: 'none',
+	plugins: [
+		new webpack.DefinePlugin({
+			'process.env.NODE_ENV': JSON.stringify('production')
+		}),
+	],
+	entry: {
+		background: './src/backgroundScripts/background.js',
+		content: './src/contentScripts/content.js',
+		sidebar: './src/sidebar/sidebar.jsx'
+	},
+	output: {
+		path: path.resolve(__dirname, 'extension/dist'),
+		filename: '[name].js',
+	},
+	module: {
+		rules: [{
+			// Transpile all JS(X) files (except node_modules) using Babel
+			test: /\.jsx?$/,
+			exclude: /node_modules/,
+			loader: 'babel-loader',
+			options: {
+				presets: ['react']
+			}
+		}]
+	},
+	resolve: {
+		// Allows importing modules as in a NodeJS app
+		extensions: ['.js', '.jsx'],
+	},
+	// This will expose source map files so that errors will point to your
+	// original source files instead of the transpiled files.
+	devtool: 'sourcemap'
 };
