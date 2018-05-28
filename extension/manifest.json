@@ -17,6 +17,12 @@
     "default_title": "LaSuli"
   },
 
+  "sidebar_action": {
+    "default_title": "LaSuli",
+    "default_icon" : "button/laSuli-32.png",
+    "default_panel": "/page/sidebar.html"
+  },
+
   "background": {
     "scripts" : [
       "/dist/background.js"
