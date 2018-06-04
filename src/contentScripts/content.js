@@ -1,11 +1,11 @@
 /*global browser */
+import color from './color.js';
 
 let textNodes = [],
 	highlights = [],
 	textFragments = [],
 	marks = [],
-	viewpoints = [],
-	baseColor = {hue: 60, sat: 100, light: .8};
+	viewpoints = [];
 
 const errorHandler = (error) => console.error(error);
 
@@ -106,29 +106,18 @@ const insertMark = (nodeToMark, frag) => {
 		return;
 	}
 
-	// Get the color hue for each viewpoint
-	let hues = Array.from(frag.viewpoints).map(id => {
-		let vp = getViewpoint(id);
-		return vp && (vp.color.hue * Math.PI / 180); // To radians
-	}).filter(hue => hue !== false);
-
-	// Get the mean hue (angle on the color wheel)
-	let hue = 180 / Math.PI * Math.atan2(
-		hues.map(Math.sin).reduce((sum, n) => sum + n, 0) / hues.length,
-		hues.map(Math.cos).reduce((sum, n) => sum + n, 0) / hues.length
-	);
-	// Negative mixing: darker
-	let light = Math.pow(baseColor.light, hues.length);
+	let vps = Array.from(frag.viewpoints).map(id => getViewpoint(id));
+	let rgb = color.blend(vps.map(vp => vp && vp.color).filter(Boolean));
 
 	// Insert the <mark>
 	let mark = document.createElement('mark');
 	mark.textContent = nodeToMark.textContent;
-	mark.style.backgroundColor =
-		`hsl(${hue}, ${baseColor.sat}%, ${light * 100}%)`;
-	mark.style.color = (light > .5)
+	mark.title = vps.map(vp => String(vp.name)).join(', ');
+	mark.style.backgroundColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+	mark.style.color = color.isBright(rgb)
 		? 'black'
 		: 'white';
-	mark.title = [...frag.viewpoints].join(', ');
+
 	marks.push(mark);
 	nodeToMark.parentNode.replaceChild(mark, nodeToMark);
 };

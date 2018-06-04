@@ -6,6 +6,18 @@ class Resource {
 	}
 }
 
+const colors = [
+	{r: 255, g: 255, b: 153},
+	{r: 255, g: 153, b: 187},
+	{r: 187, g: 153, b: 255},
+	{r: 153, g: 255, b: 255},
+	{r: 187, g: 255, b: 153},
+	{r: 255, g: 187, b: 153},
+	{r: 255, g: 153, b: 255},
+	{r: 153, g: 187, b: 255},
+	{r: 153, g: 255, b: 187}
+];
+
 const model = (function () {
 	let cache = {};
 	let db = require('hypertopic')([
@@ -95,15 +107,6 @@ const model = (function () {
 		return [].concat(... await Promise.all(promises));
 	};
 
-	let baseColor = {hue: 60, sat: 100, light: .8};
-	const getColor = (index) => {
-		return {
-			hue: (baseColor.hue + (280 * index)) % 360,
-			sat: baseColor.sat,
-			light: baseColor.light
-		};
-	};
-
 	const getSecond = () => {
 		return Date.now() / 1000 | 0;
 	};
@@ -139,7 +142,7 @@ const model = (function () {
 			});
 			res.viewpoints = await getViewpoints(Object.keys(viewpoints));
 			res.viewpoints.forEach((v, i) => {
-				v.color = getColor(i);
+				v.color = colors[i % colors.length];
 			});
 
 			cache[uri].updated = getSecond();
