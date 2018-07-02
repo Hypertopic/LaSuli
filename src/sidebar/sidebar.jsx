@@ -1,85 +1,83 @@
 /*global browser */
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import Whitelist from './jsx/Whitelist.jsx';
 import Display from './jsx/Display.jsx';
 
 class Sidebar extends React.Component {
 	constructor(props) {
-		// Initiate the sidebar state
 		super(props);
 		this.state = {
 			uri: '',
 			status: 'waiting'
 		};
+	}
 
+	componentDidMount() {
 		// Listen to browser events for this window
-		let self = this;
 		browser.windows.getCurrent({populate: true}).then((windowInfo) => {
-			self.windowId = windowInfo.id;
-			self._updateContent();
+			this.windowId = windowInfo.id;
+			this._updateContent();
 		});
-		browser.tabs.onActivated.addListener(self._updateContent);
-		browser.tabs.onUpdated.addListener(self._updateContent);
+
+		browser.tabs.onActivated.addListener(() => this._updateContent());
+		browser.tabs.onUpdated.addListener((tab, changeInfo) => {
+			if (changeInfo.status === 'complete') {
+				this._updateContent();
+			}
+		});
 	}
 
 	render() {
-		let elem = 'Waiting…';
-		switch (this.state.status) {
-		case 'unknown': // Site is not on the whitelist
-			elem = <Whitelist uri={this.state.uri} />;
-			break;
-		case 'display': // Manage the highlights
-			elem = <Display uri={this.state.uri} vps={this.viewpoints} />;
-			break;
+		return <div>
+			{this.getContent(this.state.status)}
+		</div>;
+	}
+
+	getContent(status) {
+		if (status === 'unknown') {
+			// URI is unknown (not in the whitelist)
+			return <Whitelist uri={this.state.uri} />;
+		} else if (status === 'display') {
+			// Show the highlights
+			return <Display uri={this.state.uri} vps={this.res.viewpoints} />;
 		}
-		
-		return elem;
+		return 'Waiting…'; // Waiting for the highlights
 	}
 
 	async _updateContent() {
-		console.time('Time spent updating content');
 		let tabs = await browser.tabs.query({
 			windowId: this.windowId,
 			active: true
 		});
 		let uri = tabs[0].url;
-		console.log('updateContent!', uri);
+		let status;
 
 		let isWhitelisted = await browser.runtime.sendMessage({
 			aim: 'isWhitelisted',
 			uri: uri
 		});
-		console.log('is whitelisted?', isWhitelisted);
+		status = isWhitelisted ? 'waiting' : 'unknown';
+		this.setState({uri, status});
 
 		if (!isWhitelisted) {
-			this.setState({
-				uri: uri,
-				status: 'unknown'
-			});
-			console.timeEnd('Time spent updating content');
 			return;
 		}
 
-		this.setState({
-			uri: uri,
-			status: 'waiting'
-		});
 		let res = await browser.runtime.sendMessage({
 			aim: 'getResource',
 			uri: uri,
 			reload: false
 		});
-		console.log('Got it:', res);
-		this.viewpoints = res.viewpoints;
-		this.setState({
-			uri: uri,
-			status: 'display'
-		});
-		console.timeEnd('Time spent updating content');
+
+		if (res && res.viewpoints) {
+			status = 'display';
+			this.res = res;
+			this.setState({uri, status});
+		}
 	}
 }
 
 const panel = document.getElementById('panel');
 ReactDOM.render(<Sidebar />, panel);
-

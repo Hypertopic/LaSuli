@@ -6,7 +6,10 @@ import model from './model.js';
  * and manages the whitelist
  */
 
-const errorHandler = (error) => console.error(error);
+const errorHandler = (error, tabId) => {
+	console.error(error);
+	button.setBadgeText({text: 'err', tabId});
+};
 
 let button = browser.browserAction,
 	tabs = browser.tabs;
@@ -37,9 +40,13 @@ const updateHighlightNumber = async (tabId, url, refresh) => {
 
 	// Get the number of highlights for this URL
 	button.setBadgeText({text: '…', tabId});
-	let resource = await model.getResource(url, refresh);
-	let text = resource.highlights.length.toString();
-	button.setBadgeText({text, tabId});
+	let resource = await model.getResource(url, refresh)
+		.catch((e) => errorHandler(e, tabId));
+
+	if (resource) {
+		let text = String(resource.highlights.length.toString());
+		button.setBadgeText({text, tabId});
+	}
 };
 
 /*
@@ -59,7 +66,7 @@ tabs.onActivated.addListener(async (activeInfo) => {
 		let tab = await tabs.get(activeInfo.tabId);
 		await updateHighlightNumber(tab.id, tab.url, false);
 	} catch (e) {
-		errorHandler(e);
+		errorHandler(e, activeInfo.tabId);
 	}
 });
 
