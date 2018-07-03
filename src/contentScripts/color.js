@@ -29,7 +29,8 @@ const luminance = (color) =>
 
 // Checks the constrast against black and white
 // Contrast ratio formula: https://www.w3.org/WAI/GL/wiki/Contrast_ratio
+// Simplified form of: Math.pow(luminance(color) + 0.05, 2) > 0.0525;
 const isBright = (color) =>
-	Math.pow(luminance(color) + 0.05, 2) > 0.0525;
+	luminance(color) > 0.17913;
 
 export default {blend, luminance, isBright};

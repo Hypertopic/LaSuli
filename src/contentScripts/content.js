@@ -1,6 +1,8 @@
 /*global browser */
 import color from './color.js';
 
+let marks = [];
+
 const getTreeWalker = () => {
 	let ignore = ['script']; // We can ignore more tags (link, style, title…)
 	return document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
@@ -88,6 +90,7 @@ const insertMark = (nodeToMark, frag, labels) => {
 		? 'black'
 		: 'white';
 
+	marks.push(mark);
 	nodeToMark.parentNode.replaceChild(mark, nodeToMark);
 };
 
@@ -149,11 +152,27 @@ const highlight = (fragments, labels) => {
 	showHighlights(nodes, frags, labels);
 };
 
+const erase = () => {
+	marks.forEach(mark => {
+		let parent = mark.parentNode;
+		if (parent) {
+			let text = document.createTextNode(mark.textContent);
+			parent.replaceChild(text, mark);
+			parent.normalize();
+		}
+	});
+	marks.length = 0;
+};
+
 const messageHandler = async (message) => {
 	switch (message.aim) {
 	case 'isLoaded':
 		return true;
-	case 'showHighlights':
+	case 'erase':
+		erase();
+		return true;
+	case 'highlight':
+		erase();
 		highlight(message.fragments, message.labels);
 		return true;
 	}

@@ -33,7 +33,7 @@ export default class Display extends React.Component {
 	async _highlight(labels, fragments) {
 		let tab = await this._loadScript();
 		await browser.tabs.sendMessage(tab.id, {
-			aim: 'showHighlights',
+			aim: 'highlight',
 			labels,
 			fragments
 		});
