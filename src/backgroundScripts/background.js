@@ -71,27 +71,6 @@ tabs.onActivated.addListener(async (activeInfo) => {
 });
 
 /*
- * Display the highlights when the button gets clicked
+ * Open the sidebar when the button gets clicked
  */
-button.onClicked.addListener(async (tab) => {
-	// Check whether the tab knows the script
-	await tabs.sendMessage(tab.id, {aim: 'isLoaded'})
-		.catch(async () => {
-			await tabs.executeScript(tab.id, {
-				file: '/dist/content.js'
-			});
-		});
-
-	// Show highlights
-	let res = await model.getResource(tab.url, false)
-		.catch((e) => errorHandler(e, tab.id));
-	await tabs.sendMessage(tab.id, {
-		aim: 'showHighlights',
-		labels: res.getLabels(),
-		fragments: res.getFragments()
-	}).catch(errorHandler);
-
-	// Open the sidebar
-	browser.sidebarAction.open();
-});
-
+button.onClicked.addListener(() => browser.sidebarAction.open());
