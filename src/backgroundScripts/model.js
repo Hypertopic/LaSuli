@@ -1,22 +1,6 @@
 /*global browser, require */
-class Resource {
-	constructor() {
-		this.highlights = [];
-		this.viewpoints = [];
-	}
-}
-
-const colors = [
-	{r: 255, g: 255, b: 153},
-	{r: 255, g: 153, b: 187},
-	{r: 187, g: 153, b: 255},
-	{r: 153, g: 255, b: 255},
-	{r: 187, g: 255, b: 153},
-	{r: 255, g: 187, b: 153},
-	{r: 255, g: 153, b: 255},
-	{r: 153, g: 187, b: 255},
-	{r: 153, g: 255, b: 187}
-];
+import Resource from './Resource.js';
+import Viewpoint from './Viewpoint.js';
 
 const model = (function () {
 	let cache = {};
@@ -68,7 +52,6 @@ const model = (function () {
 		if (Object.keys(view).length > 2) {
 			delete view['resource'];
 			delete view['thumbnail'];
-			console.log('Corpus:', item.corpus);
 			return Object.values(view);
 		}
 		return [];
@@ -131,19 +114,33 @@ const model = (function () {
 		cache[uri].updated = getSecond();
 
 		try {
-			let res = new Resource();
-			res.highlights = await getHighlights(uri);
+			let highlights = await getHighlights(uri);
 
 			let viewpoints = {};
-			res.highlights.forEach(frag => {
-				frag.topic.forEach(t => {
-					viewpoints[t.viewpoint] = 1;
+			highlights.forEach(frag => {
+				(frag.topic || []).forEach(t => {
+					let v = viewpoints[t.viewpoint] || new Viewpoint();
+					v.topics[t.id] = v.topics[t.id] || [];
+					v.topics[t.id].push(frag);
+					viewpoints[t.viewpoint] = v;
+				});
+				delete frag.topic;
+			});
+			(await getViewpoints(Object.keys(viewpoints))).forEach((v) => {
+				let vp = viewpoints[v.id];
+				vp.name = String((v.name || [])[0]);
+				vp.user = String((v.user || [])[0]);
+				v.topics.forEach((t) => {
+					if (!vp.topics[t.id]) {
+						console.log('No viewpoint for:', t);
+						return;
+					}
+					vp.topics[t.id].name = String((t.name || [])[0]);
 				});
 			});
-			res.viewpoints = await getViewpoints(Object.keys(viewpoints));
-			res.viewpoints.forEach((v, i) => {
-				v.color = colors[i % colors.length];
-			});
+
+			let res = new Resource();
+			res.viewpoints = viewpoints;
 
 			cache[uri].updated = getSecond();
 			resolve(res);
@@ -151,6 +148,7 @@ const model = (function () {
 			delete cache[uri]; // We failed, drop the entry
 			console.error(err);
 			reject(err);
+			throw err;
 		}
 		return cache[uri];
 	};

@@ -4,24 +4,24 @@ import Viewpoint from './Viewpoint.jsx';
 class Display extends React.Component {
 	constructor(props) {
 		super(props);
-		this.uri = props.uri;
-		this.viewpoints = props.vps;
 	}
 
 	render() {
-		let viewpoints = this._getViewpoints();
+		let title = 'Points de vue';
+		let labels = this.props.res.getLabels();
+		let list = this._getViewpoints(labels);
 		return (<div>
-			<h1>Viewpoints</h1>
-			<div className="viewpoints">
-				{viewpoints}
-			</div>
+			<h1>{title}</h1>
+			{list}
 		</div>);
 	}
 
-	_getViewpoints() {
-		return this.viewpoints.map(vp =>
-			<Viewpoint key={vp.id} details={vp} />
-		);
+	_getViewpoints(labels) {
+		return Object.keys(this.props.res.viewpoints).map(id => {
+			let vp = this.props.res.viewpoints[id];
+			return <Viewpoint key={id} details={vp}
+				color={labels[id].color} />;
+		});
 	}
 }
 

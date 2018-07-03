@@ -44,7 +44,7 @@ const updateHighlightNumber = async (tabId, url, refresh) => {
 		.catch((e) => errorHandler(e, tabId));
 
 	if (resource) {
-		let text = String(resource.highlights.length.toString());
+		let text = String(resource.getHLCount());
 		button.setBadgeText({text, tabId});
 	}
 };
