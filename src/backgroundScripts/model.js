@@ -6,7 +6,7 @@ const model = (function () {
 	let cache = {};
 	let db = require('hypertopic')([
 		'http://argos2.hypertopic.org',
-		'http://steatite.hypertopic.org'
+		'http://cassandre.hypertopic.org'
 	]);
 
 	const getDomain = (uri) => {
@@ -57,14 +57,30 @@ const model = (function () {
 		return [];
 	};
 
+	const getCorpusVps = async (item) => {
+		let view = await db.getView(`/corpus/${item.corpus}`);
+		let topics = Object.keys(view[item.corpus])
+			.filter(key => !(key in ['name', 'user']))
+			.map(key => view[item.corpus][key])
+			.map(res => Object.keys(res).map(k => res[k].topic));
+
+		topics = [].concat(... [].concat(... topics).filter(Boolean));
+		return Array.from(
+			new Set(topics.map(t => t.viewpoint).filter(Boolean)));
+	};
+
 	const getHighlights = async (uri) => {
 		let itemLists = (await getItems(uri)) || {};
+		let items = [].concat(... Object.values(itemLists));
 
-		// For each item, run getItemHighlights
+		// For each item, run getItemHighlights and getCorpusVps
 		// Wait for all highlights and flatten the resulting array
-		let promises = [].concat(... Object.values(itemLists))
-			.map(getItemHighlights);
-		return [].concat(... await Promise.all(promises));
+		let hls = Promise.all(items.map(getItemHighlights));
+		let vps = Promise.all(items.map(getCorpusVps));
+		return {
+			highlights: [].concat(... await hls),
+			viewpoints: Array.from(new Set([].concat(... await vps)))
+		};
 	};
 
 	const getViewpoint = async (id) => {
@@ -114,7 +130,12 @@ const model = (function () {
 		cache[uri].updated = getSecond();
 
 		try {
-			let highlights = await getHighlights(uri);
+			let data = await getHighlights(uri);
+			let highlights = data.highlights;
+
+			// Asynchronous, shows how to get corpus viewpoints
+			Promise.all(data.viewpoints.map(vp => getViewpoint(vp)))
+				.then(allViewpoints => console.log(allViewpoints));
 
 			let viewpoints = {};
 			highlights.forEach(frag => {
