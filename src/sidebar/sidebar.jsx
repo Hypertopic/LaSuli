@@ -5,6 +5,8 @@ import ReactDOM from 'react-dom';
 import Whitelist from './jsx/Whitelist.jsx';
 import Display from './jsx/Display.jsx';
 
+import Resource from '../backgroundScripts/Resource.js';
+
 class Sidebar extends React.Component {
 	constructor(props) {
 		super(props);
@@ -41,7 +43,7 @@ class Sidebar extends React.Component {
 			return <Whitelist uri={this.state.uri} />;
 		} else if (status === 'display') {
 			// Show the highlights
-			return <Display uri={this.state.uri} vps={this.res.viewpoints} />;
+			return <Display uri={this.state.uri} res={this.res} />;
 		}
 		return 'Waiting…'; // Waiting for the highlights
 	}
@@ -73,7 +75,7 @@ class Sidebar extends React.Component {
 
 		if (res && res.viewpoints) {
 			status = 'display';
-			this.res = res;
+			this.res = new Resource(res);
 			this.setState({uri, status});
 		}
 	}

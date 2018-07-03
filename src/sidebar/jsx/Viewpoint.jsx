@@ -3,15 +3,18 @@ import React from 'react';
 class Viewpoint extends React.Component {
 	constructor(props) {
 		super(props);
-		console.log('Constructing viewpoint from:', props.details);
-		this.id = props.details.id;
-		this.user = String((props.details.user || [])[0]);
-		this.name = String((props.details.name || [])[0]);
 	}
 
 	render() {
+		let vp = this.props.details;
+		let col = this.props.color;
+		let style = {
+			background: `rgb(${col.r}, ${col.g}, ${col.b})`
+		};
 		return (<div>
-			<h2 title={this.id}>{this.name}</h2>
+			<h2 style={style} className="viewpoint">
+				{vp.name} <small class="counter">{vp.getHLCount()}</small>
+			</h2>
 		</div>);
 	}
 }

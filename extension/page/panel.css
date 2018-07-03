@@ -1,0 +1,59 @@
+html {
+  font: 12pt/1.4 sans-serif;
+}
+
+body {
+  background: #F7F7F7;
+  color: #222222;
+  margin: .5rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400;
+  margin: 0 0 1rem 0;
+  padding: .5rem;
+}
+
+p, pre {
+  font-size: 11pt;
+  -moz-user-select: text !important;
+  user-select: text !important;
+}
+
+pre {
+  color: #FF3366;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+h1 {
+  border-bottom: 1px solid #CCC;
+}
+
+.viewpoint {
+  cursor: pointer;
+}
+
+.viewpoint {
+  align-items: center;
+  border-radius: .25rem;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .5rem;
+}
+
+.viewpoint:hover {
+  box-shadow: 0 0 1px 1px #555;
+}
+
+.counter {
+  background: #3337;
+  border-radius: .25rem;
+  color: #FFF;
+  display: inline-block;
+  line-height: 1;
+  padding: .25em .4em;
+  text-align: center;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
