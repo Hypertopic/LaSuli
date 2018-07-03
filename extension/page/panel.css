@@ -30,11 +30,11 @@ h1 {
   border-bottom: 1px solid #CCC;
 }
 
-.viewpoint {
+.viewpoint, .topic {
   cursor: pointer;
 }
 
-.viewpoint {
+.viewpoint, .topic {
   align-items: center;
   border-radius: .25rem;
   display: flex;
@@ -42,8 +42,19 @@ h1 {
   margin-bottom: .5rem;
 }
 
-.viewpoint:hover {
+.viewpoint:hover, .topic:hover {
   box-shadow: 0 0 1px 1px #555;
+}
+
+.fragments {
+  margin-bottom: 1rem;
+}
+
+.fragment {
+  background: #FFF;
+  border-radius: 3px;
+  padding: .25rem;
+  margin: .5rem;
 }
 
 .counter {
@@ -56,4 +67,14 @@ h1 {
   text-align: center;
   vertical-align: baseline;
   white-space: nowrap;
+}
+
+.btn-back {
+  box-sizing: border-box;
+  cursor: pointer;
+  display: block;
+  margin: .5rem;
+  padding: .5rem;
+  text-align: center;
+  width: calc(100% - 1rem);
 }
