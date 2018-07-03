@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 
 import Whitelist from './jsx/Whitelist.jsx';
 import Display from './jsx/Display.jsx';
+import Error from './jsx/Error.jsx';
 
 import Resource from '../backgroundScripts/Resource.js';
 
@@ -44,6 +45,8 @@ class Sidebar extends React.Component {
 		} else if (status === 'display') {
 			// Show the highlights
 			return <Display uri={this.state.uri} res={this.res} />;
+		} else if (status === 'error') {
+			return <Error err={this.state.error} uri={this.state.uri} />;
 		}
 		return 'Waiting…'; // Waiting for the highlights
 	}
@@ -71,6 +74,9 @@ class Sidebar extends React.Component {
 			aim: 'getResource',
 			uri: uri,
 			reload: false
+		}).catch((error) => {
+			status = 'error';
+			this.setState({uri, status, error});
 		});
 
 		if (res && res.viewpoints) {

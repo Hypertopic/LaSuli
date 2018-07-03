@@ -3,16 +3,18 @@ import React from 'react';
 class Whitelist extends React.Component {
 	constructor(props) {
 		super(props);
-		this.uri = props.uri;
-		this.viewpoints = props.vps;
 	}
 
 	render() {
 		return (<div>
-			<h1>Whitelist</h1>
-			<p>The domain for this URI is not whitelisted:</p>
-			<pre>{this.uri}</pre>
+			<h1>Site inconnu</h1>
+			<p>Le domaine de cette page n'est pas dans la liste blanche :</p>
+			<pre>{this._getDomain(this.props.uri)}</pre>
 		</div>);
+	}
+
+	_getDomain(uri) {
+		return new URL(uri).hostname;
 	}
 }
 
