@@ -14,6 +14,15 @@ export default class Viewpoint {
 			(sum, tp) => sum + tp.length, 0);
 	}
 
+	getFragments(vid) {
+		return Object.keys(this.topics).reduce((frags, tid) => {
+			return frags.concat(this.topics[tid].map(frag => ({
+				coords: frag.coordinates,
+				label: vid || tid
+			})));
+		}, []);
+	}
+
 	getLabels() {
 		Object.values(this.topics).forEach((t, i) => {
 			t.color = colors[i % colors.length];

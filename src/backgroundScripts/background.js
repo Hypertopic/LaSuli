@@ -81,10 +81,14 @@ button.onClicked.addListener(async (tab) => {
 				file: '/dist/content.js'
 			});
 		});
+
 	// Show highlights
+	let res = await model.getResource(tab.url, false)
+		.catch((e) => errorHandler(e, tab.id));
 	await tabs.sendMessage(tab.id, {
 		aim: 'showHighlights',
-		data: tab.url
+		labels: res.getLabels(),
+		fragments: res.getFragments()
 	}).catch(errorHandler);
 
 	// Open the sidebar

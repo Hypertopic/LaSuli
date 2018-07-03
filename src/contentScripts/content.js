@@ -1,29 +1,7 @@
 /*global browser */
 import color from './color.js';
 
-let textNodes = [],
-	highlights = [],
-	textFragments = [],
-	marks = [],
-	viewpoints = [];
-
-const errorHandler = (error) => console.error(error);
-
-const updateBufferHighlights = async (uri) => {
-	let resource = await browser.runtime.sendMessage({
-		aim: 'getResource',
-		uri: uri,
-		reload: false
-	});
-	highlights = resource.highlights;
-	viewpoints = resource.viewpoints;
-};
-
-const getViewpoint = (id) => {
-	return viewpoints.filter(vp => vp.id === id)[0];
-};
-
-const getTreeWalker = async () => {
+const getTreeWalker = () => {
 	let ignore = ['script']; // We can ignore more tags (link, style, title…)
 	return document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
 		acceptNode: node => {
@@ -53,80 +31,71 @@ class TextNode {
 /*
  * Give a start and end position to every text node in the document.
  */
-const updateTextNode = async () => {
-	textNodes = [];
-	let treeWalker = await getTreeWalker();
+const getTextNodes = () => {
+	let textNodes = [];
+	let treeWalker = getTreeWalker();
 	let offset = 0;
 	while (treeWalker.nextNode()) {
 		let textNode = new TextNode(offset, treeWalker.currentNode);
 		textNodes.push(textNode);
 		offset += textNode.length;
 	}
+	return textNodes;
 };
 
 /*
- * Split text nodes and highlights with their coordinates
- * to build a simpler list of text fragments. A fragment
- * may refer to zero (non highlighted), one (highlighted)
- * or multiple viewpoints and topics.
+ * Merge fragments with interpolating coordinates
+ * to build a simpler fragment list.
  */
-const updateSubFragParts = async () => {
+const mergeFragments = (fragments) => {
 	// Get a list of unique, sorted positions
-	let allFragCoordinatesSet = new Set(); // No duplicates
-	highlights.forEach(highlight => {
-		allFragCoordinatesSet.add(highlight.coordinates[0][0]);
-		allFragCoordinatesSet.add(highlight.coordinates[0][1]);
-	});
-	let sortedCoords = [...allFragCoordinatesSet]; 
-	sortedCoords.sort((a, b) => a - b);
+	let coordList = [... new Set(
+		[].concat(... fragments.map(f => f.coords[0]))
+	)].sort((a, b) => a - b);
 
-	textFragments = [];
-	for (let i = 0; i <= sortedCoords.length - 2 ; ++i) {
-		let tempViewpoints = new Set();
-		let tempTopics = new Set();
-		highlights.forEach(highlight => {
-			if (highlight.coordinates[0][0] <= sortedCoords[i]
-					&& sortedCoords[i+1] <= highlight.coordinates[0][1]) {
-				tempViewpoints.add(highlight.topic[0]['viewpoint']);
-				tempTopics.add(highlight.topic[0]['id']);
-			}
-		});
+	let textFragments = [];
+	for (let i = 0; i < coordList.length - 1; ++i) {
+		let labels = new Set(fragments
+			.filter(f => f.coords[0][0] <= coordList[i])
+			.filter(f => coordList[i+1] <= f.coords[0][1])
+			.map(f => f.label));
 		textFragments.push({
-			start: sortedCoords[i],
-			end: sortedCoords[i+1],
-			viewpoints: tempViewpoints,
-			topics: tempTopics
+			start: coordList[i],
+			end: coordList[i+1],
+			labels: [... labels]
 		});
 	}
+	return textFragments;
 };
 
-// Replace the given node in the document with a <mark>
-const insertMark = (nodeToMark, frag) => {
+/*
+ * Replace the given node in the document with a <mark>
+ */
+const insertMark = (nodeToMark, frag, labels) => {
 	if (nodeToMark.textContent.match(/^[\s]*$/) !== null) {
 		return;
 	}
 
-	let vps = Array.from(frag.viewpoints).map(id => getViewpoint(id));
-	let rgb = color.blend(vps.map(vp => vp && vp.color).filter(Boolean));
+	let flabs = Array.from(frag.labels).map(id => labels[id]).filter(Boolean);
+	let rgb = color.blend(flabs.map(fl => fl.color));
 
 	// Insert the <mark>
 	let mark = document.createElement('mark');
 	mark.textContent = nodeToMark.textContent;
-	mark.title = vps.map(vp => String(vp.name)).join(', ');
+	mark.title = flabs.map(fl => String(fl.name)).join(', ');
 	mark.style.backgroundColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 	mark.style.color = color.isBright(rgb)
 		? 'black'
 		: 'white';
 
-	marks.push(mark);
 	nodeToMark.parentNode.replaceChild(mark, nodeToMark);
 };
 
-const showHighlights = async () => {
-	let	j = 0;
-	textFragments.forEach(frag => {
+const showHighlights = (textNodes, fragments, labels) => {
+	let j = 0;
+	fragments.forEach(frag => {
 		// Skip this fragment if it is not highlighted
-		if (frag.viewpoints.size === 0) {
+		if (frag.labels.size === 0) {
 			return;
 		}
 		let fragStart = frag.start;
@@ -142,22 +111,22 @@ const showHighlights = async () => {
 			// Split the text node with the fragment boundaries
 			// in order to know where to insert the <mark>
 			let relStart = fragStart - node.start;
-			let markNode = (relStart !== 0)
+			let nodeToMark = (relStart !== 0)
 				? node.fullNode.splitText(relStart)
 				: node.fullNode;
 			let isFinished = (frag.end <= node.end);
 			let relEnd = Math.min(frag.end, node.end) - fragStart;
 			let endNode = (frag.end < node.end)
-				? markNode.splitText(relEnd)
+				? nodeToMark.splitText(relEnd)
 				: null;
 
 			// Insert the <mark>
 			let newNodes = [new TextNode(node.start, node.fullNode)];
-			insertMark(markNode, frag);
+			insertMark(nodeToMark, frag, labels);
 
 			// Replace the previous textNode with the new ones
 			if (relStart !== 0) {
-				newNodes.push(new TextNode(fragStart, markNode));
+				newNodes.push(new TextNode(fragStart, nodeToMark));
 			}
 			if (endNode !== null) {
 				newNodes.push(new TextNode(frag.end, endNode));
@@ -174,23 +143,20 @@ const showHighlights = async () => {
 	});
 };
 
+const highlight = (fragments, labels) => {
+	let nodes = getTextNodes();
+	let frags = mergeFragments(fragments);
+	showHighlights(nodes, frags, labels);
+};
+
 const messageHandler = async (message) => {
-	let returnMessage;
 	switch (message.aim) {
 	case 'isLoaded':
 		return true;
 	case 'showHighlights':
-		try {
-			await updateBufferHighlights(message.data);
-			await updateTextNode();
-			await updateSubFragParts();
-			await showHighlights();
-			returnMessage = 'Highlighted';
-		} catch (e) { errorHandler(e); }
-		break;
+		highlight(message.fragments, message.labels);
+		return true;
 	}
-	return Promise.resolve({returnMessage});
 };
 
 browser.runtime.onMessage.addListener(messageHandler);
-

@@ -17,6 +17,11 @@ export default class Resource {
 			(sum, vp) => sum + vp.getHLCount(), 0);
 	}
 
+	getFragments() {
+		return Object.keys(this.viewpoints).reduce((frags, vid) =>
+			frags.concat(this.viewpoints[vid].getFragments(vid)), []);
+	}
+
 	getLabels() {
 		let labels = {};
 		Object.keys(this.viewpoints).forEach((vid, i) =>
