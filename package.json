@@ -6,7 +6,6 @@
     "build": "webpack",
     "start": "web-ext run --verbose -s extension/"
   },
-  "license": "MPL-2.0",
   "author": {
     "name": "Aurélien Bénel",
     "url": "https://github.com/benel"
@@ -25,6 +24,7 @@
       "url": "https://github.com/gnoxr"
     }
   ],
+  "license": "GPL-3.0",
   "devDependencies": {
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
