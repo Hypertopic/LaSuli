@@ -6,8 +6,25 @@
     "build": "webpack",
     "start": "web-ext run --verbose -s extension/"
   },
-  "author": "Florent PERGOUD - Aurelien BENEL",
   "license": "MPL-2.0",
+  "author": {
+    "name": "Aurélien Bénel",
+    "url": "https://github.com/benel"
+  },
+  "contributors": [
+    {
+      "name": "Chao Zhou",
+      "url": "https://github.com/chao"
+    },
+    {
+      "name": "Florent Pergoud",
+      "url": "https://github.com/flopshoubox"
+    },
+    {
+      "name": "Quentin Villecroze",
+      "url": "https://github.com/gnoxr"
+    }
+  ],
   "devDependencies": {
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
