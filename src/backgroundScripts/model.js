@@ -85,6 +85,10 @@ const model = (function () {
 
 	const getViewpoint = async (id) => {
 		let view = (await db.getView(`/viewpoint/${id}`))[id];
+		if (!view) {
+			console.log(`no view for ${id}`);
+			return {id:id,topics:[]};
+		}
 		let vp = {
 			id: id,
 			user: view.user,
@@ -141,6 +145,11 @@ const model = (function () {
 			highlights.forEach(frag => {
 				(frag.topic || []).forEach(t => {
 					let v = viewpoints[t.viewpoint] || new Viewpoint();
+					if (v === null){
+						console.log("v is null for topic");
+						console.log(t);
+						return;
+					}
 					v.topics[t.id] = v.topics[t.id] || [];
 					v.topics[t.id].push(frag);
 					viewpoints[t.viewpoint] = v;
@@ -148,6 +157,10 @@ const model = (function () {
 				delete frag.topic;
 			});
 			(await getViewpoints(Object.keys(viewpoints))).forEach((v) => {
+				if (v === null) {
+					console.log ("v is null");
+					return;
+				}
 				let vp = viewpoints[v.id];
 				vp.name = String((v.name || [])[0]);
 				vp.user = String((v.user || [])[0]);
