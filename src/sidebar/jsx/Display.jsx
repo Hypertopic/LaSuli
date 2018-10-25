@@ -7,6 +7,7 @@ export default class Display extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {vp: null};
+		browser.contextMenus.removeAll();
 	}
 
 	render() {
@@ -54,27 +55,67 @@ export default class Display extends React.Component {
 	_getViewpoints(labels) {
 		return Object.keys(this.props.res.viewpoints).map(id => {
 			let vp = this.props.res.viewpoints[id];
-			let vpDetails = this._vpDetails.bind(this, vp);
+			let vpDetails = this._vpDetails.bind(this, vp, id);
 			return <Viewpoint key={id} details={vp} onClick={vpDetails}
 				color={labels[id].color} />;
 		});
 	}
 
+	_createMenus(vp,vpid){
+		if (!vp) return;
+		console.log(vp);
+		browser.contextMenus.create({
+			id: "highlightmenu",
+			title: "highlight %s in "+(vp.name || vpid),
+			contexts:["selection"]
+		},() => {
+			console.log("created menu");
+		});
+
+		browser.contextMenus.create({
+			id: "highlightnew",
+			title: "...",
+			parentId: "highlightmenu",
+			contexts:["selection"]
+		},() => {
+			console.log("created menu");
+		});
+
+		console.log("topics");
+		console.log(Object.keys(vp.topics).map(id=>vp.topics[id].name));
+
+		Object.keys(vp.topics).map(id => {
+			console.log("topic",id);
+			browser.contextMenus.create({
+				id: "highlight-"+vpid+"-"+id,
+				title: vp.topics[id].name || id,
+				parentId: "highlightmenu",
+				contexts:["selection"]
+			});
+		});
+	}
+
 	_getTopics(labels) {
 		return Object.keys(this.state.vp.topics).map(id =>
-			<Topic details={this.state.vp.topics[id]}
+			<Topic details={this.state.vp.topics[id]} id={id}
 				color={labels[id].color} />
 		);
 	}
 
 	_getButton() {
-		let back = () => this.setState({vp: null});
+		let back = () => {
+			this.setState({vp: null});
+			browser.contextMenus.removeAll();
+		}
 		return <button class="btn btn-back" onClick={back}>
 			Retour aux points de vue
 		</button>;
 	}
 
-	_vpDetails(vp) {
+	_vpDetails(vp,id) {
+		console.log("View point");
+		console.log(vp);
+		this._createMenus(vp,id);
 		this.setState({vp: vp});
 	}
 }

@@ -19,6 +19,38 @@ const getTreeWalker = () => {
 	}, false);
 };
 
+const getCoordinates = () => {
+	let treeWalker = getTreeWalker();
+  var selection = document.getSelection();
+
+  var strContent = selection + "";
+  strContent = strContent.trim();
+  if(strContent == ""){
+    //TODO replace with message in lasuli
+    alert(_("null.content.selected"));
+    return false;
+  }
+  var range = selection.getRangeAt(0);
+  var startContainer = range.startContainer;
+  var endContainer = range.endContainer;
+  var startOffset = range.startOffset;
+  var endOffset = range.endOffset;
+	var curPos = 0;
+  var startPos,endPos;
+	while(treeWalker.nextNode()) {
+    var node = treeWalker.currentNode;
+    if(node===startContainer){
+      startPos = curPos + startOffset;
+      endPos = startPos + ('' + range).length;
+      break;
+    }
+    curPos += node.data.length;
+  }
+  if(typeof startPos != "number" || typeof endPos != "number") return false;
+  return {"startPos": startPos, "endPos": endPos, "text": strContent };
+
+}
+
 class TextNode {
 	constructor(offset, node) {
 		this.text = node.textContent;
@@ -175,6 +207,8 @@ const messageHandler = async (message) => {
 		erase();
 		highlight(message.fragments, message.labels);
 		return true;
+	case 'getCoordinates':
+		return getCoordinates();;
 	}
 };
 

@@ -15,7 +15,7 @@ class Topic extends React.Component {
 		let style = {
 			background: `rgb(${col.r}, ${col.g}, ${col.b})`
 		};
-		let name = this.props.details.name;
+		let name = this.props.details.name  || this.props.id;
 		let count = this.props.details.length;
 		let onClick = this._handleClick;
 		return (<div>

@@ -87,5 +87,20 @@ class Sidebar extends React.Component {
 	}
 }
 
+browser.contextMenus.onClicked.addListener(async (info, tab) => {
+	console.log(info.menuItemId);
+	console.log(info.selectionText);
+	let coordinates = await browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"});
+	let matches=/highlight-(\w+)-(\w+)/.exec(info.menuItemId)
+	if (matches) {
+		let viewpoint=matches[1];
+		let topic=matches[2];
+		if (coordinates.text!=info.selectionText) {
+			console.log("problem in getting text from webpage",coordinates.text,info.selectionText);
+		}
+		alert(`will create an highlight for ${coordinates.text} (${coordinates.startPos},${coordinates.endPos}) in topic ${topic} for viewpoint ${viewpoint}`);
+	}
+});
+
 const panel = document.getElementById('panel');
 ReactDOM.render(<Sidebar />, panel);
