@@ -91,6 +91,13 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 	console.log(info.menuItemId);
 	console.log(info.selectionText);
 	let coordinates = await browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"});
+	if (!coordinates) {
+		console.error("error getting coordinates");
+		alert("error getting coordinates");
+		return;
+	}
+	console.log(coordinates);
+
 	let matches=/highlight-(\w+)-(\w+)/.exec(info.menuItemId)
 	if (matches) {
 		let viewpoint=matches[1];
@@ -98,7 +105,13 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 		if (coordinates.text!=info.selectionText) {
 			console.log("problem in getting text from webpage",coordinates.text,info.selectionText);
 		}
-		alert(`will create an highlight for ${coordinates.text} (${coordinates.startPos},${coordinates.endPos}) in topic ${topic} for viewpoint ${viewpoint}`);
+		var uri=tab.url;
+		// alert(`will create an highlight for ${coordinates.text} (${coordinates.startPos},${coordinates.endPos}), \
+		// 	${uri} in topic ${topic} for viewpoint ${viewpoint}`);
+		let res=await browser.runtime.sendMessage({
+			aim:'createHighlight',uri,viewpoint,topic,coordinates
+		});
+		console.log(res);
 	}
 });
 

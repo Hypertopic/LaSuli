@@ -31,6 +31,35 @@ const model = (function () {
 		}
 	};
 
+	const getUuid = (size) => {
+		size = size || 32;
+		const chars="0123456789abcdef";
+		return new Array(size).fill(0).map(function() {
+			return chars[Math.floor(Math.random()*chars.length)];
+		}).join("");
+	}
+
+	const createHighlight = async (uri,viewpoint,topic,coordinates) => {
+		let items=await getItems(uri);
+		if (items && items.item && items.item.length>0) {
+			let itemId=items.item[0].id;
+			let item=await db.get({_id:itemId})
+				.catch(x=>console.error(x));
+			var uuid=getUuid();
+			item.highlights=item.highlights || {};
+			item.highlights[uuid]={
+				coordinates:[coordinates.startPos,coordinates.endPos],
+				text:coordinates.text,
+				viewpoint:viewpoint,
+				topic:topic
+			};
+			let res=await db.post(item);
+			return res;
+		}
+		return false;
+
+	}
+
 	/*
 	 * Fetch the item(s) for the given resource (URI)
 	 */
@@ -189,7 +218,8 @@ const model = (function () {
 
 	return {
 		isWhitelisted,
-		getResource
+		getResource,
+		createHighlight
 	};
 }());
 
@@ -202,6 +232,9 @@ browser.runtime.onMessage.addListener(async (msg) => {
 	}
 	if (msg.aim === 'isWhitelisted') {
 		return model.isWhitelisted(msg.uri);
+	}
+	if (msg.aim === 'createHighlight') {
+		return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
 	}
 });
 
