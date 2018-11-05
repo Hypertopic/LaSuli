@@ -1,4 +1,5 @@
 import React from 'react';
+import Fragment from './Fragment.jsx';
 
 class Topic extends React.Component {
 	constructor(props) {
@@ -9,7 +10,7 @@ class Topic extends React.Component {
 
 	render() {
 		let fragments = this.props.details.map(hl =>
-			<div class="fragment">{String(hl.text)}</div>
+			<Fragment text={hl.text} id={hl.id} />
 		);
 		let col = this.props.color;
 		let style = {

@@ -81,6 +81,9 @@ const model = (function () {
 		if (Object.keys(view).length > 2) {
 			delete view['resource'];
 			delete view['thumbnail'];
+			for (let id in view) {
+				view[id].id=id;
+			}
 			return Object.values(view);
 		}
 		return [];
