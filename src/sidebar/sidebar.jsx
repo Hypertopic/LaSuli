@@ -30,6 +30,15 @@ class Sidebar extends React.Component {
 				this._updateContent();
 			}
 		});
+
+		this._contextMenuListener=this._contextMenuListener.bind(this);
+
+		browser.contextMenus.onClicked.addListener(this._contextMenuListener);
+
+	}
+
+	componentWillUnmount() {
+		browser.contextMenus.onClicked.removeListener(this._contextMenuListener);
 	}
 
 	render() {
@@ -85,35 +94,36 @@ class Sidebar extends React.Component {
 			this.setState({uri, status});
 		}
 	}
+
+	async _contextMenuListener(info, tab) {
+		let coordinates = await browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"});
+		if (!coordinates) {
+			console.error("error getting coordinates");
+			alert("error getting coordinates");
+			return;
+		}
+		console.log(coordinates);
+
+		let matches=/highlight-(\w+)-(\w+)/.exec(info.menuItemId)
+		if (matches) {
+			let viewpoint=matches[1];
+			let topic=matches[2];
+			if (coordinates.text!=info.selectionText) {
+				console.log("problem in getting text from webpage",coordinates.text,info.selectionText);
+			}
+			var uri=tab.url;
+			// alert(`will create an highlight for ${coordinates.text} (${coordinates.startPos},${coordinates.endPos}), \
+			// 	${uri} in topic ${topic} for viewpoint ${viewpoint}`);
+			let res=await browser.runtime.sendMessage({
+				aim:'createHighlight',uri,viewpoint,topic,coordinates
+			}).then(_ => {
+				this._updateContent();
+			});
+		}
+	}
+
 }
 
-browser.contextMenus.onClicked.addListener(async (info, tab) => {
-	console.log(info.menuItemId);
-	console.log(info.selectionText);
-	let coordinates = await browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"});
-	if (!coordinates) {
-		console.error("error getting coordinates");
-		alert("error getting coordinates");
-		return;
-	}
-	console.log(coordinates);
-
-	let matches=/highlight-(\w+)-(\w+)/.exec(info.menuItemId)
-	if (matches) {
-		let viewpoint=matches[1];
-		let topic=matches[2];
-		if (coordinates.text!=info.selectionText) {
-			console.log("problem in getting text from webpage",coordinates.text,info.selectionText);
-		}
-		var uri=tab.url;
-		// alert(`will create an highlight for ${coordinates.text} (${coordinates.startPos},${coordinates.endPos}), \
-		// 	${uri} in topic ${topic} for viewpoint ${viewpoint}`);
-		let res=await browser.runtime.sendMessage({
-			aim:'createHighlight',uri,viewpoint,topic,coordinates
-		});
-		console.log(res);
-	}
-});
 
 const panel = document.getElementById('panel');
 ReactDOM.render(<Sidebar />, panel);
