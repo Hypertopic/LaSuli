@@ -43,6 +43,14 @@ export default class Display extends React.Component {
 		let tabs = browser.tabs;
 		let tab = (await tabs.query({active: true}))[0];
 		await tabs.sendMessage(tab.id, {aim: 'isLoaded'})
+		.then(_ => {
+			// the message system do not always throw an console.error
+			// when the scripts are not loaded, so we do it ourselves
+			// if we don't get the true result from isLoaded message
+			if (!_) {
+				throw new Error("not loaded in "+tab.id)
+			}
+		})
 			.catch(async () => {
 				await tabs.executeScript(tab.id, {
 					file: '/dist/content.js'
