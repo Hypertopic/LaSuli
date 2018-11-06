@@ -6,8 +6,8 @@ class Fragment extends React.Component {
 	}
 
 	render() {
-    return (<div class="fragment">{String(this.props.text)} ({this.props.id})
-      <span onClick={this.props.deleteFrag}>x</span>
+    return (<div class="fragment">{String(this.props.text)}
+      <span class="delete" onClick={this.props.deleteFrag}>x</span>
     </div>);
   }
 

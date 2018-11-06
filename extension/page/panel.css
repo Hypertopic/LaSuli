@@ -55,7 +55,24 @@ h1 {
   border-radius: 3px;
   padding: .25rem;
   margin: .5rem;
+  position: relative;
 }
+
+span.delete {
+  top:0px;
+  right:0px;
+  font-weight: bold;
+  display: none;
+  border: 1px dashed;
+  padding: 0px 1px;
+  cursor: pointer;
+}
+
+.fragment:hover > span.delete {
+  display: inline;
+  position: absolute;
+}
+
 
 .counter {
   background: #3337;
