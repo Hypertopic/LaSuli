@@ -57,7 +57,22 @@ const model = (function () {
 			return res;
 		}
 		return false;
+	}
 
+	const removeHighlight = async (uri,viewpoint,topic,fragId) => {
+		let items=await getItems(uri);
+		if (items && items.item && items.item.length>0) {
+			let itemId=items.item[0].id;
+			let item=await db.get({_id:itemId})
+				.catch(x=>console.error(x));
+			if (fragId in item.highlights) {
+				delete item.highlights[fragId];
+				let res=await db.post(item);
+				return res;
+			}
+			return new Promise().resolve();
+		}
+		return false
 	}
 
 	/*
@@ -222,7 +237,8 @@ const model = (function () {
 	return {
 		isWhitelisted,
 		getResource,
-		createHighlight
+		createHighlight,
+		removeHighlight
 	};
 }());
 
@@ -238,6 +254,9 @@ browser.runtime.onMessage.addListener(async (msg) => {
 	}
 	if (msg.aim === 'createHighlight') {
 		return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
+	}
+	if (msg.aim === 'removeHighlight') {
+		return model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
 	}
 });
 

@@ -8,6 +8,7 @@ export default class Display extends React.Component {
 		super(props);
 		this.state = {vp: null};
 		browser.contextMenus.removeAll();
+		this.deleteFrag=this.deleteFrag.bind(this);
 	}
 
 	render() {
@@ -29,6 +30,13 @@ export default class Display extends React.Component {
 			{vp && vp.topics && this._getButton()}
 			{list}
 		</div>);
+	}
+
+	async deleteFrag(topic,fragId) {
+		if (this.state.vp && this.state.vpId) {
+			console.log("deleting",fragId,"from topic",topic,"of viewpoint",this.state.vpId);
+			return this.props.deleteFrag(this.state.vpId,topic,fragId);
+		}
 	}
 
 	async _highlight(labels, fragments) {
@@ -102,14 +110,14 @@ export default class Display extends React.Component {
 
 	_getTopics(labels) {
 		return Object.keys(this.state.vp.topics).map(id =>
-			<Topic details={this.state.vp.topics[id]} id={id}
-				color={labels[id].color} />
+			<Topic details={this.state.vp.topics[id]} id={id} vpId={this.state.vpId}
+				color={labels[id].color} deleteFrag={this.deleteFrag}/>
 		);
 	}
 
 	_getButton() {
 		let back = () => {
-			this.setState({vp: null});
+			this.setState({vp: null, vpId: null});
 			browser.contextMenus.removeAll();
 		}
 		return <button class="btn btn-back" onClick={back}>
@@ -121,6 +129,6 @@ export default class Display extends React.Component {
 		console.log("View point");
 		console.log(vp);
 		this._createMenus(vp,id);
-		this.setState({vp: vp});
+		this.setState({vp, vpId:id});
 	}
 }

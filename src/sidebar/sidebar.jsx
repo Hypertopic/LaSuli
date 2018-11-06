@@ -38,6 +38,7 @@ class Sidebar extends React.Component {
 		});
 
 		this._contextMenuListener=this._contextMenuListener.bind(this);
+		this._deleteFrag=this._deleteFrag.bind(this);
 
 		browser.contextMenus.onClicked.addListener(this._contextMenuListener);
 
@@ -59,7 +60,7 @@ class Sidebar extends React.Component {
 			return <Whitelist uri={this.state.uri} />;
 		} else if (status === 'display') {
 			// Show the highlights
-			return <Display uri={this.state.uri} res={this.res} tabId={this.state.tabId} />;
+			return <Display uri={this.state.uri} res={this.res} tabId={this.state.tabId} deleteFrag={this._deleteFrag} />;
 		} else if (status === 'error') {
 			return <Error err={this.state.error} uri={this.state.uri} />;
 		}
@@ -101,6 +102,16 @@ class Sidebar extends React.Component {
 		}
 	}
 
+	async _deleteFrag(viewpoint,topic,fragId) {
+		let uri=this.state.uri;
+		let res=browser.runtime.sendMessage({
+			aim:'removeHighlight',uri,viewpoint,topic,fragId
+		}).then(_ => {
+			this._updateContent(this.state.tabId,true);
+		});
+		return res;
+	}
+
 	async _contextMenuListener(info, tab) {
 		let coordinates = await browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"});
 		if (!coordinates) {
@@ -123,7 +134,7 @@ class Sidebar extends React.Component {
 			let res=await browser.runtime.sendMessage({
 				aim:'createHighlight',uri,viewpoint,topic,coordinates
 			}).then(_ => {
-				this._updateContent();
+				this._updateContent(tab.id);
 			});
 		}
 	}

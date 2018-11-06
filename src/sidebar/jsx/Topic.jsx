@@ -9,9 +9,12 @@ class Topic extends React.Component {
 	}
 
 	render() {
-		let fragments = this.props.details.map(hl =>
-			<Fragment text={hl.text} id={hl.id} />
-		);
+		let fragments = this.props.details.map(hl => {
+			let deleteFrag=() => {
+				return this.props.deleteFrag(this.props.id,hl.id);
+			}
+			return <Fragment text={hl.text} id={hl.id} deleteFrag={deleteFrag}/>
+		});
 		let col = this.props.color;
 		let style = {
 			background: `rgb(${col.r}, ${col.g}, ${col.b})`
