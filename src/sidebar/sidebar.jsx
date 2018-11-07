@@ -67,7 +67,7 @@ class Sidebar extends React.Component {
 		return 'Waiting…'; // Waiting for the highlights
 	}
 
-	async _updateContent(tabId) {
+	async _updateContent(tabId,reload) {
 
 		let tab=await browser.tabs.get(tabId);
 		if (!tab) return;
@@ -89,7 +89,7 @@ class Sidebar extends React.Component {
 		let res = await browser.runtime.sendMessage({
 			aim: 'getResource',
 			uri: uri,
-			reload: false
+			reload
 		}).catch((error) => {
 			status = 'error';
 			this.setState({uri, status, error, tabId});
@@ -134,7 +134,7 @@ class Sidebar extends React.Component {
 			let res=await browser.runtime.sendMessage({
 				aim:'createHighlight',uri,viewpoint,topic,coordinates
 			}).then(_ => {
-				this._updateContent(tab.id);
+				this._updateContent(tab.id,true);
 			});
 		}
 	}
