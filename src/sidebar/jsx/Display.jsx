@@ -79,20 +79,20 @@ export default class Display extends React.Component {
 		console.log(vp);
 		browser.contextMenus.create({
 			id: "highlightmenu",
-			title: "highlight %s in "+(vp.name || vpid),
+			title: "Highlight as",
 			contexts:["selection"]
 		},() => {
 			console.log("created menu");
 		});
 
+		/* as soon as new topic creation exists, can be enabled
 		browser.contextMenus.create({
 			id: "highlightnew",
 			title: "...",
 			parentId: "highlightmenu",
 			contexts:["selection"]
-		},() => {
-			console.log("created menu");
 		});
+		*/
 
 		console.log("topics");
 		console.log(Object.keys(vp.topics).map(id=>vp.topics[id].name));
@@ -101,7 +101,7 @@ export default class Display extends React.Component {
 			console.log("topic",id);
 			browser.contextMenus.create({
 				id: "highlight-"+vpid+"-"+id,
-				title: vp.topics[id].name || id,
+				title: vp.topics[id].name,
 				parentId: "highlightmenu",
 				contexts:["selection"]
 			});
