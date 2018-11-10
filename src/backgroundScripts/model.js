@@ -133,7 +133,7 @@ const model = (function () {
 	const getViewpoint = async (id) => {
 		let view = (await db.getView(`/viewpoint/${id}`))[id];
 		if (!view) {
-			console.log(`no view for ${id}`);
+			console.error(`no view for ${id}`);
 			return {id:id,topics:[]};
 		}
 		let vp = {
@@ -184,17 +184,12 @@ const model = (function () {
 			let data = await getHighlights(uri);
 			let highlights = data.highlights;
 
-			// Asynchronous, shows how to get corpus viewpoints
-			Promise.all(data.viewpoints.map(vp => getViewpoint(vp)))
-				.then(allViewpoints => console.log(allViewpoints));
-
 			let viewpoints = {};
 			highlights.forEach(frag => {
 				(frag.topic || []).forEach(t => {
 					let v = viewpoints[t.viewpoint] || new Viewpoint();
 					if (v === null){
-						console.log("v is null for topic");
-						console.log(t);
+						console.error("v is null for topic");
 						return;
 					}
 					v.topics[t.id] = v.topics[t.id] || [];
@@ -205,7 +200,7 @@ const model = (function () {
 			});
 			(await getViewpoints(Object.keys(viewpoints))).forEach((v) => {
 				if (v === null) {
-					console.log ("v is null");
+					console.error ("v is null");
 					return;
 				}
 				let vp = viewpoints[v.id];
@@ -213,7 +208,7 @@ const model = (function () {
 				vp.user = String((v.user || [])[0]);
 				v.topics.forEach((t) => {
 					if (!vp.topics[t.id]) {
-						console.log('No viewpoint for:', t);
+						console.error('No viewpoint for:', t);
 						return;
 					}
 					vp.topics[t.id].name = String((t.name || [])[0]);

@@ -126,8 +126,6 @@ export default class Display extends React.Component {
 	}
 
 	_vpDetails(vp,id) {
-		console.log("View point");
-		console.log(vp);
 		this._createMenus(vp,id);
 		this.setState({vp, vpId:id});
 	}

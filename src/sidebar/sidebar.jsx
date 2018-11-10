@@ -119,14 +119,13 @@ class Sidebar extends React.Component {
 			alert("error getting coordinates");
 			return;
 		}
-		console.log(coordinates);
 
 		let matches=/highlight-(\w+)-(\w+)/.exec(info.menuItemId)
 		if (matches) {
 			let viewpoint=matches[1];
 			let topic=matches[2];
 			if (coordinates.text!=info.selectionText) {
-				console.log("problem in getting text from webpage",coordinates.text,info.selectionText);
+				console.error("problem in getting text from webpage",coordinates.text,info.selectionText);
 			}
 			var uri=tab.url;
 			// alert(`will create an highlight for ${coordinates.text} (${coordinates.startPos},${coordinates.endPos}), \
