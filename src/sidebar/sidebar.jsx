@@ -37,15 +37,9 @@ class Sidebar extends React.Component {
 			}
 		});
 
-		this._contextMenuListener=this._contextMenuListener.bind(this);
 		this._deleteFrag=this._deleteFrag.bind(this);
+		this._createFrag=this._createFrag.bind(this);
 
-		browser.contextMenus.onClicked.addListener(this._contextMenuListener);
-
-	}
-
-	componentWillUnmount() {
-		browser.contextMenus.onClicked.removeListener(this._contextMenuListener);
 	}
 
 	render() {
@@ -60,7 +54,8 @@ class Sidebar extends React.Component {
 			return <Whitelist uri={this.state.uri} />;
 		} else if (status === 'display') {
 			// Show the highlights
-			return <Display uri={this.state.uri} res={this.res} tabId={this.state.tabId} deleteFrag={this._deleteFrag} />;
+			return <Display uri={this.state.uri} res={this.res} tabId={this.state.tabId}
+				createFrag={this._createFrag} deleteFrag={this._deleteFrag} />;
 		} else if (status === 'error') {
 			return <Error err={this.state.error} uri={this.state.uri} />;
 		}
@@ -106,13 +101,12 @@ class Sidebar extends React.Component {
 		let uri=this.state.uri;
 		let res=browser.runtime.sendMessage({
 			aim:'removeHighlight',uri,viewpoint,topic,fragId
-		}).then(_ => {
-			this._updateContent(this.state.tabId,true);
 		});
 		return res;
 	}
 
-	async _contextMenuListener(info, tab) {
+	async _createFrag(tab,viewpoint,topic) {
+		let uri=this.state.uri;
 		let coordinates = await browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"});
 		if (!coordinates) {
 			console.error("error getting coordinates");
@@ -120,23 +114,12 @@ class Sidebar extends React.Component {
 			return;
 		}
 
-		let matches=/highlight-(\w+)-(\w+)/.exec(info.menuItemId)
-		if (matches) {
-			let viewpoint=matches[1];
-			let topic=matches[2];
-			if (coordinates.text!=info.selectionText) {
-				console.error("problem in getting text from webpage",coordinates.text,info.selectionText);
-			}
-			var uri=tab.url;
-			// alert(`will create an highlight for ${coordinates.text} (${coordinates.startPos},${coordinates.endPos}), \
-			// 	${uri} in topic ${topic} for viewpoint ${viewpoint}`);
-			let res=await browser.runtime.sendMessage({
-				aim:'createHighlight',uri,viewpoint,topic,coordinates
-			}).then(_ => {
-				this._updateContent(tab.id,true);
-			});
-		}
+		let res=browser.runtime.sendMessage({
+			aim:'createHighlight',uri,viewpoint,topic,coordinates
+		});
+		return res;
 	}
+
 
 }
 

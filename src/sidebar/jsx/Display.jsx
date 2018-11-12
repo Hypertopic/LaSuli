@@ -8,7 +8,23 @@ export default class Display extends React.Component {
 		super(props);
 		this.state = {vp: null};
 		browser.contextMenus.removeAll();
-		this.deleteFrag=this.deleteFrag.bind(this);
+		this._deleteFrag=this._deleteFrag.bind(this);
+		this._createFrag=this._createFrag.bind(this);
+		this._contextMenuListener=this._contextMenuListener.bind(this);
+	}
+
+	_contextMenuListener(info,tab) {
+		if (info.menuItemId=="highlightnew" && this.state.vpId) {
+			return this._createFrag();
+		}
+	}
+
+	componentDidMount() {
+		browser.contextMenus.onClicked.addListener(this._contextMenuListener);
+	}
+
+	componentWillUnmount() {
+		browser.contextMenus.onClicked.removeListener(this._contextMenuListener);
 	}
 
 	render() {
@@ -32,10 +48,41 @@ export default class Display extends React.Component {
 		</div>);
 	}
 
-	async deleteFrag(topic,fragId) {
+	_createFrag(tab,topic) {
+		function addHL(vp,hl) {
+			hl.text=[].concat(hl.text);
+			hl.coordinates=[hl.coordinates];
+			vp.topics[topic] = vp.topics[topic] || [];
+			vp.topics[topic].push(hl);
+			return vp;
+		}
+		if (this.state.vpId) {
+			return this.props.createFrag(tab,this.state.vpId,topic).then( hl => {
+				if (hl.topic) {
+					//addHL(this.props.res.viewpoints[this.state.vpId],hl);
+					this.setState(previousState => {
+						addHL(previousState.vp,hl);
+						return previousState;
+					});
+				}
+			});
+		}
+	}
+
+	async _deleteFrag(topic,fragId) {
+		function removeHL(vp) {
+			vp.topics[topic]=vp.topics[topic].filter(hl => {return hl.id!=fragId});
+			return vp;
+		}
 		if (this.state.vp && this.state.vpId) {
 			console.log("deleting",fragId,"from topic",topic,"of viewpoint",this.state.vpId);
-			return this.props.deleteFrag(this.state.vpId,topic,fragId);
+			return this.props.deleteFrag(this.state.vpId,topic,fragId).then( _ => {
+				//removeHL(this.props.res.viewpoints[this.state.vpId]);
+				this.setState(previousState => {
+					removeHL(previousState.vp);
+					return previousState;
+				});
+			});
 		}
 	}
 
@@ -76,13 +123,10 @@ export default class Display extends React.Component {
 
 	_createMenus(vp,vpid){
 		if (!vp) return;
-		console.log(vp);
 		browser.contextMenus.create({
 			id: "highlightmenu",
 			title: "Highlight as",
 			contexts:["selection"]
-		},() => {
-			console.log("created menu");
 		});
 
 		/* as soon as new topic creation exists, can be enabled
@@ -93,32 +137,20 @@ export default class Display extends React.Component {
 			contexts:["selection"]
 		});
 		*/
-
-		console.log("topics");
-		console.log(Object.keys(vp.topics).map(id=>vp.topics[id].name));
-
-		Object.keys(vp.topics).map(id => {
-			console.log("topic",id);
-			browser.contextMenus.create({
-				id: "highlight-"+vpid+"-"+id,
-				title: vp.topics[id].name,
-				parentId: "highlightmenu",
-				contexts:["selection"]
-			});
-		});
 	}
 
 	_getTopics(labels) {
 		return Object.keys(this.state.vp.topics).map(id =>
 			<Topic details={this.state.vp.topics[id]} id={id} vpId={this.state.vpId}
-				color={labels[id].color} deleteFrag={this.deleteFrag}/>
+				color={labels[id].color} name={this.state.vp.topics[id.name]}
+				createFrag={this._createFrag} deleteFrag={this._deleteFrag} />
 		);
 	}
 
 	_getButton() {
 		let back = () => {
 			this.setState({vp: null, vpId: null});
-			browser.contextMenus.removeAll();
+			browser.contextMenus.remove("highlightmenu");
 		}
 		return <button class="btn btn-back" onClick={back}>
 			Retour aux points de vue

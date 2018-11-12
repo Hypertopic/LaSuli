@@ -47,14 +47,16 @@ const model = (function () {
 				.catch(x=>console.error(x));
 			var uuid=getUuid();
 			item.highlights=item.highlights || {};
-			item.highlights[uuid]={
+			let hl={
 				coordinates:[coordinates.startPos,coordinates.endPos],
 				text:coordinates.text,
 				viewpoint:viewpoint,
 				topic:topic
 			};
+			item.highlights[uuid]=hl;
 			let res=await db.post(item);
-			return res;
+			hl.id=uuid;
+			return hl;
 		}
 		return false;
 	}
