@@ -116,6 +116,9 @@ class Sidebar extends React.Component {
 
 		let res=browser.runtime.sendMessage({
 			aim:'createHighlight',uri,viewpoint,topic,coordinates
+		}).then(x => {
+			browser.tabs.sendMessage(tab.id,{aim:"cleanSelection"});
+			return x;
 		});
 		return res;
 	}

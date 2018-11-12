@@ -209,6 +209,10 @@ const messageHandler = async (message) => {
 		return true;
 	case 'getCoordinates':
 		return getCoordinates();;
+	case 'cleanSelection':
+		let sel=document.getSelection();
+		sel.empty();
+		return true;
 	}
 };
 
