@@ -15,7 +15,7 @@ export default class Display extends React.Component {
 
 	_contextMenuListener(info,tab) {
 		if (info.menuItemId=="highlightnew" && this.state.vpId) {
-			return this._createFrag();
+			return this._createFrag(tab);
 		}
 	}
 
@@ -48,12 +48,12 @@ export default class Display extends React.Component {
 		</div>);
 	}
 
-	_createFrag(tab,topic) {
+	async _createFrag(tab,topic) {
 		function addHL(vp,hl) {
 			hl.text=[].concat(hl.text);
 			hl.coordinates=[hl.coordinates];
-			vp.topics[topic] = vp.topics[topic] || [];
-			vp.topics[topic].push(hl);
+			vp.topics[hl.topic] = vp.topics[hl.topic] || [];
+			vp.topics[hl.topic].push(hl);
 			return vp;
 		}
 		if (this.state.vpId) {
@@ -129,20 +129,18 @@ export default class Display extends React.Component {
 			contexts:["selection"]
 		});
 
-		/* as soon as new topic creation exists, can be enabled
 		browser.contextMenus.create({
 			id: "highlightnew",
 			title: "...",
 			parentId: "highlightmenu",
 			contexts:["selection"]
 		});
-		*/
 	}
 
 	_getTopics(labels) {
 		return Object.keys(this.state.vp.topics).map(id =>
 			<Topic details={this.state.vp.topics[id]} id={id} vpId={this.state.vpId}
-				color={labels[id].color} name={this.state.vp.topics[id.name]}
+				color={labels[id].color} name={this.state.vp.topics[id].name}
 				createFrag={this._createFrag} deleteFrag={this._deleteFrag} />
 		);
 	}

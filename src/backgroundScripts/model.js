@@ -40,6 +40,8 @@ const model = (function () {
 	}
 
 	const createHighlight = async (uri,viewpoint,topic,coordinates) => {
+		if (!topic) topic=getUuid();
+		if (!viewpoint) viewpoint=getUuid();
 		let items=await getItems(uri);
 		if (items && items.item && items.item.length>0) {
 			let itemId=items.item[0].id;
