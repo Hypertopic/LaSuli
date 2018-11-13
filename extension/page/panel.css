@@ -59,20 +59,25 @@ h1 {
 }
 
 span.delete {
-  top:0px;
-  right:0px;
+  top:0.1em;
+  right:0.1em;
   font-weight: bold;
   display: none;
   border: 1px dashed;
-  padding: 0px 1px;
+  line-height: 1;
+  text-align: center;
+  vertical-align: baseline;
+  white-space: nowrap;
+  border-radius: .25rem;
+  padding: .25em .4em;
   cursor: pointer;
+  background: #aaa7;
 }
 
 .fragment:hover > span.delete {
-  display: inline;
+  display: inline-block;
   position: absolute;
 }
-
 
 .counter {
   background: #3337;
