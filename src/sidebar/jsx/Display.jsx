@@ -59,12 +59,12 @@ export default class Display extends React.Component {
 		if (this.state.vpId) {
 			return this.props.createFrag(tab,this.state.vpId,topic).then( hl => {
 				if (hl.topic) {
-					//addHL(this.props.res.viewpoints[this.state.vpId],hl);
 					this.setState(previousState => {
 						addHL(previousState.vp,hl);
 						return previousState;
 					});
 				}
+				return hl;
 			});
 		}
 	}
@@ -75,13 +75,12 @@ export default class Display extends React.Component {
 			return vp;
 		}
 		if (this.state.vp && this.state.vpId) {
-			console.log("deleting",fragId,"from topic",topic,"of viewpoint",this.state.vpId);
-			return this.props.deleteFrag(this.state.vpId,topic,fragId).then( _ => {
-				//removeHL(this.props.res.viewpoints[this.state.vpId]);
+			return this.props.deleteFrag(this.state.vpId,topic,fragId).then( x => {
 				this.setState(previousState => {
 					removeHL(previousState.vp);
 					return previousState;
 				});
+				return x;
 			});
 		}
 	}
@@ -138,8 +137,8 @@ export default class Display extends React.Component {
 	}
 
 	_getTopics(labels) {
-		return Object.keys(this.state.vp.topics).map(id =>
-			<Topic details={this.state.vp.topics[id]} id={id} vpId={this.state.vpId}
+		return Object.keys(this.state.vp.topics).map((id,i) =>
+			<Topic details={this.state.vp.topics[id]} id={id} index={i} vpId={this.state.vpId}
 				color={labels[id].color} name={this.state.vp.topics[id].name}
 				createFrag={this._createFrag} deleteFrag={this._deleteFrag} />
 		);
