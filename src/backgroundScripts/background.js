@@ -24,12 +24,20 @@ browser.windows.getCurrent({populate: true}).then((window) => {
 
 button.setBadgeBackgroundColor({color: '#333'});
 
+const setHLNumber = (number,tabId) => {
+	var text;
+	if (typeof number !== "number") text=null;
+	else if (number < 0) text='…';
+	else text=String(number);
+	button.setBadgeText({text,tabId});
+}
+
 const updateHighlightNumber = async (tabId, url, refresh) => {
 	// The page must be whitelisted
 	let isOk = await model.isWhitelisted(url);
 	if (!isOk) {
 		button.setIcon({tabId});
-		button.setBadgeText({text: null, tabId});
+		setHLNumber(false,tabId);
 		return;
 	} else {
 		button.setIcon({
@@ -39,13 +47,12 @@ const updateHighlightNumber = async (tabId, url, refresh) => {
 	}
 
 	// Get the number of highlights for this URL
-	button.setBadgeText({text: '…', tabId});
+	setHLNumber(-1,tabId);
 	let resource = await model.getResource(url, refresh)
 		.catch((e) => errorHandler(e, tabId));
 
 	if (resource) {
-		let text = String(resource.getHLCount());
-		button.setBadgeText({text, tabId});
+		setHLNumber(resource.getHLCount(),tabId);
 	}
 };
 
@@ -74,3 +81,26 @@ tabs.onActivated.addListener(async (activeInfo) => {
  * Open the sidebar when the button gets clicked
  */
 button.onClicked.addListener(() => browser.sidebarAction.open());
+
+/*
+ * Message handler
+ */
+browser.runtime.onMessage.addListener(async (msg) => {
+	if (msg.aim === 'getResource') {
+		return model.getResource(msg.uri, msg.reload);
+	}
+	if (msg.aim === 'isWhitelisted') {
+		return model.isWhitelisted(msg.uri);
+	}
+	if (msg.aim === 'createHighlight') {
+		return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
+	}
+	if (msg.aim === 'removeHighlight') {
+		return model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
+	}
+	if (msg.aim === 'setHLNumber') {
+		if (msg.count && msg.tabId) {
+			return setHLNumber(msg.count,msg.tabId);
+		}
+	}
+});

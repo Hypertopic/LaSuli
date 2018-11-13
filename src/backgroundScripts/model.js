@@ -241,22 +241,4 @@ const model = (function () {
 	};
 }());
 
-/*
- * Message handler
- */
-browser.runtime.onMessage.addListener(async (msg) => {
-	if (msg.aim === 'getResource') {
-		return model.getResource(msg.uri, msg.reload);
-	}
-	if (msg.aim === 'isWhitelisted') {
-		return model.isWhitelisted(msg.uri);
-	}
-	if (msg.aim === 'createHighlight') {
-		return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
-	}
-	if (msg.aim === 'removeHighlight') {
-		return model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
-	}
-});
-
 export default model;

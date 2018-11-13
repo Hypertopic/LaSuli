@@ -90,18 +90,25 @@ export default class Display extends React.Component {
 			aim: 'highlight',
 			labels,
 			fragments
-		}));
+		}))
+		.then(() => {
+			browser.runtime.sendMessage({
+				aim:"setHLNumber",
+				count:this.props.res.getFragments().length,
+				tabId:this.props.tabId
+			});
+		});
 	}
 
 	async _loadScript() {
 		let tabs = browser.tabs;
 		return tabs.sendMessage(this.props.tabId, {aim: 'isLoaded'})
-			.then(_ => {
-				// the message system do not always throw an console.error
+			.then(ret => {
+				// the message system do not always throw an error
 				// when the scripts are not loaded, so we do it ourselves
 				// if we don't get the true result from isLoaded message
-				if (!_) {
-					throw new Error("not loaded in "+tab.id)
+				if (!ret) {
+					throw new Error("not loaded in "+tab.id);
 				}
 			})
 			.catch(async () => {
