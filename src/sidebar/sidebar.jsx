@@ -59,7 +59,7 @@ class Sidebar extends React.Component {
 		} else if (status === 'error') {
 			return <Error err={this.state.error} uri={this.state.uri} />;
 		}
-		return 'Waiting…'; // Waiting for the highlights
+		return 'Chargement…'; // Waiting for the highlights
 	}
 
 	async _updateContent(tabId,reload) {

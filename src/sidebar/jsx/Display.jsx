@@ -131,7 +131,7 @@ export default class Display extends React.Component {
 		if (!vp) return;
 		browser.contextMenus.create({
 			id: "highlightmenu",
-			title: "Highlight as",
+			title: "Étiqueter comme...",
 			contexts:["selection"]
 		});
 
