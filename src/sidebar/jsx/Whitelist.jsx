@@ -14,7 +14,7 @@ class Whitelist extends React.Component {
 	}
 
 	_getDomain(uri) {
-		return new URL(uri).hostname;
+		return new URL(uri).hostname || uri;
 	}
 }
 
