@@ -119,12 +119,17 @@ export default class Display extends React.Component {
 	}
 
 	_getViewpoints(labels) {
-		return Object.keys(this.props.res.viewpoints).map(id => {
-			let vp = this.props.res.viewpoints[id];
-			let vpDetails = this._vpDetails.bind(this, vp, id);
-			return <Viewpoint key={id} details={vp} onClick={vpDetails}
-				color={labels[id].color} />;
-		});
+    let viewpoints = Object.keys(this.props.res.viewpoints);
+    if (!viewpoints.length)
+      return "Aucun";
+    return viewpoints.map(id => {
+      let vp = this.props.res.viewpoints[id];
+      let vpDetails = this._vpDetails.bind(this, vp, id);
+      return (
+        <Viewpoint key={id} details={vp} onClick={vpDetails}
+        color={labels[id].color} />
+      );
+    });
 	}
 
 	_createMenus(vp,vpid){
