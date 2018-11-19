@@ -100,3 +100,32 @@ span.delete {
   text-align: center;
   width: calc(100% - 1rem);
 }
+
+.Authenticated {
+  background-color: rgb(60, 50, 50);
+  color: ivory;
+  padding: 4px;
+  width: 100%;
+  text-align: right;
+}
+
+.Authenticated a {
+  color: lightgrey;
+  padding: 0 4px;
+  text-decoration: none;
+}
+
+.Authenticated a:hover {
+  text-decoration: underline;
+}
+
+.Authenticated input:not([type='submit']) {
+  background: dimgrey;
+  color: white;
+  border: 0;
+  margin: 1px;
+}
+
+.Authenticated input::placeholder {
+  color: lightgrey;
+}

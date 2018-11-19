@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import Whitelist from './jsx/Whitelist.jsx';
 import Display from './jsx/Display.jsx';
 import Error from './jsx/Error.jsx';
+import Authenticated from './jsx/Authenticated.jsx';
 
 import Resource from '../backgroundScripts/Resource.js';
 
@@ -42,11 +43,14 @@ class Sidebar extends React.Component {
 
 	}
 
-	render() {
-		return <div>
-			{this.getContent(this.state.status)}
-		</div>;
-	}
+  render() {
+    return (
+      <div>
+        <Authenticated />
+        {this.getContent(this.state.status)}
+      </div>
+    );
+  }
 
 	getContent(status) {
 		if (status === 'unknown') {

@@ -86,18 +86,24 @@ button.onClicked.addListener(() => browser.sidebarAction.open());
  * Message handler
  */
 browser.runtime.onMessage.addListener(async (msg) => {
-	switch (msg.aim) {
-		case 'getResource':
-			return model.getResource(msg.uri, msg.reload);
-		case 'isWhitelisted':
-			return model.isWhitelisted(msg.uri);
-		case 'createHighlight':
-			return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
-		case 'removeHighlight':
-			return model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
-		case 'setHLNumber':
-			if (msg.count && msg.tabId) {
-				return setHLNumber(msg.count,msg.tabId);
-			}
-	}
+  switch (msg.aim) {
+    case 'getResource':
+      return model.getResource(msg.uri, msg.reload);
+    case 'isWhitelisted':
+      return model.isWhitelisted(msg.uri);
+    case 'createHighlight':
+      return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
+    case 'removeHighlight':
+      return model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
+    case 'setHLNumber':
+      if (msg.count && msg.tabId) {
+        return setHLNumber(msg.count,msg.tabId);
+      }
+    case 'fetchSession':
+      return model.fetchSession();
+    case 'openSession':
+      return model.openSession(msg.user, msg.password);
+    case 'closeSession':
+      return model.closeSession();
+  }
 });

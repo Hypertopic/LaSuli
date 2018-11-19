@@ -3,11 +3,13 @@ import Resource from './Resource.js';
 import Viewpoint from './Viewpoint.js';
 
 const model = (function () {
-	let cache = {};
-	let db = require('hypertopic')([
-		'http://argos2.hypertopic.org',
-		'http://cassandre.hypertopic.org'
-	]);
+  let cache = {};
+  let services = [
+    'http://argos2.test.hypertopic.org',
+    'http://cassandre.hypertopic.org'
+  ];
+  let db = require('hypertopic')(services);
+  let session_uri = services[0] + '/_session';
 
 	const getDomain = (uri) => {
 		if (uri.indexOf('/') === -1) {
@@ -233,12 +235,36 @@ const model = (function () {
 		return cache[uri];
 	};
 
-	return {
-		isWhitelisted,
-		getResource,
-		createHighlight,
-		removeHighlight
-	};
+  const fetchSession = () => fetch(session_uri, {credentials: 'include'})
+    .then(x => x.json());
+
+  const openSession = (user, password) => fetch(session_uri, {
+    method:'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body:`name=${user}&password=${password}`,
+    credentials:'include'
+  })
+    .then((x) => {
+      if (!x.ok) throw new Error('Bad credentials!');
+      return x;
+    });
+
+  const closeSession = () => fetch(session_uri, {
+    method:'DELETE',
+    credentials:'include'
+  });
+
+  return {
+    fetchSession,
+    openSession,
+    closeSession,
+    isWhitelisted,
+    getResource,
+    createHighlight,
+    removeHighlight
+  };
 }());
 
 export default model;
