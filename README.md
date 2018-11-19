@@ -22,11 +22,16 @@ Installation requirements
 Installation procedure
 ----------------------
 
-> npm install
+    npm install
 
 Launch in development mode
 --------------------------
 
-> npm run build
-> npm start
+    npm start
 
+Build for distribution
+----------------------
+
+    npm config set api_key xxxxxxx
+    npm config set api_secret xxxxxxx
+    npm run build

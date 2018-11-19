@@ -1,10 +1,11 @@
 {
-  "name": "LaSuli-v3",
-  "version": "1.0.0",
+  "name": "LaSuli",
+  "version": "3.0.1",
   "description": "Web extension to annotate text.",
   "scripts": {
-    "build": "webpack",
-    "start": "web-ext run -s extension/"
+    "start": "webpack && web-ext run",
+    "lint": "webpack && web-ext lint",
+    "build": "webpack && web-ext sign --api-key $npm_config_api_key --api-secret $npm_config_api_secret"
   },
   "author": {
     "name": "Aurélien Bénel",
@@ -29,6 +30,9 @@
     }
   ],
   "license": "GPL-3.0",
+  "webExt": {
+    "sourceDir": "extension/"
+  },
   "dependencies": {
     "@babel/core": "^7.1.2",
     "@babel/preset-react": "^7.0.0",
@@ -36,7 +40,7 @@
     "hypertopic": "^3.1.5",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
-    "web-ext": "^2.9.1",
+    "web-ext": "^2.9.2",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2"
   }
