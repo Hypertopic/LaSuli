@@ -4,14 +4,15 @@ import Viewpoint from './Viewpoint.jsx';
 import Topic from './Topic.jsx';
 
 export default class Display extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {vp: null};
-		browser.contextMenus.removeAll();
-		this._deleteFrag=this._deleteFrag.bind(this);
-		this._createFrag=this._createFrag.bind(this);
-		this._contextMenuListener=this._contextMenuListener.bind(this);
-	}
+  constructor(props) {
+    super(props);
+    this.state = {vp: null};
+    browser.contextMenus.removeAll();
+    this._deleteFrag=this._deleteFrag.bind(this);
+    this._createFrag=this._createFrag.bind(this);
+    this._renameTopic=this._renameTopic.bind(this);
+    this._contextMenuListener=this._contextMenuListener.bind(this);
+  }
 
 	_contextMenuListener(info,tab) {
 		if (info.menuItemId=="highlightnew" && this.state.vpId) {
@@ -85,6 +86,18 @@ export default class Display extends React.Component {
 		}
 	}
 
+  _renameTopic(topic,newName) {
+    let viewpoint=this.state.vpId;
+    return browser.runtime.sendMessage({
+      aim:'renameTopic',viewpoint,topic,newName
+    }).then(x => {
+      this.setState(previousState => {
+        previousState.vp.topics[topic].name=newName;
+        return previousState;
+      });
+    });
+  }
+
 	async _highlight(labels, fragments) {
 		return this._loadScript().then(_ => browser.tabs.sendMessage(this.props.tabId, {
 			aim: 'highlight',
@@ -148,13 +161,14 @@ export default class Display extends React.Component {
 		});
 	}
 
-	_getTopics(labels) {
-		return Object.keys(this.state.vp.topics).map((id,i) =>
-			<Topic details={this.state.vp.topics[id]} id={id} index={i} vpId={this.state.vpId}
-				color={labels[id].color} name={this.state.vp.topics[id].name}
-				createFrag={this._createFrag} deleteFrag={this._deleteFrag} />
-		);
-	}
+  _getTopics(labels) {
+    return Object.keys(this.state.vp.topics).map((id,i) =>
+      <Topic details={this.state.vp.topics[id]} id={id} index={i} vpId={this.state.vpId}
+        color={labels[id].color} name={this.state.vp.topics[id].name}
+        createFrag={this._createFrag} deleteFrag={this._deleteFrag}
+        renameTopic={this._renameTopic} />
+    );
+  }
 
 	_getButton() {
 		let back = () => {
