@@ -13,6 +13,7 @@ const errorHandler = (error, tabId) => {
     title:"LaSuli error",
     message:String(error)
   });
+  return Promise.reject();
 };
 
 let button = browser.browserAction,
