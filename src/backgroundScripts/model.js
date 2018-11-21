@@ -110,18 +110,6 @@ const model = (function () {
 		return [];
 	};
 
-	const getCorpusVps = async (item) => {
-		let view = await db.getView(`/corpus/${item.corpus}`);
-		let topics = Object.keys(view[item.corpus])
-			.filter(key => !(key in ['name', 'user']))
-			.map(key => view[item.corpus][key])
-			.map(res => Object.keys(res).map(k => res[k].topic));
-
-		topics = [].concat(... [].concat(... topics).filter(Boolean));
-		return Array.from(
-			new Set(topics.map(t => t.viewpoint).filter(Boolean)));
-	};
-
 	const getHighlights = async (uri) => {
 		let itemLists = (await getItems(uri)) || {};
 		let items = [].concat(... Object.values(itemLists));
@@ -129,10 +117,8 @@ const model = (function () {
 		// For each item, run getItemHighlights and getCorpusVps
 		// Wait for all highlights and flatten the resulting array
 		let hls = Promise.all(items.map(getItemHighlights));
-		let vps = Promise.all(items.map(getCorpusVps));
 		return {
 			highlights: [].concat(... await hls),
-			viewpoints: Array.from(new Set([].concat(... await vps)))
 		};
 	};
 
