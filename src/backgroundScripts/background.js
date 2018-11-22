@@ -109,11 +109,7 @@ browser.runtime.onMessage.addListener(async (msg) => {
       res=model.renameTopic(msg.viewpoint,msg.topic,msg.newName);
       break;
     case 'setHLNumber':
-      if (msg.count && msg.tabId) {
-        res=setHLNumber(msg.count,msg.tabId);
-      } else {
-        res=Promise.reject("missing count or tabId");
-      }
+      res=setHLNumber(msg.count,msg.tabId);
       break;
     case 'fetchSession':
       res=model.fetchSession();
