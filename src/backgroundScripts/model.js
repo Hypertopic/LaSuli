@@ -10,6 +10,7 @@ const model = (function () {
   ];
   let db = require('hypertopic')(services);
   let session_uri = services[0] + '/_session';
+  let connected_user = '';
 
 	const getDomain = (uri) => {
 		if (uri.indexOf('/') === -1) {
@@ -153,6 +154,12 @@ const model = (function () {
 		return Date.now() / 1000 | 0;
 	};
 
+  const getUserViewpoints = async () => {
+    return (!connected_user)? []
+      : db.getView(`/user/${connected_user}`)
+          .then((x) => x[connected_user].viewpoint.map((y) => y.id))
+  }
+
 	/*
 	 * Manage a shared cache of the resources (for 10 minutes)
 	 */
@@ -172,40 +179,36 @@ const model = (function () {
 		});
 		cache[uri].updated = getSecond();
 
-		try {
-			let data = await getHighlights(uri);
-			let highlights = data.highlights;
-
-			let viewpoints = {};
-			highlights.forEach(frag => {
-				(frag.topic || []).forEach(t => {
-					let v = viewpoints[t.viewpoint] || new Viewpoint();
-					if (v === null){
-						console.error("v is null for topic");
-						return;
-					}
-					v.topics[t.id] = v.topics[t.id] || [];
-					v.topics[t.id].push(frag);
-					viewpoints[t.viewpoint] = v;
-				});
-				delete frag.topic;
-			});
-			(await getViewpoints(Object.keys(viewpoints))).forEach((v) => {
-				if (v === null) {
-					console.error ("v is null");
-					return;
-				}
+    try {
+      let viewpoints = {};
+      // USER VIEWPOINTS
+      let user_viewpoints = await getUserViewpoints();
+      user_viewpoints.forEach((id) => {
+        viewpoints[id] = viewpoints[id] || new Viewpoint();
+      });
+      // HIGHLIGHTS VIEWPOINTS
+      let data = await getHighlights(uri);
+      let highlights = data.highlights;
+      highlights.forEach((h) => {
+        (h.topic || []).forEach(t => {
+          let v = viewpoints[t.viewpoint] || new Viewpoint();
+          v.topics[t.id] = v.topics[t.id] || [];
+          v.topics[t.id].push(h);
+          viewpoints[t.viewpoint] = v;
+        });
+        delete h.topic;
+      });
+      let highlights_viewpoints = Object.keys(viewpoints);
+      // ALL VIEWPOINTS
+      let all_viewpoints = [...new Set([...highlights_viewpoints, ...user_viewpoints])];
+			(await getViewpoints(all_viewpoints)).forEach((v) => {
 				let vp = viewpoints[v.id];
-				vp.name = String((v.name || [])[0]);
-				vp.user = String((v.user || [])[0]);
-				v.topics.forEach((t) => {
-					if (!vp.topics[t.id]) {
-						console.error('No viewpoint for:', t);
-						return;
-					}
-					vp.topics[t.id].name = String((t.name || [])[0]);
-				});
-			});
+        vp.name = v.name && v.name[0] || '',
+        v.topics.forEach((t) => {
+          vp.topics[t.id] = vp.topics[t.id] || [];
+          vp.topics[t.id].name = t.name && t.name[0] || ''; // vp.topics is an array with an attribute!
+        });
+      });
 
 			let res = new Resource();
 			res.viewpoints = viewpoints;
@@ -234,13 +237,18 @@ const model = (function () {
   })
     .then((x) => {
       if (!x.ok) throw new Error('Bad credentials!');
+      connected_user = user;
       return x;
     });
 
   const closeSession = () => fetch(session_uri, {
     method:'DELETE',
     credentials:'include'
-  });
+  })
+    .then((x) => {
+      connected_user = '';
+      return x;
+    });
 
   return {
     fetchSession,
