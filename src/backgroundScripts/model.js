@@ -42,29 +42,34 @@ const model = (function () {
 		}).join("");
 	}
 
-	const createHighlight = async (uri,viewpoint,topic,coordinates) => {
-		if (!topic) topic=getUuid();
-		if (!viewpoint) viewpoint=getUuid();
-		let items=await getItems(uri);
-		if (items && items.item && items.item.length>0) {
-			let itemId=items.item[0].id;
-			let item=await db.get({_id:itemId})
-				.catch(x=>console.error(x));
-			var uuid=getUuid();
-			item.highlights=item.highlights || {};
-			let hl={
-				coordinates:[coordinates.startPos,coordinates.endPos],
-				text:coordinates.text,
-				viewpoint:viewpoint,
-				topic:topic
-			};
-			item.highlights[uuid]=hl;
-			let res=await db.post(item);
-			hl.id=uuid;
-			return hl;
-		}
-		return false;
-	}
+  const createHighlight = async (uri,viewpoint,topic,coordinates) => {
+    if (!topic) topic=getUuid();
+    if (!viewpoint) viewpoint=getUuid();
+    let items=await getItems(uri);
+    if (items && items.item && items.item.length>0) {
+      let itemId=items.item[0].id;
+      let item=await db.get({_id:itemId})
+        .catch(e => {
+           return {
+             _id: itemId,
+             item_corpus: items.item[0].corpus
+           };
+         });
+      var uuid=getUuid();
+      item.highlights=item.highlights || {};
+      let hl={
+        coordinates:[coordinates.startPos,coordinates.endPos],
+        text:coordinates.text,
+        viewpoint:viewpoint,
+        topic:topic
+      };
+      item.highlights[uuid]=hl;
+      let res=await db.post(item);
+      hl.id=uuid;
+      return hl;
+    }
+    return false;
+  }
 
 	const removeHighlight = async (uri,viewpoint,topic,fragId) => {
 		let items=await getItems(uri);
