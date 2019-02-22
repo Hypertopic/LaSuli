@@ -11,6 +11,7 @@ module.exports = {
 		}),
 	],
 	entry: {
+		settings: './src/settings/settings.jsx',
 		background: './src/backgroundScripts/background.js',
 		content: './src/contentScripts/content.js',
 		sidebar: './src/sidebar/sidebar.jsx'

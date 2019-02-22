@@ -23,6 +23,10 @@
     "default_panel": "/page/sidebar.html"
   },
 
+  "options_ui": {
+    "page": "page/settings.html"
+  },
+
   "background": {
     "scripts" : [
       "/dist/background.js"

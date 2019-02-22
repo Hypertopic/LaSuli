@@ -1,16 +1,25 @@
 /*global browser, require */
+import Hypertopic from 'hypertopic';
 import Resource from './Resource.js';
 import Viewpoint from './Viewpoint.js';
 
 const model = (function () {
   let cache = {};
-  let services = [
-    'http://argos2.test.hypertopic.org',
-    'http://cassandre.hypertopic.org'
-  ];
-  let db = require('hypertopic')(services);
-  let session_uri = services[0] + '/_session';
   let connected_user = '';
+
+  const getServices = async () => {
+    let settings = await browser.storage.local.get('services');
+    console.log(settings);
+    if (!settings.services) throw new Error('Annotation service undefined!');
+    return settings.services;
+  }
+
+  const getDB = async () => {
+    return new Hypertopic(await getServices());
+  }
+
+  const getSessionURI = async () => getServices()
+    .then((x) => x + '/_session');
 
 	const getDomain = (uri) => {
 		if (uri.indexOf('/') === -1) {
@@ -45,6 +54,7 @@ const model = (function () {
   const createHighlight = async (uri,viewpoint,topic,coordinates) => {
     if (!topic) topic=getUuid();
     if (!viewpoint) viewpoint=getUuid();
+    let db = await getDB();
     let items=await getItems(uri);
     if (items && items.item && items.item.length>0) {
       let itemId=items.item[0].id;
@@ -72,6 +82,7 @@ const model = (function () {
   }
 
 	const removeHighlight = async (uri,viewpoint,topic,fragId) => {
+    let db = await getDB();
 		let items=await getItems(uri);
 		if (items && items.item && items.item.length>0) {
 			let itemId=items.item[0].id;
@@ -91,6 +102,7 @@ const model = (function () {
 	 * Fetch the item(s) for the given resource (URI)
 	 */
 	const getItems = async (uri) => {
+    let db = await getDB();
 		let view = await db.getView(`/item/?resource=${uri}`);
 		let key = Object.keys(view)[0];
 		return key && view[key]; // False if "key" is false
@@ -100,6 +112,7 @@ const model = (function () {
 	 * Fetch the highlights for the given item (corpus + id)
 	 */
 	const getItemHighlights = async (item) => {
+    let db = await getDB();
 		let view = await db.getView(`/item/${item.corpus}/${item.id}`);
 		view = (view && view[item.corpus])
 			? view[item.corpus][item.id]
@@ -129,6 +142,7 @@ const model = (function () {
 	};
 
 	const getViewpoint = async (id) => {
+    let db = await getDB();
 		let view = (await db.getView(`/viewpoint/${id}`))[id];
 		if (!view) {
 			console.error(`no view for ${id}`);
@@ -160,6 +174,7 @@ const model = (function () {
 	};
 
   const getUserViewpoints = async () => {
+    let db = await getDB();
     return (!connected_user)? []
       : db.getView(`/user/${connected_user}`)
           .then((x) => x[connected_user].viewpoint.map((y) => y.id))
@@ -229,27 +244,30 @@ const model = (function () {
 		return cache[uri];
 	};
 
-  const fetchSession = () => fetch(session_uri, {credentials: 'include'})
-    .then(x => x.json());
+  const fetchSession = () => getSessionURI()
+    .then((x) => fetch(x, {credentials: 'include'}))
+    .then((x) => x.json());
 
-  const openSession = (user, password) => fetch(session_uri, {
-    method:'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body:`name=${user}&password=${password}`,
-    credentials:'include'
-  })
+  const openSession = (user, password) => getSessionURI()
+    .then((x) => fetch(x, { 
+      method:'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body:`name=${user}&password=${password}`,
+      credentials:'include'
+    }))
     .then((x) => {
       if (!x.ok) throw new Error('Bad credentials!');
       connected_user = user;
       return x;
     });
 
-  const closeSession = () => fetch(session_uri, {
-    method:'DELETE',
-    credentials:'include'
-  })
+  const closeSession = () => getSessionURI()
+    .then((x) => fetch(x, {
+      method:'DELETE',
+      credentials:'include'
+    }))
     .then((x) => {
       connected_user = '';
       return x;
