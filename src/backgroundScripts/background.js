@@ -7,8 +7,13 @@ import model from './model.js';
  */
 
 const errorHandler = (error, tabId) => {
-	console.error(error);
-	button.setBadgeText({text: 'err', tabId});
+  console.error(error);
+  browser.notifications.create({
+    type:"basic",
+    title:"LaSuli error",
+    message:String(error)
+  });
+  return Promise.reject();
 };
 
 let button = browser.browserAction,
@@ -25,26 +30,26 @@ browser.windows.getCurrent({populate: true}).then((window) => {
 button.setBadgeBackgroundColor({color: '#333'});
 
 const setHLNumber = (number,tabId) => {
-	var text;
-	if (typeof number !== "number") text=null;
-	else if (number < 0) text='…';
-	else text=String(number);
-	button.setBadgeText({text,tabId});
+  var text;
+  if (typeof number !== "number") text=null;
+  else if (number < 0) text='…';
+  else text=String(number);
+  return button.setBadgeText({text,tabId});
 }
 
 const updateHighlightNumber = async (tabId, url, refresh) => {
-	// The page must be whitelisted
-	let isOk = await model.isWhitelisted(url);
-	if (!isOk) {
-		button.setIcon({tabId});
-		setHLNumber(false,tabId);
-		return;
-	} else {
-		button.setIcon({
-			path: {32: '/button/laSuli-32.png'},
-			tabId
-		});
-	}
+  // The page must be whitelisted
+  let isOk = await model.isWhitelisted(url);
+  if (!isOk) {
+    return button.setIcon({tabId}).then(x => {
+      return setHLNumber(false,tabId);
+    });
+  } else {
+    return button.setIcon({
+      path: {32: '/button/laSuli-32.png'},
+      tabId
+    });
+  }
 
 	// Get the number of highlights for this URL
 	setHLNumber(-1,tabId);
@@ -86,24 +91,37 @@ button.onClicked.addListener(() => browser.sidebarAction.open());
  * Message handler
  */
 browser.runtime.onMessage.addListener(async (msg) => {
+  let res;
   switch (msg.aim) {
     case 'getResource':
-      return model.getResource(msg.uri, msg.reload);
+      res=model.getResource(msg.uri, msg.reload);
+      break;
     case 'isWhitelisted':
-      return model.isWhitelisted(msg.uri);
+      res=model.isWhitelisted(msg.uri);
+      break;
     case 'createHighlight':
-      return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
+      res=model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
+      break;
     case 'removeHighlight':
-      return model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
+      res=model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
+      break;
+    case 'renameTopic':
+      res=model.renameTopic(msg.viewpoint,msg.topic,msg.newName);
+      break;
     case 'setHLNumber':
-      if (msg.count && msg.tabId) {
-        return setHLNumber(msg.count,msg.tabId);
-      }
+      res=setHLNumber(msg.count,msg.tabId);
+      break;
     case 'fetchSession':
-      return model.fetchSession();
+      res=model.fetchSession();
+      break;
     case 'openSession':
-      return model.openSession(msg.user, msg.password);
+      res=model.openSession(msg.user, msg.password);
+      break;
     case 'closeSession':
-      return model.closeSession();
+      res=model.closeSession();
+      break;
+    default:
+      res=Promise.reject("unknown message "+$msg.aim);
   }
+  return res.catch(errorHandler);
 });
