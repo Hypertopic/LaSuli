@@ -101,32 +101,29 @@ class Sidebar extends React.Component {
 		}
 	}
 
-	async _deleteFrag(viewpoint,topic,fragId) {
-		let uri=this.state.uri;
-		let res=browser.runtime.sendMessage({
-			aim:'removeHighlight',uri,viewpoint,topic,fragId
-		});
-		return res;
-	}
+  _deleteFrag(viewpoint,topic,fragId) {
+    let uri=this.state.uri;
+    return browser.runtime.sendMessage({
+      aim:'removeHighlight',uri,viewpoint,topic,fragId
+    });
+  }
 
-	async _createFrag(tab,viewpoint,topic) {
-		let uri=this.state.uri;
-		let coordinates = await browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"});
-		if (!coordinates) {
-			console.error("error getting coordinates");
-			alert("error getting coordinates");
-			return;
-		}
-
-		let res=browser.runtime.sendMessage({
-			aim:'createHighlight',uri,viewpoint,topic,coordinates
-		}).then(x => {
-			browser.tabs.sendMessage(tab.id,{aim:"cleanSelection"});
-			return x;
-		});
-		return res;
-	}
-
+  _createFrag(tab,viewpoint,topic) {
+    let uri=this.state.uri;
+    return browser.tabs.sendMessage(tab.id,{aim:"getCoordinates"})
+      .then(coordinates => {
+        if (!coordinates) {
+          throw new Error("error getting coordinates");
+        }
+        return browser.runtime.sendMessage({
+          aim:'createHighlight',uri,viewpoint,topic,coordinates
+        });
+      })
+      .then(x => {
+        browser.tabs.sendMessage(tab.id,{aim:"cleanSelection"});
+        return x;
+      });
+  }
 
 }
 

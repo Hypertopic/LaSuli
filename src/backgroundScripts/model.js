@@ -87,7 +87,7 @@ const model = (function () {
 		if (items && items.item && items.item.length>0) {
 			let itemId=items.item[0].id;
 			let item=await db.get({_id:itemId})
-				.catch(x=>console.error(x));
+				.catch(()=>{throw new Error(`can't find item for ${uri}`)});
 			if (fragId in item.highlights) {
 				delete item.highlights[fragId];
 				let res=await db.post(item);
@@ -271,7 +271,7 @@ const model = (function () {
     .then((x) => x.json());
 
   const openSession = (user, password) => getSessionURI()
-    .then((x) => fetch(x, { 
+    .then((x) => fetch(x, {
       method:'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
