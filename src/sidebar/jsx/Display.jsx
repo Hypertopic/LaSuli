@@ -11,6 +11,7 @@ export default class Display extends React.Component {
 		this._deleteFrag=this._deleteFrag.bind(this);
 		this._createFrag=this._createFrag.bind(this);
 		this._contextMenuListener=this._contextMenuListener.bind(this);
+		this._handleBack = this._handleBack.bind(this);
 	}
 
 	_contextMenuListener(info,tab) {
@@ -27,26 +28,31 @@ export default class Display extends React.Component {
 		browser.contextMenus.onClicked.removeListener(this._contextMenuListener);
 	}
 
-	render() {
-		let title, list;
-		let vp = this.state.vp;
-		let coll = (vp || this.props.res);
-		let labels = coll.getLabels();
-
-		if (vp && vp.topics) {
-			title = vp.name;
-			list = this._getTopics(labels);
-		} else {
-			title = 'Points de vue';
-			list = this._getViewpoints(labels);
-		}
-		this._highlight(labels, coll.getFragments());
-		return (<div>
-			<h1>{title}</h1>
-			{vp && vp.topics && this._getButton()}
-			{list}
-		</div>);
-	}
+  render() {
+    let vp = this.state.vp;
+    let coll = (vp || this.props.res);
+    let labels = coll.getLabels();
+    this._highlight(labels, coll.getFragments());
+    if (vp && vp.topics) {
+      let topics = this._getTopics(labels);
+      return (
+        <div>
+          <h1>{vp.name}</h1>
+          <button className="btn btn-back" onClick={this._handleBack}>
+            Retour aux points de vue
+           </button>
+          {topics}
+        </div>
+      );
+    }
+    let viewpoints = this._getViewpoints(labels);
+    return (
+      <div>
+        <h1>Points de vue</h1>
+        {viewpoints}
+      </div>
+    );
+  }
 
 	async _createFrag(tab,topic) {
 		function addHL(vp,hl) {
@@ -156,15 +162,10 @@ export default class Display extends React.Component {
 		);
 	}
 
-	_getButton() {
-		let back = () => {
-			this.setState({vp: null, vpId: null});
-			browser.contextMenus.remove("highlightmenu");
-		}
-		return <button class="btn btn-back" onClick={back}>
-			Retour aux points de vue
-		</button>;
-	}
+  _handleBack() {
+    this.setState({vp: null, vpId: null});
+    browser.contextMenus.remove("highlightmenu");
+  }
 
 	_vpDetails(vp,id) {
 		this._createMenus(vp,id);
