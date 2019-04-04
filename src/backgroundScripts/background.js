@@ -91,6 +91,8 @@ browser.runtime.onMessage.addListener(async (msg) => {
       return model.getResource(msg.uri, msg.reload);
     case 'isWhitelisted':
       return model.isWhitelisted(msg.uri);
+    case 'createViewpoint':
+      return model.createViewpoint(msg.name);
     case 'createHighlight':
       return model.createHighlight(msg.uri,msg.viewpoint,msg.topic,msg.coordinates);
     case 'removeHighlight':

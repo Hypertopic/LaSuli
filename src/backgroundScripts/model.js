@@ -255,12 +255,19 @@ const model = (function () {
       return x;
     });
 
+  const createViewpoint = (name) => db.post({
+    viewpoint_name: name,
+    users: [connected_user],
+    topics: {}
+  });
+
   return {
     fetchSession,
     openSession,
     closeSession,
     isWhitelisted,
     getResource,
+    createViewpoint,
     createHighlight,
     removeHighlight
   };

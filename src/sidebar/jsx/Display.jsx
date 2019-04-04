@@ -2,16 +2,19 @@
 import React from 'react';
 import Viewpoint from './Viewpoint.jsx';
 import Topic from './Topic.jsx';
+import ViewpointModel from '../../backgroundScripts/Viewpoint.js'
 
 export default class Display extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {vp: null};
+		this.state = {vp: null, viewpointName:''};
 		browser.contextMenus.removeAll();
 		this._deleteFrag=this._deleteFrag.bind(this);
 		this._createFrag=this._createFrag.bind(this);
 		this._contextMenuListener=this._contextMenuListener.bind(this);
 		this._handleBack = this._handleBack.bind(this);
+		this._handleCreateViewpoint = this._handleCreateViewpoint.bind(this);
+		this._handleViewpointName = this._handleViewpointName.bind(this);
 	}
 
 	_contextMenuListener(info,tab) {
@@ -50,8 +53,25 @@ export default class Display extends React.Component {
       <div>
         <h1>Points de vue</h1>
         {viewpoints}
+        <form onChange={this._handleViewpointName} onSubmit={this._handleCreateViewpoint}>
+          <input type="text" placeholder="Nouveau point de vue" />
+          <input type="submit" value="Créer" />
+        </form>
       </div>
     );
+  }
+
+  _handleViewpointName(event) {
+    this.setState({viewpointName: event.target.value});
+  }
+
+  _handleCreateViewpoint(event) {
+    event.preventDefault();
+    browser.runtime.sendMessage({
+      aim:'createViewpoint',
+      name: this.state.viewpointName
+    })
+      .then((v) => this._vpDetails(new ViewpointModel(v), v._id));
   }
 
 	async _createFrag(tab,topic) {
@@ -171,4 +191,5 @@ export default class Display extends React.Component {
 		this._createMenus(vp,id);
 		this.setState({vp, vpId:id});
 	}
+
 }
