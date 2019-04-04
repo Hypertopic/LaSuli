@@ -6,6 +6,7 @@ class Settings extends React.Component {
   constructor() {
     super();
     this.state = {
+      whitelist: [],
       service: ''
     };
     this.handleChange = this.handleChange.bind(this);
@@ -13,21 +14,36 @@ class Settings extends React.Component {
   }
 
   render() {
+    let domains = this.getDomains();
     return (
-      <form onSubmit={this.handleSubmit}>
-          <label>Service d'annotation (Hypertopic) :
-            <input
-              type="url"
-              pattern="https?://.*/"
-              placeholder="http://argos.local/"
-              size="30"
-              required
-              value={this.state.service}
-              onChange={this.handleChange}
-            />
-          </label>
-          <button type="submit">Enregistrer</button>
-      </form>
+      <div>
+        <form onSubmit={this.handleSubmit}>
+            <label>Service d'annotation (Hypertopic) :
+              <input
+                type="url"
+                pattern="https?://.*/"
+                placeholder="http://argos.local/"
+                size="30"
+                required
+                value={this.state.service}
+                onChange={this.handleChange}
+              />
+            </label>
+            <button type="submit">Enregistrer</button>
+        </form>
+        <div>
+          <p>Domaines dans la liste blanche :</p>
+          <ul>
+            {domains}
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  getDomains() {
+    return this.state.whitelist.map((page) => 
+      <li> {page} </li>
     );
   }
 
@@ -39,6 +55,8 @@ class Settings extends React.Component {
   componentDidMount() {
     this.fetchSettings('services')
       .then((x) => this.setState({service: x[0]}));
+    this.fetchSettings('whitelist')
+      .then((x) => this.setState({whitelist: x}));
   }
 
   handleChange(event) {
@@ -51,7 +69,16 @@ class Settings extends React.Component {
       .then((services) => {
         services[0] = this.state.service;
         browser.storage.local.set({services});
+        this.notify("Success!", "Annotation service successfully added.")
       });
+  }
+
+  notify(title, message) {
+    browser.notifications.create({
+      type: "basic",
+      title,
+      message,
+    });
   }
 }
 
