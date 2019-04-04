@@ -9,8 +9,11 @@ const model = (function () {
 
   const getServices = async () => {
     let settings = await browser.storage.local.get('services');
-    console.log(settings);
-    if (!settings.services) throw new Error('Annotation service undefined!');
+    if (!settings.services) {
+        await browser.storage.local.set({
+            services: ['http://argos2.test.hypertopic.org/']
+        });
+	}
     return settings.services;
   }
 
@@ -99,25 +102,26 @@ const model = (function () {
 	}
 
   const renameTopic = (vpId,topicId,newName) => {
-    return db.get({_id:vpId})
-    .catch(x => {
-      return {_id:vpId,topics:{},viewpoint_name:"",users:[]};
-    })
-    .then(vp => {
-      if (vp.topics.constructor === Array) vp.topics={};
-      vp.viewpoint_name=vp.viewpoint_name || "Sans nom";
-      vp.users=vp.users || [];
-      let topic=vp.topics[topicId] || {};
-      if (!topic.name || topic.name != newName) {
-        topic.name=newName;
-        vp.topics[topicId]=topic;
-        return db.post(vp).then( x => {
-          return topic;
-        });
-      } else {
-        return topic;
-      }
-    });
+      return getDB().then(db => db.get({_id:vpId}))
+          .catch(x => {
+              return {_id:vpId,topics:{},viewpoint_name:"",users:[]};
+          })
+          .then(vp => {
+              if (vp.topics.constructor === Array) vp.topics={};
+              vp.viewpoint_name=vp.viewpoint_name || "Sans nom";
+              vp.users=vp.users || [];
+              let topic=vp.topics[topicId] || {};
+              if (!topic.name || topic.name != newName) {
+                  topic.name=newName;
+                  vp.topics[topicId]=topic;
+                  return getDB().then(db => db.post(vp))
+                      .then( x => {
+                          return topic;
+                      });
+              } else {
+                  return topic;
+              }
+          });
   }
 
 	/*
