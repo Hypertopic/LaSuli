@@ -9,8 +9,11 @@ const model = (function () {
 
   const getServices = async () => {
     let settings = await browser.storage.local.get('services');
-    console.log(settings);
-    if (!settings.services) throw new Error('Annotation service undefined!');
+    if (!settings.services) {
+      await browser.storage.local.set({
+        services: ['http://argos2.test.hypertopic.org/']
+      });
+    }
     return settings.services;
   }
 
