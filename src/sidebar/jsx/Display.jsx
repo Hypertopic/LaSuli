@@ -5,6 +5,7 @@ import Topic from './Topic.jsx';
 import ViewpointModel from '../../backgroundScripts/Viewpoint.js'
 
 export default class Display extends React.Component {
+
 	constructor(props) {
 		super(props);
 		this.state = {vp: null, viewpointName:''};
@@ -15,6 +16,7 @@ export default class Display extends React.Component {
 		this._handleBack = this._handleBack.bind(this);
 		this._handleCreateViewpoint = this._handleCreateViewpoint.bind(this);
 		this._handleViewpointName = this._handleViewpointName.bind(this);
+		this._renameTopic=this._renameTopic.bind(this);
 	}
 
 	_contextMenuListener(info,tab) {
@@ -111,6 +113,18 @@ export default class Display extends React.Component {
 		}
 	}
 
+  _renameTopic(topic,newName) {
+    let viewpoint=this.state.vpId;
+    return browser.runtime.sendMessage({
+      aim:'renameTopic',viewpoint,topic,newName
+    }).then(x => {
+      this.setState(previousState => {
+        previousState.vp.topics[topic].name=newName;
+        return previousState;
+      });
+    });
+  }
+
 	async _highlight(labels, fragments) {
 		return this._loadScript().then(_ => browser.tabs.sendMessage(this.props.tabId, {
 			aim: 'highlight',
@@ -174,13 +188,14 @@ export default class Display extends React.Component {
 		});
 	}
 
-	_getTopics(labels) {
-		return Object.keys(this.state.vp.topics).map((id,i) =>
-			<Topic details={this.state.vp.topics[id]} id={id} index={i} vpId={this.state.vpId}
-				color={labels[id].color} name={this.state.vp.topics[id].name}
-				createFrag={this._createFrag} deleteFrag={this._deleteFrag} />
-		);
-	}
+  _getTopics(labels) {
+    return Object.keys(this.state.vp.topics).map((id,i) =>
+      <Topic details={this.state.vp.topics[id]} id={id} index={i} vpId={this.state.vpId}
+        color={labels[id].color} name={this.state.vp.topics[id].name}
+        createFrag={this._createFrag} deleteFrag={this._deleteFrag}
+        renameTopic={this._renameTopic} />
+    );
+  }
 
   _handleBack() {
     this.setState({vp: null, vpId: null});

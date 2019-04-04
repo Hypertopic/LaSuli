@@ -87,6 +87,28 @@ const model = (function () {
 		return false
 	}
 
+  const renameTopic = (vpId,topicId,newName) => {
+    return db.get({_id:vpId})
+    .catch(x => {
+      return {_id:vpId,topics:{},viewpoint_name:"",users:[]};
+    })
+    .then(vp => {
+      if (vp.topics.constructor === Array) vp.topics={};
+      vp.viewpoint_name=vp.viewpoint_name || "Sans nom";
+      vp.users=vp.users || [];
+      let topic=vp.topics[topicId] || {};
+      if (!topic.name || topic.name != newName) {
+        topic.name=newName;
+        vp.topics[topicId]=topic;
+        return db.post(vp).then( x => {
+          return topic;
+        });
+      } else {
+        return topic;
+      }
+    });
+  }
+
 	/*
 	 * Fetch the item(s) for the given resource (URI)
 	 */
@@ -269,7 +291,8 @@ const model = (function () {
     getResource,
     createViewpoint,
     createHighlight,
-    removeHighlight
+    removeHighlight,
+    renameTopic
   };
 }());
 
