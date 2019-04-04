@@ -76,42 +76,43 @@ export default class Display extends React.Component {
       .then((v) => this._vpDetails(new ViewpointModel(v), v._id));
   }
 
-	async _createFrag(tab,topic) {
-		function addHL(vp,hl) {
-			hl.text=[].concat(hl.text);
-			hl.coordinates=[hl.coordinates];
-			vp.topics[hl.topic] = vp.topics[hl.topic] || [];
-			vp.topics[hl.topic].push(hl);
-			return vp;
-		}
-		if (this.state.vpId) {
-			return this.props.createFrag(tab,this.state.vpId,topic).then( hl => {
-				if (hl.topic) {
-					this.setState(previousState => {
-						addHL(previousState.vp,hl);
-						return previousState;
-					});
-				}
-				return hl;
-			});
-		}
-	}
+  _createFrag(tab,topic) {
+    function addHL(vp,hl) {
+      hl.text=[].concat(hl.text);
+      hl.coordinates=[hl.coordinates];
+      vp.topics[hl.topic] = vp.topics[hl.topic] || [];
+      vp.topics[hl.topic].push(hl);
+      return vp;
+    }
+    if (this.state.vpId) {
+      return this.props.createFrag(tab,this.state.vpId,topic)
+        .then( hl => {
+          if (hl.topic) {
+            this.setState(previousState => {
+              addHL(previousState.vp,hl);
+              return previousState;
+            });
+          }
+          return hl;
+        });
+    }
+  }
 
-	async _deleteFrag(topic,fragId) {
-		function removeHL(vp) {
-			vp.topics[topic]=vp.topics[topic].filter(hl => {return hl.id!=fragId});
-			return vp;
-		}
-		if (this.state.vp && this.state.vpId) {
-			return this.props.deleteFrag(this.state.vpId,topic,fragId).then( x => {
-				this.setState(previousState => {
-					removeHL(previousState.vp);
-					return previousState;
-				});
-				return x;
-			});
-		}
-	}
+  _deleteFrag(topic,fragId) {
+    function removeHL(vp) {
+      vp.topics[topic]=vp.topics[topic].filter(hl => {return hl.id!=fragId});
+      return vp;
+    }
+    if (this.state.vp && this.state.vpId) {
+      return this.props.deleteFrag(this.state.vpId,topic,fragId).then( x => {
+        this.setState(previousState => {
+          removeHL(previousState.vp);
+          return previousState;
+        });
+        return x;
+      });
+    }
+  }
 
   _renameTopic(topic,newName) {
     let viewpoint=this.state.vpId;
