@@ -84,10 +84,21 @@ tabs.onActivated.addListener(async (activeInfo) => {
 	}
 });
 
+let isOpened = browser.sidebarAction.isOpen({});
+
 /*
  * Open the sidebar when the button gets clicked
  */
-button.onClicked.addListener(() => browser.sidebarAction.open());
+button.onClicked.addListener(() => {
+  let sidebar = browser.sidebarAction;
+  if (isOpened) {
+    sidebar.close();
+    isOpened = false;
+  } else {
+    sidebar.open();
+    isOpened = true;
+  }
+});
 
 /*
  * Message handler
