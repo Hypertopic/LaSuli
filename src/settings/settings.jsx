@@ -65,16 +65,27 @@ class Settings extends React.Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    this.fetchSettings('services')
+    fetch(this.state.service)
+      .then((x) => {
+        if (!x.ok) throw new Error(x.statusText);
+        return x.json()
+          .catch(_ => ({}));
+      })
+      .then((x) => {
+        if (!x.service) throw new Error('This service is not Hypertopic compliant');
+        return x.service;
+      })
+      .then((x) => this.notify('Success!', `${x} service detected!`))
+      .then(() => this.fetchSettings('services'))
       .then((services) => {
         services[0] = this.state.service;
         browser.storage.local.set({services});
-        this.notify("Success!", "Annotation service successfully added.")
-      });
+      })
+      .catch((e) => this.notify('Error!', e.message));
   }
 
   notify(title, message) {
-    browser.notifications.create({
+    return browser.notifications.create({
       type: "basic",
       title,
       message,
