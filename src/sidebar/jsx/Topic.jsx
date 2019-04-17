@@ -31,12 +31,16 @@ class Topic extends React.Component {
 		browser.contextMenus.onClicked.removeListener(this._contextMenuListener);
 	}
 
+  draggedFrag(id) {
+    this.setState({draggedFragment:id});
+  }
+
   render() {
     let fragments = this.props.details.map(hl => {
       let deleteFrag=() => {
         return this.props.deleteFrag(this.props.id,hl.id);
       }
-      return <Fragment text={hl.text} id={hl.id} deleteFrag={deleteFrag}/>
+      return <Fragment text={hl.text} id={hl.id} topicId={this.props.id} deleteFrag={deleteFrag} draggedFrag={this.draggedFrag.bind(this)}/>
     });
     let col = this.props.color;
     let style = {
@@ -51,6 +55,31 @@ class Topic extends React.Component {
     let setEdit = (e) => {
       e.stopPropagation();
       this.setState({edit:true});
+    }
+
+    let onDragEnter= (e) => {
+      if (!this.props.details.find((hl) => hl.id===this.state.draggedFragment)) {
+        this.setState({draggedOver:true});
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+      }
+    }
+
+    let onDragLeave= (e) => {
+      this.setState({draggedOver:false});
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+
+    let onDrop= (e) => {
+      this.setState({draggedOver:false});
+      if (!this.props.details.find((hl) => hl.id===this.state.draggedFragment)) {
+        var data=JSON.parse(e.dataTransfer.getData("dragContent"));
+        console.log("move hl "+data.id+" from "+data.topicId+" into "+this.props.id);
+        this.props.moveFrag(data.id,data.topicId,this.props.id);
+      }
     }
 
     if (this.state.edit) {
@@ -77,7 +106,6 @@ class Topic extends React.Component {
           endEdit();
         }
       }
-
       let onBlur = (e) => {
         e.stopPropagation();
         return changeName(e.target.value);
@@ -87,7 +115,9 @@ class Topic extends React.Component {
     } else {
       nameControl=<span onClick={setEdit}>{name}</span>;
     }
-    return (<div>
+    var classes="";
+    if (this.state.draggedOver) classes="drag-over"
+    return (<div onDrop={onDrop} onDragOver={onDragEnter} onDragLeave={onDragLeave} className={classes}>
       <h3 style={style} className="topic" onClick={onClick}>
         {nameControl} <small class="counter">{count}</small>
       </h3>

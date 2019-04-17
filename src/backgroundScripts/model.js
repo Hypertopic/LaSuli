@@ -103,6 +103,27 @@ const model = (function () {
       });
   }
 
+  const moveHighlight = (uri,hlid,newTopic) => {
+    let db = getDB();
+    return getItems(uri)
+      .then(items => {
+        if (items && items.item && items.item.length>0) {
+          let itemId=items.item[0].id;
+          return db.then((x) => x.get({_id:itemId}));
+        }
+        throw new Error ("no items found for "+uri);
+      })
+      .then(item => {
+        if (item.highlights[hlid]) {
+          var hl=item.highlights[hlid];
+          hl.topic=newTopic;
+          return db.then((x) => x.post(item).then(createdItem => {
+            return hl;
+          }));
+        }
+      });
+  }
+
   const renameTopic = (vpId,topicId,newName) => {
     let db = getDB();
     return db.then((x) => x.get({_id:vpId}))
@@ -315,6 +336,7 @@ const model = (function () {
     createViewpoint,
     createHighlight,
     removeHighlight,
+    moveHighlight,
     renameTopic
   };
 }());

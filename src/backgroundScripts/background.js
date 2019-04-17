@@ -121,6 +121,9 @@ browser.runtime.onMessage.addListener(async (msg) => {
     case 'removeHighlight':
       res=model.removeHighlight(msg.uri,msg.viewpoint,msg.topic,msg.fragId);
       break;
+    case 'moveHighlight':
+      res=model.moveHighlight(msg.uri,msg.fragId,msg.newTopic);
+      break;
     case 'renameTopic':
       res=model.renameTopic(msg.viewpoint,msg.topic,msg.newName);
       break;

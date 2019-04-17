@@ -12,6 +12,7 @@ export default class Display extends React.Component {
 		browser.contextMenus.removeAll();
 		this._deleteFrag=this._deleteFrag.bind(this);
 		this._createFrag=this._createFrag.bind(this);
+		this._moveFrag=this._moveFrag.bind(this);
 		this._contextMenuListener=this._contextMenuListener.bind(this);
 		this._handleBack = this._handleBack.bind(this);
 		this._handleCreateViewpoint = this._handleCreateViewpoint.bind(this);
@@ -114,6 +115,28 @@ export default class Display extends React.Component {
     }
   }
 
+  _moveFrag(fragId,oldTopic,newTopic) {
+    function moveHL(vp) {
+      if (vp.topics[oldTopic] && vp.topics[newTopic]) {
+        var theHl=vp.topics[oldTopic].find(hl => {return hl.id==fragId});
+        if (theHl) {
+          vp.topics[oldTopic]=vp.topics[oldTopic].filter(hl => {return hl.id!=fragId});
+          vp.topics[newTopic].push(theHl);
+        }
+      }
+      return vp;
+    }
+    if (this.state.vp && this.state.vpId) {
+      return this.props.moveFrag(this.state.vpId,fragId,newTopic).then( x => {
+        this.setState(previousState => {
+          moveHL(previousState.vp);
+          return previousState;
+        });
+        return x;
+      });
+    }
+  }
+
   _renameTopic(topic,newName) {
     let viewpoint=this.state.vpId;
     return browser.runtime.sendMessage({
@@ -194,7 +217,7 @@ export default class Display extends React.Component {
       <Topic details={this.state.vp.topics[id]} id={id} index={i} vpId={this.state.vpId}
         color={labels[id].color} name={this.state.vp.topics[id].name}
         createFrag={this._createFrag} deleteFrag={this._deleteFrag}
-        renameTopic={this._renameTopic} />
+        moveFrag={this._moveFrag} renameTopic={this._renameTopic} />
     );
   }
 

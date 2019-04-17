@@ -58,6 +58,16 @@ h1 {
   position: relative;
 }
 
+.fragment.isDragged {
+  opacity: 50%;
+}
+
+div.drag-over  {
+  border-style: dotted;
+  border-width: 2px;
+  border-color: grey;
+}
+
 span.delete {
   top:0.1em;
   right:0.1em;

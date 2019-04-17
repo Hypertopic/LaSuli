@@ -39,6 +39,7 @@ class Sidebar extends React.Component {
 		});
 
 		this._deleteFrag=this._deleteFrag.bind(this);
+		this._moveFrag=this._moveFrag.bind(this);
 		this._createFrag=this._createFrag.bind(this);
 
 	}
@@ -59,7 +60,7 @@ class Sidebar extends React.Component {
 		} else if (status === 'display') {
 			// Show the highlights
 			return <Display uri={this.state.uri} res={this.res} tabId={this.state.tabId}
-				createFrag={this._createFrag} deleteFrag={this._deleteFrag} />;
+				createFrag={this._createFrag} deleteFrag={this._deleteFrag} moveFrag={this._moveFrag} />;
 		} else if (status === 'error') {
 			return <Error err={this.state.error} uri={this.state.uri} />;
 		}
@@ -105,6 +106,13 @@ class Sidebar extends React.Component {
     let uri=this.state.uri;
     return browser.runtime.sendMessage({
       aim:'removeHighlight',uri,viewpoint,topic,fragId
+    });
+  }
+
+  _moveFrag(viewpoint,fragId,newTopic) {
+    let uri=this.state.uri;
+    return browser.runtime.sendMessage({
+      aim:'moveHighlight',uri,newTopic,fragId
     });
   }
 
