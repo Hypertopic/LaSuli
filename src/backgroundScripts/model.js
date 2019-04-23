@@ -24,14 +24,7 @@ const model = (function () {
   const getSessionURI = async () => getServices()
     .then((x) => x + '/_session');
 
-	const getDomain = (uri) => {
-		if (uri.indexOf('/') === -1) {
-			return uri;
-		}
-		let anchor = document.createElement('a');
-		anchor.href = uri;
-		return anchor.hostname;
-	};
+  const getDomain = (uri) => new URL(uri).host || uri;
 
 	const isWhitelisted = async (uri) => {
 		let match = await browser.storage.local.get('whitelist');
