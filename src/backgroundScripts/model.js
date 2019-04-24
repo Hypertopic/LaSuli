@@ -17,9 +17,8 @@ const model = (function () {
     return settings.services;
   }
 
-  const getDB = async () => {
-    return new Hypertopic(await getServices());
-  }
+  const getDB = (site) => getServices()
+    .then((x) => new Hypertopic(x.concat(site)));
 
   const getSessionURI = async () => getServices()
     .then((x) => x + '/_session');
@@ -51,14 +50,7 @@ const model = (function () {
     let db = getDB();
     if (!topic) topic=getUuid();
     if (!viewpoint) viewpoint=getUuid();
-    return getItems(uri)
-      .then(items => {
-        if (items && items.item && items.item.length>0) {
-          let itemId=items.item[0].id;
-          return db.then((x) => x.get({_id:itemId}));
-        }
-        throw new Error ("no items found for "+uri);
-      })
+    return getItem(uri)
       .then(item => {
         var uuid=getUuid();
         item.highlights=item.highlights || {};
@@ -78,15 +70,7 @@ const model = (function () {
 
   const removeHighlight = (uri,viewpoint,topic,fragId) => {
     let db = getDB();
-    return getItems(uri)
-      .then(items => {
-        if (items && items.item && items.item.length>0) {
-          let itemId=items.item[0].id;
-          return db.then((x) => x.get({_id:itemId}));
-        } else {
-          throw new Error(`can't find item for ${uri}`);
-        }
-      })
+    return getItem(uri)
       .then(item => {
         if (fragId in item.highlights) {
           delete item.highlights[fragId];
@@ -98,14 +82,7 @@ const model = (function () {
 
   const moveHighlight = (uri,hlid,newTopic) => {
     let db = getDB();
-    return getItems(uri)
-      .then(items => {
-        if (items && items.item && items.item.length>0) {
-          let itemId=items.item[0].id;
-          return db.then((x) => x.get({_id:itemId}));
-        }
-        throw new Error ("no items found for "+uri);
-      })
+    return getItem(uri)
       .then(item => {
         if (item.highlights[hlid]) {
           var hl=item.highlights[hlid];
@@ -138,15 +115,25 @@ const model = (function () {
       });
   }
 
-	/*
-	 * Fetch the item(s) for the given resource (URI)
-	 */
-	const getItems = async (uri) => {
-    let db = await getDB();
-		let view = await db.getView(`/item/?resource=${uri}`);
-		let key = Object.keys(view)[0];
-		return key && view[key]; // False if "key" is false
-	};
+  /**
+   * Depending on a Web page URI, get a list of stub items.
+   */
+  const getItems = (uri) => getDB(new URL(uri).origin || [])
+    .then((db) => db.getView(`/item/?resource=${uri}`))
+    .then((x) => Object.values(x)[0].item)
+    .catch(() => []);
+
+  /**
+   * Depending on a Web page URI:
+   * - get the whole corresponding item if present on the primary server,
+   * - get a stub item if present on another server (including the current Web site),
+   */
+  const getItem = (uri) => getItems(uri)
+    .then((x) => ({_id:x[0].id, item_corpus:x[0].corpus}))
+    .then((x) => getDB()
+      .then((db) => db.get(x))
+      .catch(() => x)
+    );
 
 	/*
 	 * Fetch the highlights for the given item (corpus + id)
@@ -170,9 +157,7 @@ const model = (function () {
 	};
 
 	const getHighlights = async (uri) => {
-		let itemLists = (await getItems(uri)) || {};
-		let items = [].concat(... Object.values(itemLists));
-
+		let items = await getItems(uri);
 		// For each item, run getItemHighlights and getCorpusVps
 		// Wait for all highlights and flatten the resulting array
 		let hls = Promise.all(items.map(getItemHighlights));
