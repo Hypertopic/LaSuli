@@ -1,6 +1,6 @@
 {
   "name": "LaSuli",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Web extension to annotate text.",
   "scripts": {
     "start": "webpack && web-ext run",
