@@ -127,9 +127,15 @@ const model = (function () {
    * Depending on a Web page URI:
    * - get the whole corresponding item if present on the primary server,
    * - get a stub item if present on another server (including the current Web site),
+   * - get a new item otherwise (yet to be created).
    */
   const getItem = (uri) => getItems(uri)
     .then((x) => ({_id:x[0].id, item_corpus:x[0].corpus}))
+    .catch(() => ({
+      _id:getUuid(),
+      item_corpus:`${connected_user}_highlights`,
+      resource:uri
+    })) //TODO create corpus with user if needed
     .then((x) => getDB()
       .then((db) => db.get(x))
       .catch(() => x)
