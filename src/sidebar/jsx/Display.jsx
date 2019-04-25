@@ -8,7 +8,7 @@ export default class Display extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {vp: null, viewpointName:''};
+		this.state = {selectedViewpoint: null, viewpointName:''};
 		browser.contextMenus.removeAll();
 		this._deleteFrag=this._deleteFrag.bind(this);
 		this._createFrag=this._createFrag.bind(this);
@@ -21,7 +21,7 @@ export default class Display extends React.Component {
 	}
 
 	_contextMenuListener(info,tab) {
-		if (info.menuItemId=="highlightnew" && this.state.vpId) {
+		if (info.menuItemId=="highlightnew" && this.state.selectedViewpoint) {
 			return this._createFrag(tab);
 		}
 	}
@@ -35,7 +35,7 @@ export default class Display extends React.Component {
 	}
 
   render() {
-    let vp = this.state.vp;
+    let vp = this.state.selectedViewpoint;
     let coll = (vp || this.props.res);
     let labels = coll.getLabels();
     this._highlight(labels, coll.getFragments());
@@ -74,7 +74,7 @@ export default class Display extends React.Component {
       aim:'createViewpoint',
       name: this.state.viewpointName
     })
-      .then((v) => this._vpDetails(new ViewpointModel(v), v._id));
+      .then((v) => this._vpDetails(new ViewpointModel(v)));
   }
 
   _createFrag(tab,topic) {
@@ -85,12 +85,13 @@ export default class Display extends React.Component {
       vp.topics[hl.topic].push(hl);
       return vp;
     }
-    if (this.state.vpId) {
-      return this.props.createFrag(tab,this.state.vpId,topic)
+    let viewpoint = this.state.selectedViewpoint;
+    if (viewpoint) {
+      return this.props.createFrag(tab, viewpoint._id, topic)
         .then( hl => {
           if (hl.topic) {
             this.setState(previousState => {
-              addHL(previousState.vp,hl);
+              addHL(previousState.selectedViewpoint, hl);
               return previousState;
             });
           }
@@ -104,10 +105,11 @@ export default class Display extends React.Component {
       vp.topics[topic]=vp.topics[topic].filter(hl => {return hl.id!=fragId});
       return vp;
     }
-    if (this.state.vp && this.state.vpId) {
-      return this.props.deleteFrag(this.state.vpId,topic,fragId).then( x => {
+    let viewpoint = this.state.selectedViewpoint;
+    if (viewpoint) {
+      return this.props.deleteFrag(viewpoint._id, topic, fragId).then( x => {
         this.setState(previousState => {
-          removeHL(previousState.vp);
+          removeHL(previousState.selectedViewpoint);
           return previousState;
         });
         return x;
@@ -126,10 +128,11 @@ export default class Display extends React.Component {
       }
       return vp;
     }
-    if (this.state.vp && this.state.vpId) {
-      return this.props.moveFrag(this.state.vpId,fragId,newTopic).then( x => {
+    let viewpoint = this.state.selectedViewpoint;
+    if (viewpoint) {
+      return this.props.moveFrag(viewpoint._id, fragId, newTopic).then( x => {
         this.setState(previousState => {
-          moveHL(previousState.vp);
+          moveHL(previousState.selectedViewpoint);
           return previousState;
         });
         return x;
@@ -138,12 +141,12 @@ export default class Display extends React.Component {
   }
 
   _renameTopic(topic,newName) {
-    let viewpoint=this.state.vpId;
+    let viewpoint = this.state.selectedViewpoint._id;
     return browser.runtime.sendMessage({
       aim:'renameTopic',viewpoint,topic,newName
     }).then(x => {
       this.setState(previousState => {
-        previousState.vp.topics[topic].name=newName;
+        previousState.selectedViewpoint.topics[topic].name = newName;
         return previousState;
       });
     });
@@ -188,7 +191,8 @@ export default class Display extends React.Component {
       return "Aucun";
     return viewpoints.map(id => {
       let vp = this.props.res.viewpoints[id];
-      let vpDetails = this._vpDetails.bind(this, vp, id);
+      vp._id = id;
+      let vpDetails = this._vpDetails.bind(this, vp);
       return (
         <Viewpoint key={id} details={vp} onClick={vpDetails}
         color={labels[id].color} />
@@ -196,7 +200,7 @@ export default class Display extends React.Component {
     });
 	}
 
-	_createMenus(vp,vpid){
+	_createMenus(vp){
 		if (!vp) return;
 		browser.contextMenus.create({
 			id: "highlightmenu",
@@ -213,22 +217,24 @@ export default class Display extends React.Component {
 	}
 
   _getTopics(labels) {
-    return Object.keys(this.state.vp.topics).map((id,i) =>
-      <Topic details={this.state.vp.topics[id]} id={id} index={i} vpId={this.state.vpId}
-        color={labels[id].color} name={this.state.vp.topics[id].name}
+    let viewpoint = this.state.selectedViewpoint;
+    let topics = viewpoint.topics;
+    return Object.keys(topics).map((id,i) =>
+      <Topic details={topics[id]} id={id} index={i} vpId={viewpoint._id}
+        color={labels[id].color} name={topics[id].name}
         createFrag={this._createFrag} deleteFrag={this._deleteFrag}
         moveFrag={this._moveFrag} renameTopic={this._renameTopic} />
     );
   }
 
   _handleBack() {
-    this.setState({vp: null, vpId: null});
+    this.setState({selectedViewpoint: null});
     browser.contextMenus.remove("highlightmenu");
   }
 
-	_vpDetails(vp,id) {
-		this._createMenus(vp,id);
-		this.setState({vp, vpId:id});
+	_vpDetails(selectedViewpoint) {
+		this._createMenus(selectedViewpoint);
+		this.setState({selectedViewpoint});
 	}
 
 }
