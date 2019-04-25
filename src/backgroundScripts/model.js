@@ -209,6 +209,7 @@ const model = (function () {
     return (!connected_user)? []
       : db.getView(`/user/${connected_user}`)
           .then((x) => x[connected_user].viewpoint.map((y) => y.id))
+          .catch(() => []);
   }
 
 	/*
