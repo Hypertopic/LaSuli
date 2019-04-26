@@ -57,7 +57,7 @@ export default class Display extends React.Component {
         <h1>Points de vue</h1>
         {viewpoints}
         <form onChange={this._handleViewpointName} onSubmit={this._handleCreateViewpoint}>
-          <input type="text" placeholder="Nouveau point de vue" />
+          <input type="text" placeholder="Nouveau point de vue" required />
           <input type="submit" value="Créer" />
         </form>
       </div>
