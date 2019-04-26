@@ -74,7 +74,11 @@ export default class Display extends React.Component {
       aim:'createViewpoint',
       name: this.state.viewpointName
     })
-      .then((v) => this._vpDetails(new ViewpointModel(v)));
+      .then((v) => this._vpDetails(new ViewpointModel({
+        _id: v._id,
+        name: v.viewpoint_name,
+        topics: {}
+      })));
   }
 
   _createFrag(tab,topic) {
