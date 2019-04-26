@@ -7,15 +7,15 @@ const model = (function () {
   let cache = {};
   let connected_user = '';
 
-  const getServices = async () => {
-    let settings = await browser.storage.local.get('services');
-    if (!settings.services) {
-      await browser.storage.local.set({
-        services: ['http://argos2.test.hypertopic.org/']
-      });
-    }
-    return settings.services;
-  }
+  const getServices = () => browser.storage.local.get('services')
+    .then(x => {
+      if (!x.services) {
+        let services = ['http://argos2.test.hypertopic.org/'];
+        browser.storage.local.set({services});
+        return services;
+      }
+      return x.services;
+    });
 
   const getDB = (site) => getServices()
     .then((x) => new Hypertopic(x.concat(site)));
