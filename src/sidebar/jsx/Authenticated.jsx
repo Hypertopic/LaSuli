@@ -69,7 +69,8 @@ class Authenticated extends Component {
       password: this.password.value
     })
       .then(() => {
-        this.setState({user})
+        this.setState({user});
+        this.props.onLogin({user});
       });
   }
 
@@ -77,7 +78,10 @@ class Authenticated extends Component {
     browser.runtime.sendMessage({
       aim:'closeSession'
     })
-      .then(() => this.setState({user: ''}));
+      .then(() => {
+        this.setState({user: ''});
+        this.props.onLogin({user: ''});
+      });
   }
 
   componentDidMount() {

@@ -1,24 +1,35 @@
 /*global browser */
 import React from 'react';
+import Authenticated from './Authenticated.jsx';
 import Viewpoint from './Viewpoint.jsx';
 import Topic from './Topic.jsx';
 import ViewpointModel from '../../backgroundScripts/Viewpoint.js'
 
 export default class Display extends React.Component {
 
-	constructor(props) {
-		super(props);
-		this.state = {selectedViewpoint: null, viewpointName:''};
-		browser.contextMenus.removeAll();
-		this._deleteFrag=this._deleteFrag.bind(this);
-		this._createFrag=this._createFrag.bind(this);
-		this._moveFrag=this._moveFrag.bind(this);
-		this._contextMenuListener=this._contextMenuListener.bind(this);
-		this._handleBack = this._handleBack.bind(this);
-		this._handleCreateViewpoint = this._handleCreateViewpoint.bind(this);
-		this._handleViewpointName = this._handleViewpointName.bind(this);
-		this._renameTopic=this._renameTopic.bind(this);
-	}
+  constructor() {
+    super();
+    this.state = {
+      selectedViewpoint: null, 
+      viewpointName: '',
+      user: ''
+    };
+    browser.contextMenus.removeAll();
+    this._deleteFrag = this._deleteFrag.bind(this);
+    this._createFrag = this._createFrag.bind(this);
+    this._moveFrag = this._moveFrag.bind(this);
+    this._contextMenuListener = this._contextMenuListener.bind(this);
+    this._handleBack = this._handleBack.bind(this);
+    this._handleCreateViewpoint = this._handleCreateViewpoint.bind(this);
+    this._handleViewpointName = this._handleViewpointName.bind(this);
+    this._renameTopic = this._renameTopic.bind(this);
+    this._loginListener = this._loginListener.bind(this);
+  }
+
+  _loginListener(user) {
+    this.setState({user});
+    this.props.update(this.props.tabId, true);
+  }
 
 	_contextMenuListener(info,tab) {
 		if (info.menuItemId=="highlightnew" && this.state.selectedViewpoint) {
@@ -43,6 +54,7 @@ export default class Display extends React.Component {
       let topics = this._getTopics(labels);
       return (
         <div>
+          <Authenticated onLogin={this._loginListener} />
           <h1>{vp.name}</h1>
           <button className="btn btn-back" onClick={this._handleBack}>
             Retour aux points de vue
@@ -54,6 +66,7 @@ export default class Display extends React.Component {
     let viewpoints = this._getViewpoints(labels);
     return (
       <div>
+        <Authenticated onLogin={this._loginListener} />
         <h1>Points de vue</h1>
         {viewpoints}
         <form onChange={this._handleViewpointName} onSubmit={this._handleCreateViewpoint}>

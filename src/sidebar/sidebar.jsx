@@ -5,7 +5,6 @@ import ReactDOM from 'react-dom';
 import Whitelist from './jsx/Whitelist.jsx';
 import Display from './jsx/Display.jsx';
 import Error from './jsx/Error.jsx';
-import Authenticated from './jsx/Authenticated.jsx';
 
 import Resource from '../backgroundScripts/Resource.js';
 
@@ -16,6 +15,10 @@ class Sidebar extends React.Component {
 			uri: '',
 			status: 'waiting'
 		};
+		this._deleteFrag = this._deleteFrag.bind(this);
+		this._moveFrag = this._moveFrag.bind(this);
+		this._createFrag = this._createFrag.bind(this);
+		this._updateContent = this._updateContent.bind(this);
 	}
 
 	componentDidMount() {
@@ -37,17 +40,11 @@ class Sidebar extends React.Component {
 				this._updateContent(tabId);
 			}
 		});
-
-		this._deleteFrag=this._deleteFrag.bind(this);
-		this._moveFrag=this._moveFrag.bind(this);
-		this._createFrag=this._createFrag.bind(this);
-
 	}
 
   render() {
     return (
       <div>
-        <Authenticated />
         {this.getContent(this.state.status)}
       </div>
     );
@@ -60,7 +57,8 @@ class Sidebar extends React.Component {
 		} else if (status === 'display') {
 			// Show the highlights
 			return <Display uri={this.state.uri} res={this.res} tabId={this.state.tabId}
-				createFrag={this._createFrag} deleteFrag={this._deleteFrag} moveFrag={this._moveFrag} />;
+				createFrag={this._createFrag} deleteFrag={this._deleteFrag} moveFrag={this._moveFrag}
+				update={this._updateContent} />;
 		} else if (status === 'error') {
 			return <Error err={this.state.error} uri={this.state.uri} />;
 		}
