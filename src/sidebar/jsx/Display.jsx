@@ -245,6 +245,7 @@ export default class Display extends React.Component {
   }
 
   _handleBack() {
+    this.props.update(this.props.tabId, true);
     this.setState({selectedViewpoint: null});
     browser.contextMenus.remove("highlightmenu");
   }
