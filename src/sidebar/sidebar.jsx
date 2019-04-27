@@ -53,7 +53,8 @@ class Sidebar extends React.Component {
 	getContent(status) {
 		if (status === 'unknown') {
 			// URI is unknown (not in the whitelist)
-			return <Whitelist uri={this.state.uri} />;
+			return <Whitelist uri={this.state.uri} tabId={this.state.tabId} 
+	  		update={this._updateContent} />;
 		} else if (status === 'display') {
 			// Show the highlights
 			return <Display uri={this.state.uri} res={this.res} tabId={this.state.tabId}

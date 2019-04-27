@@ -46,8 +46,7 @@ class Whitelist extends React.Component {
       this.state.whitelist.push(page);
       browser.storage.local.set({
         whitelist: this.state.whitelist
-      });
-      this.notify("Success!", "Page successfully added to the whitelist");
+      }).then(() => this.props.update(this.props.tabId));
     }
   }
 
