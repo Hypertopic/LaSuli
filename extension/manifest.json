@@ -1,6 +1,6 @@
 {
   "name": "LaSuli",
-  "description": "Social annotation for qualitative analysis.",
+  "description": "__MSG_extensionDescription__",
   "version": "3.1.1",
 
   "manifest_version": 2,
@@ -45,5 +45,7 @@
     "tabs",
     "notifications",
     "contextMenus"
-  ]
+  ],
+
+  "default_locale": "en"
 }

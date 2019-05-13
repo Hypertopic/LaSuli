@@ -1,6 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { I18nProvider } from '@lingui/react';
+import { Trans } from '@lingui/macro';
+import catalogEt from "../locales/et/messages";
+import catalogEn from "../locales/en/messages";
+import catalogFr from "../locales/fr/messages";
+
+const supportedLanguages = ["en", "fr", "et"];
+
 class Settings extends React.Component {
 
   constructor() {
@@ -18,7 +26,7 @@ class Settings extends React.Component {
     return (
       <div>
         <form onSubmit={this.handleSubmit}>
-            <label>Service d'annotation (Hypertopic) :
+            <label><Trans>Service d'annotation (Hypertopic) :</Trans>
               <input
                 type="url"
                 pattern="https?://.*/"
@@ -29,10 +37,10 @@ class Settings extends React.Component {
                 onChange={this.handleChange}
               />
             </label>
-            <button type="submit">Enregistrer</button>
+            <button type="submit"><Trans>Enregistrer</Trans></button>
         </form>
         <div>
-          <p>Domaines dans la liste blanche :</p>
+            <p><Trans>Domaines dans la liste blanche :</Trans></p>
           <ul>
             {domains}
           </ul>
@@ -93,7 +101,21 @@ class Settings extends React.Component {
   }
 }
 
-ReactDOM.render(
-  <Settings />,
-  document.getElementById('settings')
+const catalogs =
+    { 	en: catalogEn,
+        et: catalogEt,
+        fr: catalogFr
+    };
+
+const fetchLanguage = function() {
+    let uiLanguage = browser.i18n.getUILanguage().split("-")[0];
+    return (supportedLanguages.includes(uiLanguage))? uiLanguage : 'en';
+};
+
+const SettingsApp = () => (
+    <I18nProvider language={fetchLanguage()} catalogs={catalogs}>
+        <Settings />
+    </I18nProvider>
 );
+
+ReactDOM.render( <SettingsApp />, document.getElementById('settings'));

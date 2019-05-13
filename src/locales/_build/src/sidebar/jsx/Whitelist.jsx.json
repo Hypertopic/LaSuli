@@ -1,0 +1,42 @@
+{
+  "Site inconnu": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Whitelist.jsx",
+        18
+      ]
+    ]
+  },
+  "Le domaine de cette page n'est pas dans la liste blanche :": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Whitelist.jsx",
+        19
+      ]
+    ]
+  },
+  "Voulez-vous l'ajouter ?": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Whitelist.jsx",
+        21
+      ]
+    ]
+  },
+  "En ajoutant ce site à la liste blanche, vous autorisez l'application et les serveurs à suivre votre navigation sur ce site.": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Whitelist.jsx",
+        23
+      ]
+    ]
+  },
+  "Ajouter dans la liste blanche": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Whitelist.jsx",
+        28
+      ]
+    ]
+  }
+}

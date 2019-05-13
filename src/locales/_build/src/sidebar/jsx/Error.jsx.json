@@ -1,0 +1,42 @@
+{
+  "Erreur": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Error.jsx",
+        15
+      ]
+    ]
+  },
+  "Une erreur est survenue. Vous pouvez essayer de recharger la page, ou bien contacter le mainteneur de l'extension.": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Error.jsx",
+        17
+      ]
+    ]
+  },
+  "Résumé de l'erreur :": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Error.jsx",
+        22
+      ]
+    ]
+  },
+  "Le moyen recommandé de renseigner cette erreur est de créer un <0>nouveau ticket</0> sur l'entrepôt du projet LaSuli. Ces tickets sont publics.": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Error.jsx",
+        25
+      ]
+    ]
+  },
+  "Il est conseillé d'y fournir autant d'informations que possible : adresse de la page, actions suivies ayant permis de découvrir l'erreur…": {
+    "origin": [
+      [
+        "src/sidebar/jsx/Error.jsx",
+        32
+      ]
+    ]
+  }
+}

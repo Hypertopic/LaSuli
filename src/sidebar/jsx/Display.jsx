@@ -5,12 +5,17 @@ import Viewpoint from './Viewpoint.jsx';
 import Topic from './Topic.jsx';
 import ViewpointModel from '../../backgroundScripts/Viewpoint.js'
 
+import { Trans, t } from '@lingui/macro';
+import { I18n } from "@lingui/react";
+import { i18n } from "../sidebar.jsx"
+
+
 export default class Display extends React.Component {
 
   constructor() {
     super();
     this.state = {
-      selectedViewpoint: null, 
+      selectedViewpoint: null,
       viewpointName: '',
       user: ''
     };
@@ -57,7 +62,7 @@ export default class Display extends React.Component {
           <Authenticated onLogin={this._loginListener} />
           <h1>{vp.name}</h1>
           <button className="btn btn-back" onClick={this._handleBack}>
-            Retour aux points de vue
+            <Trans>Retour aux points de vue</Trans>
            </button>
           {topics}
         </div>
@@ -66,12 +71,17 @@ export default class Display extends React.Component {
     let viewpoints = this._getViewpoints(labels);
     return (
       <div>
+        <h1><Trans>Points de vue</Trans></h1>
         <Authenticated onLogin={this._loginListener} />
         <h1>Points de vue</h1>
         {viewpoints}
         <form onChange={this._handleViewpointName} onSubmit={this._handleCreateViewpoint}>
-          <input type="text" placeholder="Nouveau point de vue" required />
-          <input type="submit" value="Créer" />
+          <I18n>
+            {({ i18n }) => ( <input type="text" placeholder={i18n._(t`Nouveau point de vue`)} required /> )}
+          </I18n>
+          <I18n>
+            {({ i18n }) => ( <input type="submit" value={i18n._(t`Créer`)} /> )}
+          </I18n>
         </form>
       </div>
     );
@@ -205,7 +215,7 @@ export default class Display extends React.Component {
 	_getViewpoints(labels) {
     let viewpoints = Object.keys(this.props.res.viewpoints);
     if (!viewpoints.length)
-      return "Aucun";
+        return <Trans>Aucun</Trans>;
     return viewpoints.map(id => {
       let vp = this.props.res.viewpoints[id];
       vp._id = id;
@@ -221,7 +231,7 @@ export default class Display extends React.Component {
 		if (!vp) return;
 		browser.contextMenus.create({
 			id: "highlightmenu",
-			title: "Étiqueter comme...",
+			title: i18n._(t`Étiqueter comme...`),
 			contexts:["selection"]
 		});
 

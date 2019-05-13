@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Trans } from '@lingui/macro';
+
 class Whitelist extends React.Component {
 
   constructor(props) {
@@ -13,13 +15,17 @@ class Whitelist extends React.Component {
     let handleClick = (x) => {this.addToWhitelist(this.props.uri)};
     return (
       <div>
-			  <h1>Site inconnu</h1>
-			  <p>Le domaine de cette page n'est pas dans la liste blanche :</p>
-			  <pre>{this._getDomain(this.props.uri)}</pre>
-        <p>Voulez-vous l'ajouter ?</p>
-        <p>En ajoutant ce site à la liste blanche, vous autorisez l'application
-        et les serveurs à suivre votre navigation sur ce site.</p>
-        <button onClick={handleClick}>Ajouter dans la liste blanche</button>
+        <h1><Trans>Site inconnu</Trans></h1>
+        <p><Trans>Le domaine de cette page n'est pas dans la liste blanche :</Trans></p>
+        <pre>{this._getDomain(this.props.uri)}</pre>
+        <p><Trans>Voulez-vous l'ajouter ?</Trans></p>
+        <p>
+          <Trans>
+          En ajoutant ce site à la liste blanche, vous autorisez l'application
+          et les serveurs à suivre votre navigation sur ce site.
+          </Trans>
+        </p>
+        <button onClick={handleClick}><Trans>Ajouter dans la liste blanche</Trans></button>
       </div>
     );
   }

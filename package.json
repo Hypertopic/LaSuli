@@ -5,6 +5,9 @@
   "scripts": {
     "start": "webpack && web-ext run",
     "lint": "webpack && web-ext lint",
+    "add-locale": "lingui add-locale",
+    "extract": "lingui extract",
+    "compile": "lingui compile",
     "build": "webpack && web-ext sign --api-key $npm_config_api_key --api-secret $npm_config_api_secret"
   },
   "author": {
@@ -27,17 +30,39 @@
     {
       "name": "Franck Eyraud",
       "url": "https://github.com/franck-eyraud"
+    },
+    {
+      "name": "Triinu Erik",
+      "url": "https://github.com/triinuerik"
     }
   ],
   "license": "GPL-3.0",
   "webExt": {
     "sourceDir": "extension/"
   },
+  "babel": {
+    "plugins": [
+      "macros"
+    ],
+    "presets": [
+      "@babel/preset-react"
+    ]
+  },
   "dependencies": {
-    "@babel/core": "^7.1.2",
+    "hypertopic": "^3.1.5"
+  },
+  "devDependencies": {
+    "@lingui/cli": "^2.7.4",
+    "@lingui/core": "latest",
+    "@lingui/macro": "^2.7.4",
+    "@lingui/react": "^2.7.4",
+    "@babel/core": "^7.4.4",
     "@babel/preset-react": "^7.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-plugin-macros": "^2.5.1",
+    "babel-preset-env": "^1.7.0",
     "babel-loader": "^8.0.4",
-    "hypertopic": "^3.1.5",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "web-ext": "^2.9.2",

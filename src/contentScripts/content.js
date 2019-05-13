@@ -208,7 +208,7 @@ const messageHandler = async (message) => {
 		highlight(message.fragments, message.labels);
 		return true;
 	case 'getCoordinates':
-		return getCoordinates();;
+		return getCoordinates();
 	case 'cleanSelection':
 		let sel=document.getSelection();
 		sel.empty();

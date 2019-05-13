@@ -1,0 +1,114 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2019-04-15 14:26+0200\n"
+"Mime-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: et\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Triinu Erik\n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/sidebar/jsx/Whitelist.jsx:28
+msgid "Ajouter dans la liste blanche"
+msgstr "Kanna valgesse nimekirja"
+
+#: src/sidebar/jsx/Display.jsx:218
+msgid "Aucun"
+msgstr "Puuduvad"
+
+#: src/sidebar/sidebar.jsx:76
+msgid "Chargement…"
+msgstr "Laadimine…"
+
+#: src/sidebar/jsx/Display.jsx:83
+msgid "Créer"
+msgstr "Loo"
+
+#: src/settings/settings.jsx:43
+msgid "Domaines dans la liste blanche :"
+msgstr "Domeenid valges nimekirjas:"
+
+#: src/sidebar/jsx/Whitelist.jsx:23
+msgid "En ajoutant ce site à la liste blanche, vous autorisez l'application et les serveurs à suivre votre navigation sur ce site."
+msgstr "Kandes selle lehekülje valgesse nimekirja, annate rakendusele ja serveritele loa jälgida teie navigatsiooni sellel lehel."
+
+#: src/settings/settings.jsx:40
+msgid "Enregistrer"
+msgstr "Salvesta"
+
+#: src/sidebar/jsx/Error.jsx:15
+msgid "Erreur"
+msgstr "Viga"
+
+#: src/sidebar/jsx/Error.jsx:32
+msgid "Il est conseillé d'y fournir autant d'informations que possible : adresse de la page, actions suivies ayant permis de découvrir l'erreur…"
+msgstr "Soovitatav on anda nii palju informatsiooni kui võimalik: lehekülje aadress; toimingud mis tegite, kui saite veateate."
+
+#: src/sidebar/jsx/Whitelist.jsx:19
+msgid "Le domaine de cette page n'est pas dans la liste blanche :"
+msgstr "Selle lehekülje domeen ei ole valges nimekirjas :"
+
+#: src/sidebar/jsx/Error.jsx:25
+msgid "Le moyen recommandé de renseigner cette erreur est de créer un <0>nouveau ticket</0> sur l'entrepôt du projet LaSuli. Ces tickets sont publics."
+msgstr "Parim viis veast meile teada anda on <0>uue pileti</0> loomisega LaSuli projekti salves. Need piletid on avalikud."
+
+#: src/sidebar/jsx/Display.jsx:80
+msgid "Nouveau point de vue"
+msgstr "Uus vaatepunkt"
+
+#: src/sidebar/jsx/Display.jsx:74
+msgid "Points de vue"
+msgstr "Vaatepunktid"
+
+#: src/sidebar/jsx/Display.jsx:65
+msgid "Retour aux points de vue"
+msgstr "Tagasi vaatepunktide juurde"
+
+#: src/sidebar/jsx/Error.jsx:22
+msgid "Résumé de l'erreur :"
+msgstr "Veateade :"
+
+#: src/sidebar/jsx/Authenticated.jsx:38
+msgid "Se connecter"
+msgstr "Logi sisse"
+
+#: src/sidebar/jsx/Authenticated.jsx:45
+msgid "Se connecter..."
+msgstr "Logi sisse..."
+
+#: src/sidebar/jsx/Authenticated.jsx:24
+msgid "Se déconnecter"
+msgstr "Logi välja"
+
+#: src/settings/settings.jsx:29
+msgid "Service d'annotation (Hypertopic) :"
+msgstr "Annotatsiooniteenus (Hypertopic):"
+
+#: src/sidebar/jsx/Whitelist.jsx:18
+msgid "Site inconnu"
+msgstr "Tundmatu lehekülg"
+
+#: src/sidebar/jsx/Error.jsx:17
+msgid "Une erreur est survenue. Vous pouvez essayer de recharger la page, ou bien contacter le mainteneur de l'extension."
+msgstr "Tekkis viga. Proovige lehekülge värskendada või kontakteeruge laiendi haldajaga."
+
+#: src/sidebar/jsx/Whitelist.jsx:21
+msgid "Voulez-vous l'ajouter ?"
+msgstr "Soovite selle lisada?"
+
+#: src/sidebar/jsx/Authenticated.jsx:35
+msgid "mot de passe"
+msgstr "parool"
+
+#: src/sidebar/jsx/Authenticated.jsx:32
+msgid "nom d'utilisateur"
+msgstr "kasutajanimi"
+
+#: src/sidebar/jsx/Display.jsx:234
+msgid "Étiqueter comme..."
+msgstr "Märgi kui..."
