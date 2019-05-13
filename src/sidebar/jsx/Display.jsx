@@ -71,9 +71,8 @@ export default class Display extends React.Component {
     let viewpoints = this._getViewpoints(labels);
     return (
       <div>
-        <h1><Trans>Points de vue</Trans></h1>
         <Authenticated onLogin={this._loginListener} />
-        <h1>Points de vue</h1>
+        <h1><Trans>Points de vue</Trans></h1>
         {viewpoints}
         <form onChange={this._handleViewpointName} onSubmit={this._handleCreateViewpoint}>
           <I18n>
