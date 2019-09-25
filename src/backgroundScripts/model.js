@@ -10,7 +10,7 @@ const model = (function () {
   const getServices = () => browser.storage.local.get('services')
     .then(x => {
       if (!x.services) {
-        let services = ['http://argos2.test.hypertopic.org/'];
+        let services = ['http://argos2.test.hypertopic.org'];
         browser.storage.local.set({services});
         return services;
       }
