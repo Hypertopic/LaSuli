@@ -17,7 +17,7 @@ msgstr ""
 msgid "Ajouter dans la liste blanche"
 msgstr "Ajouter dans la liste blanche"
 
-#: src/sidebar/jsx/Display.jsx:218
+#: src/sidebar/jsx/Display.jsx:217
 msgid "Aucun"
 msgstr "Aucun"
 
@@ -25,11 +25,11 @@ msgstr "Aucun"
 msgid "Chargement…"
 msgstr "Chargement…"
 
-#: src/sidebar/jsx/Display.jsx:83
+#: src/sidebar/jsx/Display.jsx:82
 msgid "Créer"
 msgstr "Créer"
 
-#: src/settings/settings.jsx:43
+#: src/settings/settings.jsx:42
 msgid "Domaines dans la liste blanche :"
 msgstr "Domaines dans la liste blanche :"
 
@@ -37,7 +37,7 @@ msgstr "Domaines dans la liste blanche :"
 msgid "En ajoutant ce site à la liste blanche, vous autorisez l'application et les serveurs à suivre votre navigation sur ce site."
 msgstr "En ajoutant ce site à la liste blanche, vous autorisez l'application et les serveurs à suivre votre navigation sur ce site."
 
-#: src/settings/settings.jsx:40
+#: src/settings/settings.jsx:39
 msgid "Enregistrer"
 msgstr "Enregistrer"
 
@@ -57,11 +57,11 @@ msgstr "Le domaine de cette page n'est pas dans la liste blanche :"
 msgid "Le moyen recommandé de renseigner cette erreur est de créer un <0>nouveau ticket</0> sur l'entrepôt du projet LaSuli. Ces tickets sont publics."
 msgstr "Le moyen recommandé de renseigner cette erreur est de créer un <0>nouveau ticket</0> sur l'entrepôt du projet LaSuli. Ces tickets sont publics."
 
-#: src/sidebar/jsx/Display.jsx:80
+#: src/sidebar/jsx/Display.jsx:79
 msgid "Nouveau point de vue"
 msgstr "Nouveau point de vue"
 
-#: src/sidebar/jsx/Display.jsx:74
+#: src/sidebar/jsx/Display.jsx:75
 msgid "Points de vue"
 msgstr "Points de vue"
 
@@ -109,6 +109,6 @@ msgstr "mot de passe"
 msgid "nom d'utilisateur"
 msgstr "nom d'utilisateur"
 
-#: src/sidebar/jsx/Display.jsx:234
+#: src/sidebar/jsx/Display.jsx:233
 msgid "Étiqueter comme..."
 msgstr "Étiqueter comme..."

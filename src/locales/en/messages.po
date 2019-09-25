@@ -17,7 +17,7 @@ msgstr ""
 msgid "Ajouter dans la liste blanche"
 msgstr "Add to whitelist"
 
-#: src/sidebar/jsx/Display.jsx:218
+#: src/sidebar/jsx/Display.jsx:217
 msgid "Aucun"
 msgstr "None"
 
@@ -25,11 +25,11 @@ msgstr "None"
 msgid "Chargement…"
 msgstr "Loading…"
 
-#: src/sidebar/jsx/Display.jsx:83
+#: src/sidebar/jsx/Display.jsx:82
 msgid "Créer"
 msgstr "Create"
 
-#: src/settings/settings.jsx:43
+#: src/settings/settings.jsx:42
 msgid "Domaines dans la liste blanche :"
 msgstr "Domains in the whitelist:"
 
@@ -37,7 +37,7 @@ msgstr "Domains in the whitelist:"
 msgid "En ajoutant ce site à la liste blanche, vous autorisez l'application et les serveurs à suivre votre navigation sur ce site."
 msgstr "By adding this site to the whitelist, you will authorise the application and the servers to follow your navigation on this site."
 
-#: src/settings/settings.jsx:40
+#: src/settings/settings.jsx:39
 msgid "Enregistrer"
 msgstr "Save"
 
@@ -57,11 +57,11 @@ msgstr "The domain of this page is not in the whitelist:"
 msgid "Le moyen recommandé de renseigner cette erreur est de créer un <0>nouveau ticket</0> sur l'entrepôt du projet LaSuli. Ces tickets sont publics."
 msgstr "The best way to let us know of the error is to create a <0>new ticket</0>\" in LaSuli's project repository. These tickets are public."
 
-#: src/sidebar/jsx/Display.jsx:80
+#: src/sidebar/jsx/Display.jsx:79
 msgid "Nouveau point de vue"
 msgstr "New viewpoint"
 
-#: src/sidebar/jsx/Display.jsx:74
+#: src/sidebar/jsx/Display.jsx:75
 msgid "Points de vue"
 msgstr "Viewpoints"
 
@@ -109,6 +109,6 @@ msgstr "password"
 msgid "nom d'utilisateur"
 msgstr "username"
 
-#: src/sidebar/jsx/Display.jsx:234
+#: src/sidebar/jsx/Display.jsx:233
 msgid "Étiqueter comme..."
 msgstr "Highlight as..."

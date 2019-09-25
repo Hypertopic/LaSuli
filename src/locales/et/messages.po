@@ -17,7 +17,7 @@ msgstr ""
 msgid "Ajouter dans la liste blanche"
 msgstr "Kanna valgesse nimekirja"
 
-#: src/sidebar/jsx/Display.jsx:218
+#: src/sidebar/jsx/Display.jsx:217
 msgid "Aucun"
 msgstr "Puuduvad"
 
@@ -25,11 +25,11 @@ msgstr "Puuduvad"
 msgid "Chargement…"
 msgstr "Laadimine…"
 
-#: src/sidebar/jsx/Display.jsx:83
+#: src/sidebar/jsx/Display.jsx:82
 msgid "Créer"
 msgstr "Loo"
 
-#: src/settings/settings.jsx:43
+#: src/settings/settings.jsx:42
 msgid "Domaines dans la liste blanche :"
 msgstr "Domeenid valges nimekirjas:"
 
@@ -37,7 +37,7 @@ msgstr "Domeenid valges nimekirjas:"
 msgid "En ajoutant ce site à la liste blanche, vous autorisez l'application et les serveurs à suivre votre navigation sur ce site."
 msgstr "Kandes selle lehekülje valgesse nimekirja, annate rakendusele ja serveritele loa jälgida teie navigatsiooni sellel lehel."
 
-#: src/settings/settings.jsx:40
+#: src/settings/settings.jsx:39
 msgid "Enregistrer"
 msgstr "Salvesta"
 
@@ -57,11 +57,11 @@ msgstr "Selle lehekülje domeen ei ole valges nimekirjas :"
 msgid "Le moyen recommandé de renseigner cette erreur est de créer un <0>nouveau ticket</0> sur l'entrepôt du projet LaSuli. Ces tickets sont publics."
 msgstr "Parim viis veast meile teada anda on <0>uue pileti</0> loomisega LaSuli projekti salves. Need piletid on avalikud."
 
-#: src/sidebar/jsx/Display.jsx:80
+#: src/sidebar/jsx/Display.jsx:79
 msgid "Nouveau point de vue"
 msgstr "Uus vaatepunkt"
 
-#: src/sidebar/jsx/Display.jsx:74
+#: src/sidebar/jsx/Display.jsx:75
 msgid "Points de vue"
 msgstr "Vaatepunktid"
 
@@ -109,6 +109,6 @@ msgstr "parool"
 msgid "nom d'utilisateur"
 msgstr "kasutajanimi"
 
-#: src/sidebar/jsx/Display.jsx:234
+#: src/sidebar/jsx/Display.jsx:233
 msgid "Étiqueter comme..."
 msgstr "Märgi kui..."
