@@ -52,20 +52,16 @@
     "hypertopic": "^3.1.5"
   },
   "devDependencies": {
+    "@babel/cli": "^7.6.2",
+    "@babel/core": "^7.6.2",
+    "@babel/preset-react": "^7.0.0",
     "@lingui/cli": "^2.7.4",
     "@lingui/core": "latest",
     "@lingui/macro": "^2.7.4",
     "@lingui/react": "^2.7.4",
-    "@babel/core": "^7.4.4",
-    "@babel/preset-react": "^7.0.0",
-    "babel-cli": "^6.26.0",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-plugin-macros": "^2.5.1",
-    "babel-preset-env": "^1.7.0",
-    "babel-loader": "^8.0.4",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
-    "web-ext": "^2.9.3",
+    "web-ext": "^3.1.1",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2"
   }
