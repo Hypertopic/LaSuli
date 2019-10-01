@@ -11,7 +11,7 @@ const getTreeWalker = () => {
 			let tag = (node.parentNode)
 				? node.parentNode.tagName.toLowerCase()
 				: '';
-			if (node.textContent.length === 0 || ignore.indexOf(tag) !== -1) {
+			if (node.textContent.match(/^\s*$/) || ignore.indexOf(tag) !== -1) {
 				return NodeFilter.FILTER_REJECT;
 			}
 			return NodeFilter.FILTER_ACCEPT;
