@@ -10,7 +10,7 @@ const model = (function () {
   const getServices = () => browser.storage.local.get('services')
     .then(x => {
       if (!x.services) {
-        let services = ['http://argos2.test.hypertopic.org'];
+        let services = ['http://argos4.hypertopic.org'];
         browser.storage.local.set({services});
         return services;
       }
@@ -30,7 +30,7 @@ const model = (function () {
 		let list = match['whitelist'];
 		if (!list) {
 			await browser.storage.local.set({
-				whitelist: ['cassandre.hypertopic.org']
+				whitelist: ['cassandre3.hypertopic.org']
 			});
 			return false;
 		} else {
