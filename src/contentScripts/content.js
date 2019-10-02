@@ -20,35 +20,20 @@ const getTreeWalker = () => {
 };
 
 const getCoordinates = () => {
-	let treeWalker = getTreeWalker();
-  var selection = document.getSelection();
-
-  var strContent = selection + "";
-  strContent = strContent.trim();
-  if(strContent == ""){
-    //TODO replace with message in lasuli
-    alert(_("null.content.selected"));
-    return false;
+  let selection = document.getSelection().getRangeAt(0);
+  let dom = getTreeWalker();
+  let position = 0;
+  let found = false;
+  dom.nextNode();
+  while (!found && dom.currentNode) {
+    position += dom.currentNode.data.length;
+    dom.nextNode();
+    found = (dom.currentNode === selection.startContainer);
   }
-  var range = selection.getRangeAt(0);
-  var startContainer = range.startContainer;
-  var endContainer = range.endContainer;
-  var startOffset = range.startOffset;
-  var endOffset = range.endOffset;
-	var curPos = 0;
-  var startPos,endPos;
-	while(treeWalker.nextNode()) {
-    var node = treeWalker.currentNode;
-    if(node===startContainer){
-      startPos = curPos + startOffset;
-      endPos = startPos + ('' + range).length;
-      break;
-    }
-    curPos += node.data.length;
-  }
-  if(typeof startPos != "number" || typeof endPos != "number") return false;
-  return {"startPos": startPos, "endPos": endPos, "text": strContent };
-
+  let startPos = position + selection.startOffset;
+  let text = selection.toString();
+  let endPos = startPos + text.length;
+  return (found)? {startPos, endPos, text} : false;
 }
 
 class TextNode {
