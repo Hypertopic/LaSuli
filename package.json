@@ -49,20 +49,22 @@
     ]
   },
   "dependencies": {
-    "hypertopic": "^3.1.5"
+    "hypertopic": "^3.1.6"
   },
   "devDependencies": {
-    "@babel/cli": "^7.6.2",
-    "@babel/core": "^7.6.2",
-    "@babel/preset-react": "^7.0.0",
-    "@lingui/cli": "^2.7.4",
-    "@lingui/core": "latest",
-    "@lingui/macro": "^2.7.4",
-    "@lingui/react": "^2.7.4",
-    "react": "^16.5.2",
-    "react-dom": "^16.5.2",
-    "web-ext": "^3.1.1",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2"
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/preset-react": "^7.7.0",
+    "@lingui/cli": "^2.8.3",
+    "@lingui/core": "^2.8.3",
+    "@lingui/macro": "^2.8.3",
+    "@lingui/react": "^2.8.3",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-macros": "^2.6.2",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "web-ext": "^3.2.1",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   }
 }
