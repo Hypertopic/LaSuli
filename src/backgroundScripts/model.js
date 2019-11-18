@@ -286,7 +286,7 @@ const model = (function () {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body:`name=${user}&password=${password}`,
+      body:`name=${user}&password=${encodeURI(password)}`,
       credentials:'include'
     }))
     .then((x) => {
