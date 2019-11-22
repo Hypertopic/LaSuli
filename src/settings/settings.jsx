@@ -28,7 +28,7 @@ class Settings extends React.Component {
         <form onSubmit={this.handleSubmit}>
             <label><Trans>Service d'annotation (Hypertopic) :</Trans>
               <input
-                pattern="https?://.*[^/]"
+                pattern="https?://[^ ]+[^ /]"
                 placeholder="http://argos.local"
                 size="30"
                 required
